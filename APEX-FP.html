@@ -645,6 +645,11 @@ canvas { width: 100% !important; }
   .stat-grid { grid-template-columns: repeat(4,1fr); }
 }
 
+/* SVG inline dans les photos exercices */
+.exo-photo-svg-only svg,
+.exo-photo-svg svg { width: 100%; height: 100%; display: block; }
+.exo-photo-has-img { position: relative; }
+
 </style>
 </head>
 <body>
@@ -2276,31 +2281,35 @@ function getExoImageHTML(exoId) {
   const photoUrl = (typeof EXERCISE_PHOTOS !== 'undefined' && EXERCISE_PHOTOS[exoId])
     ? EXERCISE_PHOTOS[exoId] : null;
   const svg = getExoSVG(exoId);
-  const svgB64 = btoa(unescape(encodeURIComponent(svg)));
-  
+
   if (photoUrl) {
-    // Photo avec SVG en fallback via onerror
-    return `<div class="exo-photo" 
-      style="background-image:url('${photoUrl}')"
-      onerror="this.style.backgroundImage='url(data:image/svg+xml;base64,${svgB64})'">
+    // Vraie photo Unsplash + SVG inline en fallback
+    return `<div class="exo-photo exo-photo-has-img">
+      <img src="${photoUrl}" class="exo-photo-img" 
+        onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
+        style="width:100%;height:100%;object-fit:cover;display:block">
+      <div class="exo-photo-svg" style="display:none;width:100%;height:100%">${svg}</div>
     </div>`;
   }
-  return `<div class="exo-photo" style="background-image:url('data:image/svg+xml;base64,${svgB64}')"></div>`;
+  // SVG inline direct — marche partout sans serveur
+  return `<div class="exo-photo exo-photo-svg-only">${svg}</div>`;
 }
 
 /**
  * Rendu image session hero
  */
 function getSessionImageHTML(sessId) {
+  // Retourne maintenant le HTML complet au lieu d'un style CSS
   const photoUrl = (typeof SESSION_PHOTOS !== 'undefined' && SESSION_PHOTOS[sessId])
     ? SESSION_PHOTOS[sessId] : null;
   const svg = SESSION_SVG[sessId] || SESSION_SVG.push;
-  const svgB64 = btoa(unescape(encodeURIComponent(svg)));
-  
+
   if (photoUrl) {
-    return `background-image:url('${photoUrl}'); background-size:cover; background-position:center;`;
+    return `<img src="${photoUrl}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+    <div style="display:none;position:absolute;inset:0">${svg}</div>`;
   }
-  return `background-image:url('data:image/svg+xml;base64,${svgB64}'); background-size:cover;`;
+  return `<div style="position:absolute;inset:0">${svg}</div>`;
 }
 
 </script>
@@ -2593,7 +2602,7 @@ function startSession(id) {
   const heroDur   = document.getElementById('session-hero-duration');
   const heroSets  = document.getElementById('session-hero-sets');
   if (heroPhoto) {
-    heroPhoto.setAttribute('style', getSessionImageHTML(id));
+    heroPhoto.innerHTML = getSessionImageHTML(id);
   }
   if (heroName) { heroName.textContent = sess.name; }
   if (heroDur) heroDur.textContent = sess.duration;
