@@ -1893,421 +1893,155 @@ function buildDetailedContext(history, nextPlan, summary, currentWeek) {
 </script>
 <script>
 /**
- * APEX — Illustrations SVG par exercice
- * Fallback offline si Unsplash ne charge pas
+ * APEX — Illustrations anatomiques style Jefit/Hevy
+ * Muscles actifs en rouge, silhouettes précises
  */
+
+const CAT_BG = {
+  push:  ["#0a1428","#1a3060"],
+  pull:  ["#080e20","#10244a"],
+  legs:  ["#08140a","#102810"],
+  upper: ["#100820","#1e1050"],
+  arms:  ["#0e0818","#1c1040"],
+};
+
+function mkBg(cat) {
+  const [c1,c2] = CAT_BG[cat]||CAT_BG.push;
+  return `<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${c2}"/><stop offset="100%" stop-color="${c1}"/></linearGradient></defs><rect width="400" height="180" fill="url(#bg)"/>`;
+}
+function mkFloor(cat) {
+  const c = (CAT_BG[cat]||CAT_BG.push)[0];
+  return `<rect x="0" y="155" width="400" height="25" fill="${c}" opacity=".85"/><line x1="0" y1="155" x2="400" y2="155" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+}
+function mkLegend(muscle) {
+  return `<rect x="8" y="8" width="${muscle.length*7+20}" height="19" rx="5" fill="rgba(204,51,51,0.18)" stroke="rgba(204,51,51,0.45)" stroke-width="1"/><circle cx="18" cy="17" r="4" fill="#cc3333"/><text x="26" y="22" font-size="10" fill="#ff8888" font-family="system-ui" font-weight="700">${muscle}</text>`;
+}
+function mkOv(cat) {
+  const c = (CAT_BG[cat]||CAT_BG.push)[0];
+  return `<defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="55%" stop-color="${c}" stop-opacity="0"/><stop offset="100%" stop-color="${c}" stop-opacity=".78"/></linearGradient></defs><rect width="400" height="180" fill="url(#ov)"/>`;
+}
+
+const BANC = `<rect x="72" y="108" width="256" height="15" rx="5" fill="#1e3a6a"/><rect x="72" y="105" width="256" height="7" rx="3" fill="#2a4a80"/><rect x="80" y="112" width="240" height="10" rx="4" fill="#243870"/><rect x="84" y="122" width="7" height="33" rx="2" fill="#162855"/><rect x="309" y="122" width="7" height="33" rx="2" fill="#162855"/><rect x="78" y="150" width="22" height="5" rx="2" fill="#162855"/><rect x="300" y="150" width="22" height="5" rx="2" fill="#162855"/>`;
+
+function hal(x1,x2,y){return `<rect x="${x1-3}" y="${y}" width="46" height="13" rx="6.5" fill="#4a5580"/><rect x="${x1-8}" y="${y-6}" width="11" height="25" rx="3" fill="#6677aa"/><rect x="${x1+35}" y="${y-6}" width="11" height="25" rx="3" fill="#6677aa"/><rect x="${x2-3}" y="${y}" width="46" height="13" rx="6.5" fill="#4a5580"/><rect x="${x2-8}" y="${y-6}" width="11" height="25" rx="3" fill="#6677aa"/><rect x="${x2+35}" y="${y-6}" width="11" height="25" rx="3" fill="#6677aa"/>`;}
+
+function sil(cx,ty,col){const c=col||"#4050a0";return `<ellipse cx="${cx}" cy="${ty+22}" rx="21" ry="21" fill="#c8845a"/><ellipse cx="${cx}" cy="${ty+5}" rx="18" ry="10" fill="#1a0e08"/><rect x="${cx-7}" y="${ty+40}" width="14" height="9" rx="4" fill="#c8845a"/><rect x="${cx-20}" y="${ty+48}" width="40" height="52" rx="10" fill="${c}"/><ellipse cx="${cx-18}" cy="${ty+56}" rx="14" ry="11" fill="${c}"/><ellipse cx="${cx+18}" cy="${ty+56}" rx="14" ry="11" fill="${c}"/><rect x="${cx-13}" y="${ty+98}" width="12" height="46" rx="6" fill="${c}"/><rect x="${cx+2}" y="${ty+98}" width="12" height="46" rx="6" fill="${c}"/><ellipse cx="${cx-9}" cy="${ty+143}" rx="15" ry="5" fill="#22326a"/><ellipse cx="${cx+9}" cy="${ty+143}" rx="15" ry="5" fill="#22326a"/>`;}
+
+const MTIRAGE=`<rect x="148" y="0" width="104" height="10" rx="4" fill="#1a3060"/><rect x="192" y="10" width="16" height="30" rx="4" fill="#1a2850"/><line x1="200" y1="40" x2="200" y2="55" stroke="#2a44aa" stroke-width="2.5"/><rect x="118" y="53" width="164" height="9" rx="4.5" fill="#2a44aa"/><rect x="114" y="47" width="16" height="20" rx="5" fill="#1e3888"/><rect x="270" y="47" width="16" height="20" rx="5" fill="#1e3888"/>`;
+const SIEGE=`<rect x="166" y="136" width="68" height="12" rx="5" fill="#1a3060"/><rect x="170" y="122" width="60" height="16" rx="6" fill="#1e3878"/><rect x="154" y="132" width="24" height="44" rx="9" fill="#2a3e80"/><rect x="222" y="132" width="24" height="44" rx="9" fill="#2a3e80"/>`;
 
 const EXERCISE_SVG = {
 
-  // ── PUSH ──────────────────────────────────────────────────────
-  "push-1": `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1e3868"/><stop offset="100%" stop-color="#060f20"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <!-- Banc --> <rect x="70" y="100" width="250" height="16" rx="5" fill="#2a4080" opacity=".85"/>
-    <rect x="80" y="116" width="18" height="35" rx="4" fill="#1e3060" opacity=".8"/>
-    <rect x="292" y="116" width="18" height="35" rx="4" fill="#1e3060" opacity=".8"/>
-    <!-- Corps allongé --> <ellipse cx="195" cy="92" rx="20" ry="20" fill="#4a6aaa" opacity=".9"/>
-    <rect x="148" y="100" width="94" height="12" rx="6" fill="#3a5a99" opacity=".85"/>
-    <!-- Bras étendus --> <line x1="175" y1="90" x2="85" y2="78" stroke="#4a6aaa" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <line x1="215" y1="90" x2="305" y2="78" stroke="#4a6aaa" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <!-- Haltères --> <rect x="55" y="71" width="42" height="12" rx="6" fill="#8899cc" opacity=".95"/>
-    <rect x="50" y="66" width="10" height="22" rx="3" fill="#aabbee" opacity=".9"/>
-    <rect x="82" y="66" width="10" height="22" rx="3" fill="#aabbee" opacity=".9"/>
-    <rect x="293" y="71" width="42" height="12" rx="6" fill="#8899cc" opacity=".95"/>
-    <rect x="288" y="66" width="10" height="22" rx="3" fill="#aabbee" opacity=".9"/>
-    <rect x="320" y="66" width="10" height="22" rx="3" fill="#aabbee" opacity=".9"/>
-    <rect width="390" height="180" fill="url(#ov1)"/>
-    <defs><linearGradient id="ov1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity=".05"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".8"/></linearGradient></defs>
-  </svg>`,
+"push-1":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('push')}${mkFloor('push')}${BANC}<ellipse cx="310" cy="90" rx="20" ry="20" fill="#c8845a"/><ellipse cx="310" cy="73" rx="17" ry="9" fill="#1a0e08"/><rect x="302" y="107" width="14" height="8" rx="4" fill="#c8845a"/><rect x="148" y="98" width="158" height="13" rx="6" fill="#334488" opacity=".9"/><ellipse cx="178" cy="98" rx="28" ry="13" fill="#cc3333" opacity=".75"/><ellipse cx="222" cy="98" rx="28" ry="13" fill="#cc3333" opacity=".75"/><ellipse cx="152" cy="95" rx="16" ry="12" fill="#334488" opacity=".8"/><ellipse cx="248" cy="95" rx="16" ry="12" fill="#334488" opacity=".8"/><line x1="155" y1="92" x2="96" y2="44" stroke="#4060a0" stroke-width="13" stroke-linecap="round"/><line x1="155" y1="92" x2="115" y2="58" stroke="#cc3333" stroke-width="6" stroke-linecap="round" opacity=".55"/><line x1="96" y1="44" x2="62" y2="44" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><ellipse cx="55" cy="44" rx="9" ry="7" fill="#b87048"/><line x1="245" y1="92" x2="304" y2="44" stroke="#4060a0" stroke-width="13" stroke-linecap="round"/><line x1="245" y1="92" x2="285" y2="58" stroke="#cc3333" stroke-width="6" stroke-linecap="round" opacity=".55"/><line x1="304" y1="44" x2="338" y2="44" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><ellipse cx="345" cy="44" rx="9" ry="7" fill="#b87048"/>${hal(18,292,37)}<rect x="78" y="114" width="26" height="12" rx="6" fill="#2a3e70" opacity=".8"/><rect x="296" y="114" width="26" height="12" rx="6" fill="#2a3e70" opacity=".8"/>${mkLegend("Pectoraux")}${mkOv('push')}</svg>`,
 
-  "push-5": `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a1540"/><stop offset="100%" stop-color="#060820"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <!-- Silhouette debout --> <ellipse cx="195" cy="48" rx="20" ry="20" fill="#4455aa" opacity=".9"/>
-    <rect x="183" y="68" width="24" height="55" rx="8" fill="#3344aa" opacity=".85"/>
-    <rect x="183" y="123" width="11" height="38" rx="5" fill="#3344aa" opacity=".8"/>
-    <rect x="202" y="123" width="11" height="38" rx="5" fill="#3344aa" opacity=".8"/>
-    <!-- Bras levés latéralement --> <line x1="183" y1="83" x2="95" y2="62" stroke="#4455aa" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <line x1="207" y1="83" x2="295" y2="62" stroke="#4455aa" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <!-- Haltères --> <rect x="74" y="56" width="28" height="10" rx="5" fill="#8899cc" opacity=".95"/>
-    <rect x="70" y="51" width="8" height="18" rx="3" fill="#aabbee" opacity=".9"/>
-    <rect x="94" y="51" width="8" height="18" rx="3" fill="#aabbee" opacity=".9"/>
-    <rect x="288" y="56" width="28" height="10" rx="5" fill="#8899cc" opacity=".95"/>
-    <rect x="284" y="51" width="8" height="18" rx="3" fill="#aabbee" opacity=".9"/>
-    <rect x="308" y="51" width="8" height="18" rx="3" fill="#aabbee" opacity=".9"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".75"/></linearGradient></defs>
-  </svg>`,
+"push-2":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('push')}${mkFloor('push')}<rect x="72" y="115" width="256" height="15" rx="5" fill="#1e2a5a" transform="rotate(-12 200 122)"/><rect x="78" y="112" width="244" height="9" rx="4" fill="#243870" transform="rotate(-12 200 116)"/><rect x="84" y="124" width="7" height="35" rx="2" fill="#162855" transform="rotate(-12 87 141)"/><rect x="305" y="108" width="7" height="35" rx="2" fill="#162855" transform="rotate(-12 308 125)"/><ellipse cx="316" cy="92" rx="20" ry="20" fill="#c8845a"/><ellipse cx="316" cy="75" rx="17" ry="9" fill="#1a0e08"/><rect x="308" y="109" width="14" height="8" rx="4" fill="#c8845a"/><rect x="148" y="104" width="162" height="13" rx="6" fill="#334488" opacity=".9" transform="rotate(-8 229 110)"/><ellipse cx="160" cy="102" rx="27" ry="11" fill="#cc3333" opacity=".7" transform="rotate(-8 160 102)"/><ellipse cx="215" cy="98" rx="27" ry="11" fill="#cc3333" opacity=".7" transform="rotate(-8 215 98)"/><line x1="158" y1="96" x2="94" y2="48" stroke="#4060a0" stroke-width="13" stroke-linecap="round"/><line x1="94" y1="48" x2="60" y2="48" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><line x1="242" y1="92" x2="300" y2="48" stroke="#4060a0" stroke-width="13" stroke-linecap="round"/><line x1="300" y1="48" x2="334" y2="48" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/>${hal(18,290,41)}${mkLegend("Pecs bas")}${mkOv('push')}</svg>`,
 
-  "push-7": `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a1030"/><stop offset="100%" stop-color="#080510"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <!-- Câble poulie --> <line x1="260" y1="0" x2="260" y2="180" stroke="#2a3060" stroke-width="4" opacity=".5"/>
-    <circle cx="260" cy="20" r="14" fill="#2a3060" opacity=".7"/>
-    <line x1="260" y1="34" x2="230" y2="100" stroke="#4455aa" stroke-width="3" opacity=".8"/>
-    <!-- Corde --> <line x1="220" y1="100" x2="200" y2="115" stroke="#6677cc" stroke-width="5" stroke-linecap="round" opacity=".9"/>
-    <line x1="220" y1="100" x2="240" y2="115" stroke="#6677cc" stroke-width="5" stroke-linecap="round" opacity=".9"/>
-    <!-- Silhouette --> <ellipse cx="165" cy="62" rx="19" ry="19" fill="#4455aa" opacity=".9"/>
-    <rect x="153" y="81" width="24" height="50" rx="8" fill="#3344aa" opacity=".85"/>
-    <rect x="153" y="131" width="11" height="36" rx="5" fill="#3344aa" opacity=".8"/>
-    <rect x="170" y="131" width="11" height="36" rx="5" fill="#3344aa" opacity=".8"/>
-    <!-- Bras vers le bas --> <line x1="177" y1="88" x2="218" y2="115" stroke="#4455aa" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".75"/></linearGradient></defs>
-  </svg>`,
+"push-3":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('push')}${mkFloor('push')}<line x1="20" y1="0" x2="20" y2="180" stroke="#1e2848" stroke-width="6" stroke-linecap="round"/><line x1="380" y1="0" x2="380" y2="180" stroke="#1e2848" stroke-width="6" stroke-linecap="round"/><circle cx="20" cy="80" r="10" fill="#2a3870"/><circle cx="380" cy="80" r="10" fill="#2a3870"/><line x1="20" y1="80" x2="90" y2="98" stroke="#4466aa" stroke-width="2.5"/><line x1="380" y1="80" x2="310" y2="98" stroke="#4466aa" stroke-width="2.5"/>${sil(200,12,"#4050a0")}<ellipse cx="176" cy="68" rx="15" ry="10" fill="#cc3333" opacity=".75"/><ellipse cx="224" cy="68" rx="15" ry="10" fill="#cc3333" opacity=".75"/><line x1="182" y1="68" x2="88" y2="95" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="82" cy="97" rx="9" ry="7" fill="#c8845a"/><line x1="218" y1="68" x2="312" y2="95" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="318" cy="97" rx="9" ry="7" fill="#c8845a"/>${mkLegend("Pectoraux")}${mkOv('push')}</svg>`,
 
-  // ── PULL ──────────────────────────────────────────────────────
-  "pull-1": `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#103060"/><stop offset="100%" stop-color="#060a18"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <!-- Barre de traction --> <rect x="60" y="18" width="270" height="10" rx="5" fill="#3355aa" opacity=".9"/>
-    <rect x="60" y="12" width="12" height="22" rx="4" fill="#2244aa" opacity=".8"/>
-    <rect x="318" y="12" width="12" height="22" rx="4" fill="#2244aa" opacity=".8"/>
-    <!-- Silhouette suspendue --> <ellipse cx="195" cy="75" rx="19" ry="19" fill="#4466bb" opacity=".9"/>
-    <rect x="183" y="94" width="24" height="50" rx="8" fill="#3355aa" opacity=".85"/>
-    <rect x="183" y="144" width="11" height="28" rx="5" fill="#3355aa" opacity=".8"/>
-    <rect x="200" y="144" width="11" height="28" rx="5" fill="#3355aa" opacity=".8"/>
-    <!-- Bras vers le haut --> <line x1="185" y1="75" x2="120" y2="28" stroke="#4466bb" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <line x1="205" y1="75" x2="270" y2="28" stroke="#4466bb" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".75"/></linearGradient></defs>
-  </svg>`,
+"push-4":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('push')}${mkFloor('push')}<rect x="155" y="100" width="90" height="55" rx="8" fill="#1e3060"/><rect x="148" y="90" width="104" height="14" rx="5" fill="#243878"/><rect x="145" y="55" width="15" height="48" rx="5" fill="#1a2848"/><rect x="240" y="55" width="15" height="48" rx="5" fill="#1a2848"/>${sil(200,5,"#4050a0")}<ellipse cx="182" cy="58" rx="14" ry="12" fill="#cc3333" opacity=".8"/><ellipse cx="218" cy="58" rx="14" ry="12" fill="#cc3333" opacity=".8"/><line x1="182" y1="58" x2="152" y2="40" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><line x1="152" y1="40" x2="148" y2="60" stroke="#c8845a" stroke-width="10" stroke-linecap="round"/><line x1="218" y1="58" x2="248" y2="40" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><line x1="248" y1="40" x2="252" y2="60" stroke="#c8845a" stroke-width="10" stroke-linecap="round"/><polygon points="200,22 193,34 207,34" fill="rgba(245,197,24,0.3)"/><line x1="200" y1="34" x2="200" y2="54" stroke="rgba(245,197,24,0.25)" stroke-width="2" stroke-dasharray="4,3"/>${mkLegend("Deltoïdes")}${mkOv('push')}</svg>`,
 
-  "pull-4": `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d2040"/><stop offset="100%" stop-color="#060a18"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <!-- Banc --> <rect x="80" y="90" width="150" height="14" rx="5" fill="#1e3060" opacity=".85"/>
-    <rect x="85" y="104" width="16" height="30" rx="4" fill="#162050" opacity=".8"/>
-    <rect x="214" y="104" width="16" height="30" rx="4" fill="#162050" opacity=".8"/>
-    <!-- Genou sur banc --> <ellipse cx="155" cy="88" rx="14" ry="10" fill="#3355aa" opacity=".8"/>
-    <!-- Silhouette penchée --> <ellipse cx="190" cy="60" rx="18" ry="18" fill="#4466bb" opacity=".9"/>
-    <rect x="175" y="75" width="30" height="20" rx="8" fill="#3355aa" opacity=".85" transform="rotate(-30 175 75)"/>
-    <!-- Bras tirant --> <line x1="195" y1="68" x2="195" y2="105" stroke="#4466bb" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <!-- Haltère --> <rect x="183" y="108" width="24" height="10" rx="5" fill="#8899cc" opacity=".95"/>
-    <rect x="179" y="103" width="8" height="18" rx="3" fill="#aabbee" opacity=".9"/>
-    <rect x="201" y="103" width="8" height="18" rx="3" fill="#aabbee" opacity=".9"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".75"/></linearGradient></defs>
-  </svg>`,
+"push-5":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('push')}${mkFloor('push')}${sil(200,8,"#4050a0")}<ellipse cx="182" cy="60" rx="16" ry="14" fill="#cc3333" opacity=".82"/><ellipse cx="218" cy="60" rx="16" ry="14" fill="#cc3333" opacity=".82"/><line x1="182" y1="62" x2="78" y2="52" stroke="#cc3333" stroke-width="15" stroke-linecap="round" opacity=".75"/><line x1="182" y1="62" x2="78" y2="52" stroke="#4050a0" stroke-width="10" stroke-linecap="round"/><line x1="78" y1="52" x2="50" y2="66" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><ellipse cx="43" cy="69" rx="9" ry="7" fill="#b87048"/><line x1="218" y1="62" x2="322" y2="52" stroke="#cc3333" stroke-width="15" stroke-linecap="round" opacity=".75"/><line x1="218" y1="62" x2="322" y2="52" stroke="#4050a0" stroke-width="10" stroke-linecap="round"/><line x1="322" y1="52" x2="350" y2="66" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><ellipse cx="357" cy="69" rx="9" ry="7" fill="#b87048"/><rect x="16" y="59" width="32" height="11" rx="5.5" fill="#4a5580"/><rect x="12" y="53" width="9" height="21" rx="2.5" fill="#6677aa"/><rect x="41" y="53" width="9" height="21" rx="2.5" fill="#6677aa"/><rect x="352" y="59" width="32" height="11" rx="5.5" fill="#4a5580"/><rect x="348" y="53" width="9" height="21" rx="2.5" fill="#6677aa"/><rect x="377" y="53" width="9" height="21" rx="2.5" fill="#6677aa"/><path d="M50 92 Q28 66 40 40" fill="none" stroke="rgba(245,197,24,0.18)" stroke-width="1.5" stroke-dasharray="5,4"/><path d="M352 92 Q374 66 362 40" fill="none" stroke="rgba(245,197,24,0.18)" stroke-width="1.5" stroke-dasharray="5,4"/>${mkLegend("Deltoïdes")}${mkOv('push')}</svg>`,
 
-  "pull-7": `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a1030"/><stop offset="100%" stop-color="#080510"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <!-- Banc incliné --> <rect x="80" y="70" width="200" height="14" rx="5" fill="#2a2060" opacity=".85" transform="rotate(-30 80 70)"/>
-    <!-- Silhouette assise inclinée --> <ellipse cx="175" cy="72" rx="18" ry="18" fill="#5566bb" opacity=".9"/>
-    <rect x="163" y="88" width="24" height="48" rx="8" fill="#4455aa" opacity=".85" transform="rotate(-30 163 88)"/>
-    <!-- Bras curl --> <line x1="175" y1="85" x2="175" y2="125" stroke="#5566bb" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <!-- Haltère en bas --> <rect x="163" y="128" width="24" height="10" rx="5" fill="#8899cc" opacity=".95"/>
-    <rect x="159" y="123" width="8" height="18" rx="3" fill="#aabbee" opacity=".9"/>
-    <rect x="181" y="123" width="8" height="18" rx="3" fill="#aabbee" opacity=".9"/>
-    <!-- Arc du curl --> <path d="M175 125 Q155 95 175 75" fill="none" stroke="rgba(245,197,24,0.2)" stroke-width="2" stroke-dasharray="4,3"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".75"/></linearGradient></defs>
-  </svg>`,
+"push-6":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('push')}${mkFloor('push')}<line x1="360" y1="0" x2="360" y2="180" stroke="#1e2848" stroke-width="5"/><circle cx="360" cy="60" r="9" fill="#2a3870"/><line x1="360" y1="60" x2="292" y2="72" stroke="#4466aa" stroke-width="2.5"/>${sil(180,8,"#4050a0")}<ellipse cx="198" cy="62" rx="14" ry="12" fill="#cc3333" opacity=".8"/><line x1="198" y1="62" x2="282" y2="70" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="285" cy="71" rx="9" ry="7" fill="#c8845a"/><line x1="162" y1="62" x2="130" y2="52" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="124" cy="50" rx="9" ry="7" fill="#c8845a"/>${mkLegend("Deltoïdes")}${mkOv('push')}</svg>`,
 
-  // ── LEGS ──────────────────────────────────────────────────────
-  "legs-1": `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#102040"/><stop offset="100%" stop-color="#060c18"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <!-- Machine presse --> <rect x="60" y="30" width="270" height="130" rx="10" fill="#1a2848" opacity=".5"/>
-    <rect x="60" y="30" width="270" height="6" rx="3" fill="#2a3868" opacity=".8"/>
-    <!-- Plaque pied --> <rect x="90" y="50" width="210" height="80" rx="8" fill="#2a3868" opacity=".7"/>
-    <!-- Silhouette assise --> <ellipse cx="195" cy="115" rx="25" ry="18" fill="#4466bb" opacity=".85"/>
-    <!-- Jambes étendues --> <line x1="175" y1="115" x2="120" y2="80" stroke="#3355aa" stroke-width="14" stroke-linecap="round" opacity=".9"/>
-    <line x1="215" y1="115" x2="270" y2="80" stroke="#3355aa" stroke-width="14" stroke-linecap="round" opacity=".9"/>
-    <!-- Flèche poussée --> <line x1="195" y1="80" x2="195" y2="50" stroke="rgba(245,197,24,0.4)" stroke-width="2" stroke-dasharray="4,3"/>
-    <polygon points="195,44 188,56 202,56" fill="rgba(245,197,24,0.4)"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".75"/></linearGradient></defs>
-  </svg>`,
+"push-7":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('push')}${mkFloor('push')}<line x1="340" y1="0" x2="340" y2="180" stroke="#1e2848" stroke-width="5"/><circle cx="340" cy="25" r="12" fill="#2a3870"/><line x1="340" y1="37" x2="264" y2="80" stroke="#4466aa" stroke-width="2.5"/><rect x="254" y="75" width="18" height="10" rx="4" fill="#4455aa"/>${sil(170,8,"#4050a0")}<ellipse cx="204" cy="72" rx="13" ry="11" fill="#cc3333" opacity=".85"/><line x1="188" y1="70" x2="256" y2="78" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="260" cy="80" rx="9" ry="7" fill="#c8845a"/><line x1="152" y1="70" x2="124" y2="62" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="118" cy="60" rx="9" ry="7" fill="#c8845a"/>${mkLegend("Triceps")}${mkOv('push')}</svg>`,
 
-  "legs-3": `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0a2010"/><stop offset="100%" stop-color="#060c08"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <!-- Sol --> <rect x="0" y="155" width="390" height="25" fill="#0d2015" opacity=".9"/>
-    <!-- Banc derrière --> <rect x="240" y="80" width="80" height="12" rx="4" fill="#1a3020" opacity=".85"/>
-    <rect x="248" y="92" width="14" height="40" rx="4" fill="#142518" opacity=".8"/>
-    <rect x="298" y="92" width="14" height="40" rx="4" fill="#142518" opacity=".8"/>
-    <!-- Pied arrière sur banc --> <ellipse cx="280" cy="78" rx="14" ry="8" fill="#3a5a44" opacity=".8"/>
-    <!-- Silhouette fente --> <ellipse cx="175" cy="65" rx="19" ry="19" fill="#44bb66" opacity=".9"/>
-    <rect x="163" y="82" width="24" height="40" rx="8" fill="#33aa55" opacity=".85"/>
-    <!-- Jambe avant pliée --> <line x1="175" y1="122" x2="150" y2="155" stroke="#33aa55" stroke-width="13" stroke-linecap="round" opacity=".9"/>
-    <line x1="150" y1="155" x2="140" y2="155" stroke="#33aa55" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <!-- Jambe arrière --> <line x1="185" y1="118" x2="250" y2="145" stroke="#33aa55" stroke-width="13" stroke-linecap="round" opacity=".85"/>
-    <!-- Haltères --> <rect x="135" y="110" width="20" height="8" rx="4" fill="#8899cc" opacity=".9"/>
-    <rect x="210" y="110" width="20" height="8" rx="4" fill="#8899cc" opacity=".9"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".75"/></linearGradient></defs>
-  </svg>`,
+"pull-1":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('pull')}${mkFloor('pull')}${MTIRAGE}${SIEGE}<rect x="174" y="78" width="52" height="54" rx="10" fill="#3a5098"/><path d="M174 82 Q158 97 165 127 L185 120 Z" fill="#cc3333" opacity=".82"/><path d="M226 82 Q242 97 235 127 L215 120 Z" fill="#cc3333" opacity=".82"/><ellipse cx="200" cy="74" rx="22" ry="8" fill="#4a60b0" opacity=".6"/><ellipse cx="200" cy="63" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="46" rx="17" ry="9" fill="#1a0e08"/><rect x="193" y="80" width="14" height="8" rx="4" fill="#c8845a"/><line x1="176" y1="84" x2="132" y2="57" stroke="#cc3333" stroke-width="14" stroke-linecap="round" opacity=".7"/><line x1="176" y1="84" x2="132" y2="57" stroke="#3a5098" stroke-width="9" stroke-linecap="round"/><line x1="132" y1="57" x2="116" y2="57" stroke="#c8845a" stroke-width="10" stroke-linecap="round"/><line x1="224" y1="84" x2="268" y2="57" stroke="#cc3333" stroke-width="14" stroke-linecap="round" opacity=".7"/><line x1="224" y1="84" x2="268" y2="57" stroke="#3a5098" stroke-width="9" stroke-linecap="round"/><line x1="268" y1="57" x2="284" y2="57" stroke="#c8845a" stroke-width="10" stroke-linecap="round"/><line x1="200" y1="58" x2="200" y2="78" stroke="rgba(245,197,24,0.3)" stroke-width="2" stroke-dasharray="4,3"/><polygon points="200,82 194,70 206,70" fill="rgba(245,197,24,0.3)"/>${mkLegend("Grand dorsal")}${mkOv('pull')}</svg>`,
 
-  "legs-6": `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#102010"/><stop offset="100%" stop-color="#060808"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <!-- Banc --> <rect x="80" y="65" width="230" height="14" rx="5" fill="#1e3020" opacity=".85"/>
-    <rect x="88" y="79" width="16" height="35" rx="4" fill="#162018" opacity=".8"/>
-    <rect x="286" y="79" width="16" height="35" rx="4" fill="#162018" opacity=".8"/>
-    <!-- Sol --> <rect x="0" y="155" width="390" height="25" fill="#0d1810" opacity=".9"/>
-    <!-- Silhouette hip thrust --> <ellipse cx="195" cy="60" rx="22" ry="14" fill="#44bb66" opacity=".85"/>
-    <!-- Dos appuyé sur banc --> <rect x="155" y="52" width="80" height="14" rx="7" fill="#33aa55" opacity=".85" transform="rotate(5 155 52)"/>
-    <!-- Hanches en haut --> <ellipse cx="195" cy="100" rx="28" ry="20" fill="#33aa55" opacity=".85"/>
-    <!-- Jambes --> <line x1="175" y1="115" x2="155" y2="155" stroke="#33aa55" stroke-width="14" stroke-linecap="round" opacity=".9"/>
-    <line x1="215" y1="115" x2="235" y2="155" stroke="#33aa55" stroke-width="14" stroke-linecap="round" opacity=".9"/>
-    <!-- Haltère sur hanches --> <rect x="170" y="92" width="50" height="14" rx="7" fill="#8899cc" opacity=".9"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".75"/></linearGradient></defs>
-  </svg>`,
+"pull-2":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('pull')}${mkFloor('pull')}<rect x="100" y="10" width="200" height="9" rx="4" fill="#1a3060"/><rect x="155" y="0" width="90" height="14" rx="5" fill="#1e3878"/><rect x="195" y="14" width="10" height="30" rx="3" fill="#1a2850"/><rect x="96" y="14" width="18" height="22" rx="5" fill="#2e2888"/><rect x="286" y="14" width="18" height="22" rx="5" fill="#2e2888"/><ellipse cx="200" cy="75" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="58" rx="17" ry="9" fill="#1a0e08"/><rect x="193" y="92" width="14" height="10" rx="4" fill="#c8845a"/><rect x="180" y="100" width="40" height="54" rx="10" fill="#3a5098"/><path d="M180 104 Q162 120 168 148 L188 140 Z" fill="#cc3333" opacity=".8"/><path d="M220 104 Q238 120 232 148 L212 140 Z" fill="#cc3333" opacity=".8"/><line x1="182" y1="74" x2="104" y2="20" stroke="#cc3333" stroke-width="14" stroke-linecap="round" opacity=".7"/><line x1="182" y1="74" x2="104" y2="20" stroke="#3a5098" stroke-width="9" stroke-linecap="round"/><line x1="218" y1="74" x2="296" y2="20" stroke="#cc3333" stroke-width="14" stroke-linecap="round" opacity=".7"/><line x1="218" y1="74" x2="296" y2="20" stroke="#3a5098" stroke-width="9" stroke-linecap="round"/><rect x="180" y="152" width="14" height="28" rx="6" fill="#2a3e80"/><rect x="206" y="152" width="14" height="28" rx="6" fill="#2a3e80"/>${mkLegend("Grand dorsal")}${mkOv('pull')}</svg>`,
 
-  "legs-8": `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#102010"/><stop offset="100%" stop-color="#060808"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <!-- Machine mollets --> <rect x="140" y="100" width="110" height="50" rx="8" fill="#1e3020" opacity=".8"/>
-    <rect x="150" y="90" width="90" height="14" rx="5" fill="#2a4030" opacity=".85"/>
-    <!-- Silhouette debout --> <ellipse cx="195" cy="52" rx="19" ry="19" fill="#44bb66" opacity=".9"/>
-    <rect x="183" y="71" width="24" height="55" rx="8" fill="#33aa55" opacity=".85"/>
-    <!-- Pieds sur marche --> <rect x="165" y="150" width="60" height="8" rx="3" fill="#2a4030" opacity=".7"/>
-    <!-- Jambes --> <line x1="183" y1="126" x2="175" y2="152" stroke="#33aa55" stroke-width="13" stroke-linecap="round" opacity=".9"/>
-    <line x1="207" y1="126" x2="215" y2="152" stroke="#33aa55" stroke-width="13" stroke-linecap="round" opacity=".9"/>
-    <!-- Flèche montée --> <path d="M195 148 Q185 130 195 115" fill="none" stroke="rgba(245,197,24,0.4)" stroke-width="2" stroke-dasharray="4,3"/>
-    <polygon points="195,110 189,120 201,120" fill="rgba(245,197,24,0.4)"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".75"/></linearGradient></defs>
-  </svg>`,
+"pull-3":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('pull')}${mkFloor('pull')}${MTIRAGE}${SIEGE}<rect x="174" y="78" width="52" height="54" rx="10" fill="#3a5098"/><path d="M174 82 Q158 97 165 127 L185 120 Z" fill="#cc3333" opacity=".8"/><path d="M226 82 Q242 97 235 127 L215 120 Z" fill="#cc3333" opacity=".8"/><ellipse cx="200" cy="63" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="46" rx="17" ry="9" fill="#1a0e08"/><rect x="193" y="80" width="14" height="8" rx="4" fill="#c8845a"/><line x1="176" y1="84" x2="132" y2="57" stroke="#3a5098" stroke-width="13" stroke-linecap="round"/><line x1="132" y1="57" x2="116" y2="57" stroke="#c8845a" stroke-width="10" stroke-linecap="round"/><line x1="224" y1="84" x2="268" y2="57" stroke="#3a5098" stroke-width="13" stroke-linecap="round"/><line x1="268" y1="57" x2="284" y2="57" stroke="#c8845a" stroke-width="10" stroke-linecap="round"/>${mkLegend("Grand dorsal")}${mkOv('pull')}</svg>`,
 
-  // ── UPPER ──────────────────────────────────────────────────────
-  "upper-1": `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1e2060"/><stop offset="100%" stop-color="#080820"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <!-- Banc incliné 30° --> <rect x="70" y="80" width="250" height="16" rx="5" fill="#2a2a70" opacity=".85" transform="rotate(-15 70 80)"/>
-    <rect x="78" y="96" width="18" height="38" rx="4" fill="#1e1e50" opacity=".8"/>
-    <rect x="286" y="84" width="18" height="38" rx="4" fill="#1e1e50" opacity=".8"/>
-    <!-- Corps incliné --> <ellipse cx="185" cy="78" rx="20" ry="20" fill="#6655bb" opacity=".9"/>
-    <rect x="172" y="94" width="30" height="40" rx="8" fill="#5544aa" opacity=".85" transform="rotate(-15 172 94)"/>
-    <!-- Bras --> <line x1="172" y1="86" x2="95" y2="70" stroke="#6655bb" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <line x1="205" y1="86" x2="285" y2="75" stroke="#6655bb" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <!-- Haltères --> <rect x="65" y="63" width="38" height="12" rx="6" fill="#8899cc" opacity=".95"/>
-    <rect x="61" y="58" width="9" height="21" rx="3" fill="#aabbee" opacity=".9"/>
-    <rect x="90" y="58" width="9" height="21" rx="3" fill="#aabbee" opacity=".9"/>
-    <rect x="275" y="65" width="38" height="12" rx="6" fill="#8899cc" opacity=".95"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".75"/></linearGradient></defs>
-  </svg>`,
+"pull-4":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('pull')}${mkFloor('pull')}<rect x="80" y="90" width="160" height="14" rx="5" fill="#1e3060"/><rect x="86" y="86" width="148" height="8" rx="4" fill="#2a4278"/><rect x="88" y="104" width="16" height="38" rx="4" fill="#162855"/><rect x="222" y="104" width="16" height="38" rx="4" fill="#162855"/><ellipse cx="186" cy="60" rx="20" ry="20" fill="#c8845a"/><ellipse cx="186" cy="43" rx="17" ry="9" fill="#1a0e08"/><rect x="179" y="77" width="14" height="9" rx="4" fill="#c8845a"/><rect x="165" y="80" width="38" height="16" rx="6" fill="#4050a0" transform="rotate(-30 184 88)"/><rect x="155" y="90" width="38" height="44" rx="10" fill="#4050a0" transform="rotate(-30 174 112)"/><path d="M162 88 Q145 102 150 128 L170 120 Z" fill="#cc3333" opacity=".8" transform="rotate(-30 160 108)"/><line x1="175" y1="84" x2="178" y2="126" stroke="#4050a0" stroke-width="13" stroke-linecap="round" transform="rotate(-30 176 105)"/><rect x="160" y="118" width="28" height="11" rx="5.5" fill="#4a5580" transform="rotate(-30 174 123)"/>${hal(156,0,112)}<text x="165" y="120" fill="#6677aa" font-size="0">.</text>${mkLegend("Grand dorsal")}${mkOv('pull')}</svg>`,
 
-  "upper-5": `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1e1040"/><stop offset="100%" stop-color="#080510"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <!-- Barres parallèles --> <rect x="130" y="40" width="12" height="120" rx="6" fill="#2a1a60" opacity=".8"/>
-    <rect x="248" y="40" width="12" height="120" rx="6" fill="#2a1a60" opacity=".8"/>
-    <rect x="130" y="40" width="130" height="10" rx="5" fill="#3a2a70" opacity=".85"/>
-    <!-- Silhouette en appui --> <ellipse cx="195" cy="65" rx="19" ry="19" fill="#aa66ee" opacity=".9"/>
-    <!-- Bras sur barres --> <line x1="178" y1="72" x2="136" y2="80" stroke="#aa66ee" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <line x1="212" y1="72" x2="254" y2="80" stroke="#aa66ee" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <rect x="178" y="84" width="24" height="50" rx="8" fill="#9955dd" opacity=".85"/>
-    <!-- Jambes pendantes --> <line x1="183" y1="134" x2="175" y2="170" stroke="#9955dd" stroke-width="13" stroke-linecap="round" opacity=".85"/>
-    <line x1="207" y1="134" x2="215" y2="170" stroke="#9955dd" stroke-width="13" stroke-linecap="round" opacity=".85"/>
-    <!-- Poids lesté --> <circle cx="195" cy="158" r="12" fill="#2a1a60" opacity=".9" stroke="#aabbee" stroke-width="2"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".75"/></linearGradient></defs>
-  </svg>`,
+"pull-5":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('pull')}${mkFloor('pull')}<line x1="320" y1="0" x2="320" y2="180" stroke="#1a2448" stroke-width="5"/><circle cx="320" cy="70" r="10" fill="#2a3870"/><line x1="320" y1="70" x2="258" y2="85" stroke="#4466aa" stroke-width="2.5"/>${sil(180,8,"#4050a0")}<path d="M198 60 Q182 74 188 100 L206 93 Z" fill="#cc3333" opacity=".8"/><line x1="198" y1="62" x2="250" y2="82" stroke="#4050a0" stroke-width="13" stroke-linecap="round"/><ellipse cx="254" cy="84" rx="9" ry="7" fill="#c8845a"/><line x1="162" y1="62" x2="124" y2="52" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="118" cy="50" rx="9" ry="7" fill="#c8845a"/>${mkLegend("Grand dorsal")}${mkOv('pull')}</svg>`,
 
-  // ── ARMS ──────────────────────────────────────────────────────
-  "arms-4": `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a1030"/><stop offset="100%" stop-color="#080510"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <!-- Silhouette debout --> <ellipse cx="195" cy="52" rx="19" ry="19" fill="#dd8844" opacity=".9"/>
-    <rect x="183" y="71" width="24" height="55" rx="8" fill="#cc7733" opacity=".85"/>
-    <rect x="183" y="126" width="11" height="38" rx="5" fill="#cc7733" opacity=".8"/>
-    <rect x="202" y="126" width="11" height="38" rx="5" fill="#cc7733" opacity=".8"/>
-    <!-- Bras curl EZ --> <line x1="183" y1="85" x2="165" y2="120" stroke="#dd8844" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <line x1="207" y1="85" x2="225" y2="120" stroke="#dd8844" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <!-- Barre EZ --> <path d="M158 122 Q175 112 195 122 Q215 132 232 122" fill="none" stroke="#8899cc" stroke-width="10" stroke-linecap="round" opacity=".95"/>
-    <rect x="140" y="117" width="16" height="24" rx="4" fill="#aabbee" opacity=".9"/>
-    <rect x="234" y="117" width="16" height="24" rx="4" fill="#aabbee" opacity=".9"/>
-    <!-- Arc du curl --> <path d="M195 118 Q175 80 195 55" fill="none" stroke="rgba(245,197,24,0.25)" stroke-width="2" stroke-dasharray="4,3"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".75"/></linearGradient></defs>
-  </svg>`,
+"pull-6":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('pull')}${mkFloor('pull')}<line x1="320" y1="0" x2="320" y2="180" stroke="#1a2448" stroke-width="5"/><circle cx="320" cy="55" r="10" fill="#2a3870"/><line x1="320" y1="55" x2="262" y2="72" stroke="#4466aa" stroke-width="2.5"/>${sil(180,8,"#4050a0")}<ellipse cx="164" cy="58" rx="16" ry="13" fill="#cc3333" opacity=".82"/><ellipse cx="196" cy="56" rx="16" ry="13" fill="#cc3333" opacity=".82"/><line x1="196" y1="60" x2="254" y2="70" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="258" cy="72" rx="9" ry="7" fill="#c8845a"/><line x1="164" y1="60" x2="126" y2="52" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="120" cy="50" rx="9" ry="7" fill="#c8845a"/>${mkLegend("Deltoïde post.")}${mkOv('pull')}</svg>`,
 
-  "arms-6": `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a1030"/><stop offset="100%" stop-color="#080510"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <!-- Silhouette assise --> <ellipse cx="195" cy="80" rx="19" ry="19" fill="#dd8844" opacity=".9"/>
-    <rect x="183" y="99" width="24" height="45" rx="8" fill="#cc7733" opacity=".85"/>
-    <!-- Bras levés overhead --> <line x1="195" y1="80" x2="195" y2="40" stroke="#dd8844" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <!-- Haltère au-dessus --> <rect x="183" y="26" width="24" height="18" rx="5" fill="#8899cc" opacity=".95"/>
-    <rect x="179" y="22" width="8" height="28" rx="3" fill="#aabbee" opacity=".9"/>
-    <rect x="203" y="22" width="8" height="28" rx="3" fill="#aabbee" opacity=".9"/>
-    <!-- Arc mouvement --> <path d="M195 40 Q230 60 230 90" fill="none" stroke="rgba(245,197,24,0.25)" stroke-width="2" stroke-dasharray="4,3"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".75"/></linearGradient></defs>
-  </svg>`,
+"pull-7":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('pull')}${mkFloor('pull')}<line x1="340" y1="0" x2="340" y2="180" stroke="#1a2448" stroke-width="5"/><circle cx="340" cy="60" r="10" fill="#2a3870"/><line x1="340" y1="60" x2="272" y2="80" stroke="#4466aa" stroke-width="2.5"/><rect x="262" y="74" width="18" height="10" rx="4" fill="#4455aa"/>${sil(190,8,"#4050a0")}<ellipse cx="200" cy="72" rx="14" ry="12" fill="#cc3333" opacity=".85"/><line x1="206" y1="70" x2="264" y2="78" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="268" cy="80" rx="9" ry="7" fill="#c8845a"/><line x1="174" y1="70" x2="140" y2="62" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="134" cy="60" rx="9" ry="7" fill="#c8845a"/>${mkLegend("Biceps")}${mkOv('pull')}</svg>`,
+
+"legs-1":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}<line x1="58" y1="170" x2="340" y2="10" stroke="#1a3050" stroke-width="16" stroke-linecap="round"/><line x1="58" y1="170" x2="18" y2="95" stroke="#142640" stroke-width="12" stroke-linecap="round"/><rect x="292" y="5" width="72" height="52" rx="6" fill="#1e3a50" transform="rotate(-45 328 31)"/><rect x="294" y="7" width="68" height="48" rx="5" fill="#162e42" transform="rotate(-45 328 31)"/><rect x="56" y="108" width="82" height="40" rx="8" fill="#1a3050" transform="rotate(-25 97 128)"/><rect x="36" y="80" width="18" height="52" rx="7" fill="#122440"/><rect x="104" y="88" width="42" height="60" rx="10" fill="#3a6050" transform="rotate(-40 125 118)"/><ellipse cx="70" cy="76" rx="20" ry="20" fill="#c8845a"/><ellipse cx="70" cy="59" rx="17" ry="9" fill="#1a0e08"/><rect x="63" y="93" width="14" height="8" rx="4" fill="#c8845a"/><line x1="114" y1="112" x2="218" y2="60" stroke="#cc3333" stroke-width="22" stroke-linecap="round" opacity=".7"/><line x1="114" y1="112" x2="218" y2="60" stroke="#3a6050" stroke-width="15" stroke-linecap="round"/><line x1="130" y1="122" x2="234" y2="70" stroke="#cc3333" stroke-width="22" stroke-linecap="round" opacity=".7"/><line x1="130" y1="122" x2="234" y2="70" stroke="#3a6050" stroke-width="15" stroke-linecap="round"/><line x1="218" y1="60" x2="262" y2="32" stroke="#2e5038" stroke-width="12" stroke-linecap="round"/><line x1="234" y1="70" x2="278" y2="42" stroke="#2e5038" stroke-width="12" stroke-linecap="round"/><ellipse cx="268" cy="28" rx="14" ry="7" fill="#c8845a" transform="rotate(-45 268 28)"/><ellipse cx="284" cy="38" rx="14" ry="7" fill="#c8845a" transform="rotate(-45 284 38)"/><line x1="90" y1="96" x2="54" y2="118" stroke="#3a6050" stroke-width="11" stroke-linecap="round"/><line x1="106" y1="106" x2="70" y2="128" stroke="#3a6050" stroke-width="11" stroke-linecap="round"/>${mkLegend("Quadriceps")}${mkOv('legs')}</svg>`,
+
+"legs-2":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}<rect x="145" y="60" width="110" height="95" rx="10" fill="#1a3828"/><rect x="138" y="55" width="124" height="15" rx="6" fill="#2a4838"/><rect x="135" y="50" width="14" height="100" rx="5" fill="#122e20"/><rect x="251" y="50" width="14" height="100" rx="5" fill="#122e20"/>${sil(200,0,"#3a7050")}<ellipse cx="185" cy="118" rx="14" ry="11" fill="#cc3333" opacity=".8"/><ellipse cx="215" cy="118" rx="14" ry="11" fill="#cc3333" opacity=".8"/><line x1="185" y1="120" x2="154" y2="148" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".7"/><line x1="185" y1="120" x2="154" y2="148" stroke="#3a7050" stroke-width="12" stroke-linecap="round"/><line x1="215" y1="120" x2="246" y2="148" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".7"/><line x1="215" y1="120" x2="246" y2="148" stroke="#3a7050" stroke-width="12" stroke-linecap="round"/>${mkLegend("Quadriceps")}${mkOv('legs')}</svg>`,
+
+"legs-3":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}<rect x="260" y="80" width="90" height="14" rx="5" fill="#1e3828"/><rect x="266" y="94" width="16" height="42" rx="4" fill="#162e20"/><rect x="330" y="94" width="16" height="42" rx="4" fill="#162e20"/>${sil(175,5,"#3a7050")}<ellipse cx="160" cy="62" rx="15" ry="13" fill="#cc3333" opacity=".8"/><ellipse cx="190" cy="62" rx="15" ry="13" fill="#cc3333" opacity=".8"/><line x1="178" y1="100" x2="155" y2="152" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".7"/><line x1="178" y1="100" x2="155" y2="152" stroke="#3a7050" stroke-width="13" stroke-linecap="round"/><line x1="155" y1="152" x2="142" y2="155" stroke="#2e5a40" stroke-width="12" stroke-linecap="round"/><line x1="190" y1="108" x2="268" y2="144" stroke="#3a7050" stroke-width="13" stroke-linecap="round"/><rect x="142" y="108" width="22" height="10" rx="5" fill="#4a5580"/><rect x="204" y="108" width="22" height="10" rx="5" fill="#4a5580"/>${mkLegend("Quadriceps")}${mkOv('legs')}</svg>`,
+
+"legs-4":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}${sil(200,5,"#3a7050")}<ellipse cx="186" cy="100" rx="14" ry="11" fill="#cc3333" opacity=".8"/><ellipse cx="214" cy="100" rx="14" ry="11" fill="#cc3333" opacity=".8"/><line x1="186" y1="108" x2="172" y2="152" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".7"/><line x1="186" y1="108" x2="172" y2="152" stroke="#3a7050" stroke-width="13" stroke-linecap="round"/><line x1="172" y1="152" x2="160" y2="155" stroke="#2e5a40" stroke-width="12" stroke-linecap="round"/><line x1="214" y1="108" x2="228" y2="152" stroke="#3a7050" stroke-width="13" stroke-linecap="round"/><line x1="228" y1="152" x2="240" y2="155" stroke="#2e5a40" stroke-width="12" stroke-linecap="round"/><rect x="140" y="98" width="22" height="10" rx="5" fill="#4a5580"/><rect x="136" y="92" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="155" y="92" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="240" y="98" width="22" height="10" rx="5" fill="#4a5580"/><rect x="236" y="92" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="255" y="92" width="10" height="22" rx="2.5" fill="#6677aa"/>${mkLegend("Ischios")}${mkOv('legs')}</svg>`,
+
+"legs-5":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}<rect x="130" y="90" width="140" height="60" rx="10" fill="#1a3828"/><rect x="124" y="82" width="152" height="14" rx="6" fill="#2a4838"/><rect x="120" y="78" width="14" height="65" rx="5" fill="#122e20"/><rect x="266" y="78" width="14" height="65" rx="5" fill="#122e20"/><rect x="170" y="60" width="60" height="32" rx="8" fill="#3a7050" transform="rotate(-10 200 76)"/><ellipse cx="200" cy="50" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="34" rx="17" ry="9" fill="#1a0e08"/><line x1="186" y1="88" x2="162" y2="140" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".75"/><line x1="186" y1="88" x2="162" y2="140" stroke="#3a7050" stroke-width="12" stroke-linecap="round"/><line x1="214" y1="88" x2="238" y2="140" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".75"/><line x1="214" y1="88" x2="238" y2="140" stroke="#3a7050" stroke-width="12" stroke-linecap="round"/><rect x="148" y="138" width="22" height="9" rx="4" fill="#4a5580"/><rect x="230" y="138" width="22" height="9" rx="4" fill="#4a5580"/>${mkLegend("Ischios")}${mkOv('legs')}</svg>`,
+
+"legs-6":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}<rect x="80" y="65" width="200" height="14" rx="5" fill="#1e4028"/><rect x="80" y="61" width="200" height="8" rx="4" fill="#2a5035"/><rect x="86" y="75" width="16" height="40" rx="4" fill="#162e20"/><rect x="258" y="75" width="16" height="40" rx="4" fill="#162e20"/><rect x="80" y="111" width="26" height="5" rx="2" fill="#162e20"/><rect x="254" y="111" width="26" height="5" rx="2" fill="#162e20"/><rect x="0" y="148" width="400" height="12" fill="#0c2010"/><rect x="126" y="56" width="120" height="18" rx="8" fill="#3a8050" transform="rotate(5 186 65)"/><ellipse cx="200" cy="108" rx="34" ry="26" fill="#cc3333" opacity=".82"/><ellipse cx="200" cy="100" rx="28" ry="16" fill="#2e6a42" opacity=".8"/><rect x="183" y="72" width="34" height="22" rx="6" fill="#336644" opacity=".7"/><ellipse cx="78" cy="62" rx="19" ry="19" fill="#c8845a"/><ellipse cx="78" cy="46" rx="16" ry="9" fill="#1a0e08"/><rect x="71" y="78" width="14" height="8" rx="4" fill="#c8845a"/><line x1="176" y1="118" x2="160" y2="152" stroke="#3a7048" stroke-width="16" stroke-linecap="round"/><line x1="224" y1="118" x2="240" y2="152" stroke="#3a7048" stroke-width="16" stroke-linecap="round"/><line x1="160" y1="152" x2="136" y2="152" stroke="#2e5a38" stroke-width="13" stroke-linecap="round"/><line x1="240" y1="152" x2="264" y2="152" stroke="#2e5a38" stroke-width="13" stroke-linecap="round"/><ellipse cx="125" cy="152" rx="15" ry="6" fill="#c8845a"/><ellipse cx="275" cy="152" rx="15" ry="6" fill="#c8845a"/><rect x="163" y="98" width="74" height="16" rx="8" fill="#5566aa"/><rect x="158" y="92" width="12" height="28" rx="3" fill="#7788cc"/><rect x="230" y="92" width="12" height="28" rx="3" fill="#7788cc"/><polygon points="200,74 194,84 206,84" fill="rgba(245,197,24,0.35)"/><line x1="200" y1="84" x2="200" y2="100" stroke="rgba(245,197,24,0.3)" stroke-width="2" stroke-dasharray="4,3"/>${mkLegend("Fessiers")}${mkOv('legs')}</svg>`,
+
+"legs-7":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}<rect x="140" y="98" width="120" height="52" rx="9" fill="#1a3828"/><rect x="134" y="90" width="132" height="14" rx="6" fill="#2a4838"/><rect x="130" y="86" width="14" height="60" rx="5" fill="#122e20"/><rect x="256" y="86" width="14" height="60" rx="5" fill="#122e20"/><rect x="170" y="55" width="60" height="35" rx="8" fill="#3a7050"/><ellipse cx="200" cy="45" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="28" rx="17" ry="9" fill="#1a0e08"/><line x1="185" y1="90" x2="163" y2="138" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".75"/><line x1="185" y1="90" x2="163" y2="138" stroke="#3a7050" stroke-width="12" stroke-linecap="round"/><line x1="215" y1="90" x2="237" y2="138" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".75"/><line x1="215" y1="90" x2="237" y2="138" stroke="#3a7050" stroke-width="12" stroke-linecap="round"/>${mkLegend("Quadriceps")}${mkOv('legs')}</svg>`,
+
+"legs-8":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}<rect x="150" y="100" width="100" height="52" rx="8" fill="#1a3828"/><rect x="144" y="94" width="112" height="12" rx="5" fill="#2a4838"/><rect x="160" y="148" width="80" height="8" rx="3" fill="#2a4838"/>${sil(200,5,"#3a7050")}<ellipse cx="184" cy="128" rx="12" ry="9" fill="#cc3333" opacity=".85"/><ellipse cx="216" cy="128" rx="12" ry="9" fill="#cc3333" opacity=".85"/><line x1="185" y1="128" x2="174" y2="152" stroke="#cc3333" stroke-width="16" stroke-linecap="round" opacity=".75"/><line x1="185" y1="128" x2="174" y2="152" stroke="#3a7050" stroke-width="11" stroke-linecap="round"/><line x1="215" y1="128" x2="226" y2="152" stroke="#cc3333" stroke-width="16" stroke-linecap="round" opacity=".75"/><line x1="215" y1="128" x2="226" y2="152" stroke="#3a7050" stroke-width="11" stroke-linecap="round"/>${mkLegend("Mollets")}${mkOv('legs')}</svg>`,
+
+"upper-1":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('upper')}${mkFloor('upper')}<rect x="72" y="110" width="256" height="14" rx="5" fill="#2a2060" transform="rotate(-15 200 117)"/><rect x="78" y="107" width="244" height="8" rx="4" fill="#382878" transform="rotate(-15 200 111)"/><ellipse cx="316" cy="88" rx="20" ry="20" fill="#c8845a"/><ellipse cx="316" cy="71" rx="17" ry="9" fill="#1a0e08"/><rect x="308" y="105" width="14" height="8" rx="4" fill="#c8845a"/><rect x="148" y="98" width="162" height="13" rx="6" fill="#4a40a0" opacity=".9" transform="rotate(-10 229 104)"/><ellipse cx="162" cy="98" rx="27" ry="11" fill="#cc3333" opacity=".75" transform="rotate(-10 162 98)"/><ellipse cx="220" cy="93" rx="27" ry="11" fill="#cc3333" opacity=".75" transform="rotate(-10 220 93)"/><line x1="158" y1="94" x2="94" y2="48" stroke="#4a40a0" stroke-width="13" stroke-linecap="round"/><line x1="94" y1="48" x2="60" y2="48" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><line x1="244" y1="90" x2="300" y2="48" stroke="#4a40a0" stroke-width="13" stroke-linecap="round"/><line x1="300" y1="48" x2="334" y2="48" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/>${hal(18,292,41)}${mkLegend("Pectoraux")}${mkOv('upper')}</svg>`,
+
+"upper-2":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('upper')}${mkFloor('upper')}<rect x="100" y="10" width="200" height="8" rx="4" fill="#2a2060"/><rect x="155" y="0" width="90" height="13" rx="5" fill="#2e2878"/><rect x="195" y="13" width="10" height="30" rx="3" fill="#1a1850"/><rect x="96" y="13" width="18" height="22" rx="5" fill="#2e2888"/><rect x="286" y="13" width="18" height="22" rx="5" fill="#2e2888"/><ellipse cx="200" cy="74" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="57" rx="17" ry="9" fill="#1a0e08"/><rect x="193" y="91" width="14" height="10" rx="4" fill="#c8845a"/><rect x="180" y="98" width="40" height="56" rx="10" fill="#4a40a0"/><path d="M180 102 Q162 118 168 148 L188 140 Z" fill="#cc3333" opacity=".8"/><path d="M220 102 Q238 118 232 148 L212 140 Z" fill="#cc3333" opacity=".8"/><line x1="182" y1="72" x2="104" y2="20" stroke="#cc3333" stroke-width="14" stroke-linecap="round" opacity=".7"/><line x1="182" y1="72" x2="104" y2="20" stroke="#4a40a0" stroke-width="9" stroke-linecap="round"/><line x1="218" y1="72" x2="296" y2="20" stroke="#cc3333" stroke-width="14" stroke-linecap="round" opacity=".7"/><line x1="218" y1="72" x2="296" y2="20" stroke="#4a40a0" stroke-width="9" stroke-linecap="round"/><rect x="180" y="152" width="14" height="28" rx="6" fill="#3a3080"/><rect x="206" y="152" width="14" height="28" rx="6" fill="#3a3080"/>${mkLegend("Grand dorsal")}${mkOv('upper')}</svg>`,
+
+"upper-3":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('upper')}${mkFloor('upper')}<rect x="155" y="90" width="90" height="55" rx="8" fill="#1e1e50"/><rect x="148" y="80" width="104" height="14" rx="5" fill="#2a2870"/><rect x="145" y="52" width="15" height="32" rx="5" fill="#1a1848"/><rect x="240" y="52" width="15" height="32" rx="5" fill="#1a1848"/>${sil(200,5,"#4a40a0")}<ellipse cx="182" cy="58" rx="14" ry="13" fill="#cc3333" opacity=".8"/><ellipse cx="218" cy="58" rx="14" ry="13" fill="#cc3333" opacity=".8"/><line x1="182" y1="58" x2="148" y2="38" stroke="#4a40a0" stroke-width="12" stroke-linecap="round"/><line x1="148" y1="38" x2="148" y2="60" stroke="#c8845a" stroke-width="10" stroke-linecap="round"/><line x1="218" y1="58" x2="252" y2="38" stroke="#4a40a0" stroke-width="12" stroke-linecap="round"/><line x1="252" y1="38" x2="252" y2="60" stroke="#c8845a" stroke-width="10" stroke-linecap="round"/><rect x="138" y="32" width="24" height="11" rx="5.5" fill="#5566aa"/><rect x="238" y="32" width="24" height="11" rx="5.5" fill="#5566aa"/><polygon points="200,22 193,34 207,34" fill="rgba(245,197,24,0.3)"/>${mkLegend("Deltoïdes")}${mkOv('upper')}</svg>`,
+
+"upper-4":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('upper')}${mkFloor('upper')}<rect x="80" y="90" width="160" height="14" rx="5" fill="#1e1e50"/><rect x="86" y="86" width="148" height="8" rx="4" fill="#2a2878"/><rect x="88" y="104" width="16" height="38" rx="4" fill="#161848"/><rect x="222" y="104" width="16" height="38" rx="4" fill="#161848"/><ellipse cx="188" cy="60" rx="20" ry="20" fill="#c8845a"/><ellipse cx="188" cy="43" rx="17" ry="9" fill="#1a0e08"/><rect x="181" y="77" width="14" height="9" rx="4" fill="#c8845a"/><rect x="167" y="82" width="38" height="16" rx="6" fill="#4a40a0" transform="rotate(-30 186 90)"/><rect x="157" y="92" width="38" height="44" rx="10" fill="#4a40a0" transform="rotate(-30 176 114)"/><path d="M164 90 Q147 104 152 130 L172 122 Z" fill="#cc3333" opacity=".8" transform="rotate(-30 162 110)"/><line x1="177" y1="86" x2="180" y2="128" stroke="#4a40a0" stroke-width="13" stroke-linecap="round" transform="rotate(-30 178 107)"/><rect x="160" y="118" width="28" height="11" rx="5.5" fill="#4a5580" transform="rotate(-30 174 123)"/>${mkLegend("Grand dorsal")}${mkOv('upper')}</svg>`,
+
+"upper-5":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('upper')}${mkFloor('upper')}<rect x="130" y="40" width="12" height="120" rx="6" fill="#2a2060"/><rect x="258" y="40" width="12" height="120" rx="6" fill="#2a2060"/><rect x="130" y="40" width="130" height="10" rx="5" fill="#382878"/>${sil(200,18,"#4a40a0")}<ellipse cx="184" cy="70" rx="14" ry="11" fill="#cc3333" opacity=".85"/><ellipse cx="216" cy="70" rx="14" ry="11" fill="#cc3333" opacity=".85"/><line x1="184" y1="72" x2="138" y2="80" stroke="#4a40a0" stroke-width="11" stroke-linecap="round"/><line x1="216" y1="72" x2="262" y2="80" stroke="#4a40a0" stroke-width="11" stroke-linecap="round"/><rect x="180" y="140" width="14" height="28" rx="6" fill="#3a3080"/><rect x="206" y="140" width="14" height="28" rx="6" fill="#3a3080"/><circle cx="208" cy="162" r="12" fill="#2a2060" opacity=".9" stroke="#aabbee" stroke-width="2"/>${mkLegend("Triceps")}${mkOv('upper')}</svg>`,
+
+"upper-6":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('upper')}${mkFloor('upper')}${sil(200,5,"#4a40a0")}<ellipse cx="182" cy="60" rx="14" ry="11" fill="#cc3333" opacity=".75"/><ellipse cx="218" cy="60" rx="14" ry="11" fill="#cc3333" opacity=".75"/><ellipse cx="200" cy="58" rx="22" ry="10" fill="#cc3333" opacity=".7"/><line x1="182" y1="64" x2="162" y2="92" stroke="#4a40a0" stroke-width="12" stroke-linecap="round"/><line x1="218" y1="64" x2="238" y2="92" stroke="#4a40a0" stroke-width="12" stroke-linecap="round"/><rect x="140" y="96" width="28" height="11" rx="5.5" fill="#4a5580"/><rect x="136" y="90" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="162" y="90" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="232" y="96" width="28" height="11" rx="5.5" fill="#4a5580"/><rect x="228" y="90" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="254" y="90" width="10" height="22" rx="2.5" fill="#6677aa"/>${mkLegend("Trapèzes")}${mkOv('upper')}</svg>`,
+
+"arms-1":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}${sil(200,8,"#4048a0")}<ellipse cx="182" cy="60" rx="16" ry="14" fill="#cc3333" opacity=".82"/><ellipse cx="218" cy="60" rx="16" ry="14" fill="#cc3333" opacity=".82"/><line x1="182" y1="62" x2="78" y2="52" stroke="#cc3333" stroke-width="15" stroke-linecap="round" opacity=".75"/><line x1="182" y1="62" x2="78" y2="52" stroke="#4048a0" stroke-width="10" stroke-linecap="round"/><line x1="78" y1="52" x2="50" y2="66" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><ellipse cx="43" cy="69" rx="9" ry="7" fill="#b87048"/><line x1="218" y1="62" x2="322" y2="52" stroke="#cc3333" stroke-width="15" stroke-linecap="round" opacity=".75"/><line x1="218" y1="62" x2="322" y2="52" stroke="#4048a0" stroke-width="10" stroke-linecap="round"/><line x1="322" y1="52" x2="350" y2="66" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><ellipse cx="357" cy="69" rx="9" ry="7" fill="#b87048"/><rect x="16" y="59" width="32" height="11" rx="5.5" fill="#4a5580"/><rect x="12" y="53" width="9" height="21" rx="2.5" fill="#6677aa"/><rect x="41" y="53" width="9" height="21" rx="2.5" fill="#6677aa"/><rect x="352" y="59" width="32" height="11" rx="5.5" fill="#4a5580"/><rect x="348" y="53" width="9" height="21" rx="2.5" fill="#6677aa"/><rect x="377" y="53" width="9" height="21" rx="2.5" fill="#6677aa"/><text x="290" y="38" font-size="9" fill="#f5c518" font-family="system-ui" font-weight="700">DROP SET</text>${mkLegend("Deltoïdes")}${mkOv('arms')}</svg>`,
+
+"arms-2":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}${sil(200,8,"#4048a0")}<ellipse cx="182" cy="58" rx="14" ry="12" fill="#cc3333" opacity=".8"/><ellipse cx="218" cy="58" rx="14" ry="12" fill="#cc3333" opacity=".8"/><line x1="182" y1="62" x2="152" y2="40" stroke="#4048a0" stroke-width="13" stroke-linecap="round"/><line x1="152" y1="40" x2="124" y2="36" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><ellipse cx="118" cy="34" rx="9" ry="7" fill="#b87048"/><line x1="218" y1="62" x2="248" y2="40" stroke="#4048a0" stroke-width="13" stroke-linecap="round"/><line x1="248" y1="40" x2="276" y2="36" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><ellipse cx="282" cy="34" rx="9" ry="7" fill="#b87048"/><rect x="90" y="30" width="32" height="10" rx="5" fill="#4a5580"/><rect x="86" y="24" width="9" height="20" rx="2.5" fill="#6677aa"/><rect x="115" y="24" width="9" height="20" rx="2.5" fill="#6677aa"/><rect x="278" y="30" width="32" height="10" rx="5" fill="#4a5580"/><rect x="274" y="24" width="9" height="20" rx="2.5" fill="#6677aa"/><rect x="303" y="24" width="9" height="20" rx="2.5" fill="#6677aa"/>${mkLegend("Deltoïdes ant.")}${mkOv('arms')}</svg>`,
+
+"arms-3":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}<ellipse cx="200" cy="50" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="33" rx="17" ry="9" fill="#1a0e08"/><rect x="193" y="68" width="14" height="9" rx="4" fill="#c8845a"/><rect x="180" y="74" width="40" height="50" rx="10" fill="#4048a0" transform="rotate(-45 200 99)"/><ellipse cx="182" cy="72" rx="14" ry="11" fill="#cc3333" opacity=".82" transform="rotate(-45 182 72)"/><ellipse cx="218" cy="72" rx="14" ry="11" fill="#cc3333" opacity=".82" transform="rotate(-45 218 72)"/><line x1="178" y1="80" x2="100" y2="110" stroke="#4048a0" stroke-width="13" stroke-linecap="round" transform="rotate(-45 139 95)"/><line x1="222" y1="80" x2="300" y2="110" stroke="#4048a0" stroke-width="13" stroke-linecap="round" transform="rotate(-45 261 95)"/><rect x="66" y="102" width="32" height="10" rx="5" fill="#4a5580"/><rect x="302" y="102" width="32" height="10" rx="5" fill="#4a5580"/>${mkLegend("Deltoïde post.")}${mkOv('arms')}</svg>`,
+
+"arms-4":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}${sil(200,5,"#4048a0")}<ellipse cx="172" cy="92" rx="12" ry="9" fill="#cc3333" opacity=".9"/><ellipse cx="228" cy="92" rx="12" ry="9" fill="#cc3333" opacity=".9"/><line x1="184" y1="82" x2="162" y2="110" stroke="#4048a0" stroke-width="14" stroke-linecap="round"/><line x1="162" y1="110" x2="148" y2="130" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><line x1="216" y1="82" x2="238" y2="110" stroke="#4048a0" stroke-width="14" stroke-linecap="round"/><line x1="238" y1="110" x2="252" y2="130" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><path d="M136 132 Q158 122 180 132 Q202 142 224 132 Q246 122 266 132" fill="none" stroke="#5566aa" stroke-width="10" stroke-linecap="round"/><rect x="112" y="124" width="16" height="24" rx="3" fill="#7788cc"/><rect x="119" y="121" width="10" height="30" rx="2" fill="#9aaaee"/><rect x="272" y="124" width="16" height="24" rx="3" fill="#7788cc"/><rect x="272" y="121" width="10" height="30" rx="2" fill="#9aaaee"/><path d="M148 130 Q132 100 152 75" fill="none" stroke="rgba(245,197,24,0.2)" stroke-width="1.5" stroke-dasharray="5,4"/><path d="M254 130 Q270 100 250 75" fill="none" stroke="rgba(245,197,24,0.2)" stroke-width="1.5" stroke-dasharray="5,4"/>${mkLegend("Biceps")}${mkOv('arms')}</svg>`,
+
+"arms-5":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}${sil(200,5,"#4048a0")}<ellipse cx="172" cy="90" rx="12" ry="9" fill="#cc3333" opacity=".9"/><ellipse cx="228" cy="90" rx="12" ry="9" fill="#cc3333" opacity=".9"/><line x1="184" y1="80" x2="162" y2="108" stroke="#4048a0" stroke-width="14" stroke-linecap="round"/><line x1="162" y1="108" x2="148" y2="128" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><line x1="216" y1="80" x2="238" y2="108" stroke="#4048a0" stroke-width="14" stroke-linecap="round"/><line x1="238" y1="108" x2="252" y2="128" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><rect x="134" y="122" width="28" height="11" rx="5.5" fill="#4a5580"/><rect x="130" y="116" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="156" y="116" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="238" y="122" width="28" height="11" rx="5.5" fill="#4a5580"/><rect x="234" y="116" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="260" y="116" width="10" height="22" rx="2.5" fill="#6677aa"/>${mkLegend("Biceps")}${mkOv('arms')}</svg>`,
+
+"arms-6":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}<rect x="170" y="100" width="60" height="55" rx="8" fill="#1e1040"/><rect x="164" y="94" width="72" height="12" rx="5" fill="#2a1858"/>${sil(200,12,"#4048a0")}<ellipse cx="200" cy="66" rx="13" ry="11" fill="#cc3333" opacity=".85"/><line x1="196" y1="60" x2="196" y2="30" stroke="#4048a0" stroke-width="12" stroke-linecap="round"/><line x1="204" y1="60" x2="204" y2="30" stroke="#4048a0" stroke-width="12" stroke-linecap="round"/><rect x="184" y="16" width="32" height="17" rx="6" fill="#5566aa"/><rect x="180" y="10" width="10" height="28" rx="3" fill="#7788cc"/><rect x="210" y="10" width="10" height="28" rx="3" fill="#7788cc"/><path d="M200 30 Q230 50 230 80" fill="none" stroke="rgba(245,197,24,0.22)" stroke-width="1.5" stroke-dasharray="5,4"/>${mkLegend("Triceps")}${mkOv('arms')}</svg>`,
+
+"arms-7":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}<line x1="330" y1="0" x2="330" y2="180" stroke="#1e1840" stroke-width="5"/><circle cx="330" cy="40" r="10" fill="#2a1868"/><line x1="330" y1="50" x2="268" y2="75" stroke="#4466aa" stroke-width="2.5"/><rect x="258" y="70" width="18" height="10" rx="4" fill="#4455aa"/>${sil(185,8,"#4048a0")}<ellipse cx="206" cy="70" rx="13" ry="11" fill="#cc3333" opacity=".85"/><line x1="202" y1="68" x2="258" y2="74" stroke="#4048a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="262" cy="76" rx="9" ry="7" fill="#c8845a"/><line x1="168" y1="68" x2="134" y2="60" stroke="#4048a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="128" cy="58" rx="9" ry="7" fill="#c8845a"/>${mkLegend("Triceps")}${mkOv('arms')}</svg>`,
+
+"arms-8":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}<rect x="120" y="70" width="160" height="90" rx="10" fill="#1a1040"/><rect x="114" y="62" width="172" height="14" rx="6" fill="#241858"/><rect x="110" y="58" width="14" height="90" rx="5" fill="#161040"/><rect x="276" y="58" width="14" height="90" rx="5" fill="#161040"/><ellipse cx="200" cy="50" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="33" rx="17" ry="9" fill="#1a0e08"/><rect x="193" y="67" width="14" height="8" rx="4" fill="#c8845a"/><line x1="184" y1="72" x2="162" y2="100" stroke="#4048a0" stroke-width="14" stroke-linecap="round"/><ellipse cx="160" cy="88" rx="12" ry="9" fill="#cc3333" opacity=".9"/><line x1="162" y1="100" x2="148" y2="120" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><line x1="216" y1="72" x2="238" y2="100" stroke="#4048a0" stroke-width="14" stroke-linecap="round"/><ellipse cx="240" cy="88" rx="12" ry="9" fill="#cc3333" opacity=".9"/><line x1="238" y1="100" x2="252" y2="120" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><rect x="132" y="122" width="30" height="10" rx="5" fill="#4a5580"/><rect x="238" y="122" width="30" height="10" rx="5" fill="#4a5580"/>${mkLegend("Biceps")}${mkOv('arms')}</svg>`,
 
 };
 
-// Génération automatique pour les exos sans SVG dédié
-// Utilise un SVG générique par catégorie musculaire
 const DEFAULT_SVG = {
-  push: (name) => `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1e3060"/><stop offset="100%" stop-color="#060f20"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <ellipse cx="195" cy="85" rx="60" ry="40" fill="#2a4080" opacity=".3"/>
-    <ellipse cx="195" cy="85" rx="25" ry="25" fill="#4466bb" opacity=".7"/>
-    <line x1="155" y1="80" x2="85" y2="68" stroke="#4466bb" stroke-width="10" stroke-linecap="round" opacity=".8"/>
-    <line x1="235" y1="80" x2="305" y2="68" stroke="#4466bb" stroke-width="10" stroke-linecap="round" opacity=".8"/>
-    <rect x="65" y="61" width="30" height="10" rx="5" fill="#8899cc" opacity=".9"/>
-    <rect x="295" y="61" width="30" height="10" rx="5" fill="#8899cc" opacity=".9"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".8"/></linearGradient></defs>
-  </svg>`,
-  pull: (name) => `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#103060"/><stop offset="100%" stop-color="#060a18"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <rect x="100" y="20" width="190" height="8" rx="4" fill="#3355aa" opacity=".85"/>
-    <ellipse cx="195" cy="80" rx="25" ry="25" fill="#4466bb" opacity=".8"/>
-    <line x1="178" y1="68" x2="125" y2="24" stroke="#4466bb" stroke-width="10" stroke-linecap="round" opacity=".85"/>
-    <line x1="212" y1="68" x2="265" y2="24" stroke="#4466bb" stroke-width="10" stroke-linecap="round" opacity=".85"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".8"/></linearGradient></defs>
-  </svg>`,
-  legs: (name) => `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0a2010"/><stop offset="100%" stop-color="#060c08"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <ellipse cx="195" cy="75" rx="25" ry="25" fill="#44bb66" opacity=".8"/>
-    <rect x="183" y="100" width="24" height="45" rx="8" fill="#33aa55" opacity=".8"/>
-    <line x1="183" y1="145" x2="160" y2="175" stroke="#33aa55" stroke-width="13" stroke-linecap="round" opacity=".85"/>
-    <line x1="207" y1="145" x2="230" y2="175" stroke="#33aa55" stroke-width="13" stroke-linecap="round" opacity=".85"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".8"/></linearGradient></defs>
-  </svg>`,
-  upper: (name) => `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1e1060"/><stop offset="100%" stop-color="#080520"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <ellipse cx="195" cy="75" rx="25" ry="25" fill="#aa66ee" opacity=".8"/>
-    <rect x="183" y="100" width="24" height="50" rx="8" fill="#9955dd" opacity=".8"/>
-    <line x1="183" y1="90" x2="115" y2="78" stroke="#aa66ee" stroke-width="11" stroke-linecap="round" opacity=".85"/>
-    <line x1="207" y1="90" x2="275" y2="78" stroke="#aa66ee" stroke-width="11" stroke-linecap="round" opacity=".85"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".8"/></linearGradient></defs>
-  </svg>`,
-  arms: (name) => `<svg viewBox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a1030"/><stop offset="100%" stop-color="#080510"/></linearGradient></defs>
-    <rect width="390" height="180" fill="url(#bg)"/>
-    <ellipse cx="195" cy="65" rx="22" ry="22" fill="#dd8844" opacity=".85"/>
-    <rect x="183" y="87" width="24" height="50" rx="8" fill="#cc7733" opacity=".8"/>
-    <line x1="183" y1="95" x2="158" y2="128" stroke="#dd8844" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <line x1="207" y1="95" x2="232" y2="128" stroke="#dd8844" stroke-width="11" stroke-linecap="round" opacity=".9"/>
-    <rect x="140" y="130" width="34" height="10" rx="5" fill="#8899cc" opacity=".95"/>
-    <rect x="216" y="130" width="34" height="10" rx="5" fill="#8899cc" opacity=".95"/>
-    <rect width="390" height="180" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity="0"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".8"/></linearGradient></defs>
-  </svg>`,
+  push:  () => EXERCISE_SVG["push-5"],
+  pull:  () => EXERCISE_SVG["pull-1"],
+  legs:  () => EXERCISE_SVG["legs-1"],
+  upper: () => EXERCISE_SVG["upper-1"],
+  arms:  () => EXERCISE_SVG["arms-4"],
 };
 
-// SESSION PHOTOS SVG (hero de chaque séance)
 const SESSION_SVG = {
-  push: `<svg viewBox="0 0 390 220" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1e3868"/><stop offset="50%" stop-color="#0d2040"/><stop offset="100%" stop-color="#060f20"/></linearGradient></defs>
-    <rect width="390" height="220" fill="url(#bg)"/>
-    <ellipse cx="290" cy="120" rx="100" ry="80" fill="rgba(68,102,187,0.08)"/>
-    <!-- Grand athlète push --> <ellipse cx="280" cy="85" rx="28" ry="28" fill="#4466bb" opacity=".6"/>
-    <rect x="258" y="113" width="44" height="70" rx="12" fill="#3355aa" opacity=".55"/>
-    <line x1="258" y1="130" x2="170" y2="105" stroke="#4466bb" stroke-width="16" stroke-linecap="round" opacity=".55"/>
-    <line x1="302" y1="130" x2="350" y2="108" stroke="#4466bb" stroke-width="16" stroke-linecap="round" opacity=".5"/>
-    <rect x="140" y="96" width="42" height="16" rx="8" fill="#6677cc" opacity=".6"/>
-    <rect x="145" y="89" width="12" height="28" rx="4" fill="#8899dd" opacity=".6"/>
-    <rect width="390" height="220" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity=".2"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".9"/></linearGradient></defs>
-  </svg>`,
-  pull: `<svg viewBox="0 0 390 220" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#103060"/><stop offset="50%" stop-color="#081a40"/><stop offset="100%" stop-color="#060a18"/></linearGradient></defs>
-    <rect width="390" height="220" fill="url(#bg)"/>
-    <rect x="80" y="20" width="230" height="12" rx="6" fill="#2244aa" opacity=".6"/>
-    <ellipse cx="270" cy="95" rx="28" ry="28" fill="#4466bb" opacity=".6"/>
-    <line x1="252" y1="82" x2="190" y2="28" stroke="#4466bb" stroke-width="16" stroke-linecap="round" opacity=".55"/>
-    <line x1="288" y1="82" x2="310" y2="28" stroke="#4466bb" stroke-width="16" stroke-linecap="round" opacity=".55"/>
-    <rect x="258" y="122" width="24" height="55" rx="10" fill="#3355aa" opacity=".5"/>
-    <rect width="390" height="220" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity=".2"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".9"/></linearGradient></defs>
-  </svg>`,
-  legs: `<svg viewBox="0 0 390 220" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0a2010"/><stop offset="50%" stop-color="#081508"/><stop offset="100%" stop-color="#040804"/></linearGradient></defs>
-    <rect width="390" height="220" fill="url(#bg)"/>
-    <ellipse cx="270" cy="100" rx="28" ry="28" fill="#44bb66" opacity=".55"/>
-    <rect x="258" y="128" width="24" height="55" rx="10" fill="#33aa55" opacity=".5"/>
-    <line x1="258" y1="183" x2="235" y2="218" stroke="#33aa55" stroke-width="16" stroke-linecap="round" opacity=".55"/>
-    <line x1="282" y1="183" x2="305" y2="218" stroke="#33aa55" stroke-width="16" stroke-linecap="round" opacity=".55"/>
-    <rect x="140" y="140" width="120" height="55" rx="10" fill="#1a3020" opacity=".5"/>
-    <rect width="390" height="220" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity=".2"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".9"/></linearGradient></defs>
-  </svg>`,
-  upper: `<svg viewBox="0 0 390 220" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1e1060"/><stop offset="50%" stop-color="#100830"/><stop offset="100%" stop-color="#060418"/></linearGradient></defs>
-    <rect width="390" height="220" fill="url(#bg)"/>
-    <ellipse cx="270" cy="90" rx="28" ry="28" fill="#aa66ee" opacity=".6"/>
-    <rect x="258" y="118" width="24" height="55" rx="10" fill="#9955dd" opacity=".5"/>
-    <line x1="258" y1="108" x2="175" y2="90" stroke="#aa66ee" stroke-width="16" stroke-linecap="round" opacity=".55"/>
-    <line x1="282" y1="108" x2="345" y2="95" stroke="#aa66ee" stroke-width="16" stroke-linecap="round" opacity=".5"/>
-    <rect width="390" height="220" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity=".2"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".9"/></linearGradient></defs>
-  </svg>`,
-  arms: `<svg viewBox="0 0 390 220" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a1030"/><stop offset="50%" stop-color="#100820"/><stop offset="100%" stop-color="#060408"/></linearGradient></defs>
-    <rect width="390" height="220" fill="url(#bg)"/>
-    <ellipse cx="270" cy="85" rx="28" ry="28" fill="#dd8844" opacity=".6"/>
-    <rect x="258" y="113" width="24" height="55" rx="10" fill="#cc7733" opacity=".5"/>
-    <line x1="258" y1="120" x2="215" y2="155" stroke="#dd8844" stroke-width="16" stroke-linecap="round" opacity=".6"/>
-    <line x1="282" y1="120" x2="325" y2="155" stroke="#dd8844" stroke-width="16" stroke-linecap="round" opacity=".6"/>
-    <rect x="195" y="157" width="38" height="13" rx="6" fill="#8899cc" opacity=".8"/>
-    <rect x="305" y="157" width="38" height="13" rx="6" fill="#8899cc" opacity=".8"/>
-    <rect width="390" height="220" fill="url(#ov)"/>
-    <defs><linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#080e1a" stop-opacity=".2"/><stop offset="100%" stop-color="#080e1a" stop-opacity=".9"/></linearGradient></defs>
-  </svg>`,
+  push: EXERCISE_SVG["push-1"],
+  pull: EXERCISE_SVG["pull-1"],
+  legs: EXERCISE_SVG["legs-1"],
+  upper: EXERCISE_SVG["upper-1"],
+  arms: EXERCISE_SVG["arms-4"],
 };
 
-/**
- * Obtenir le SVG d'un exercice (avec fallback catégorie)
- */
 function getExoSVG(exoId) {
   if (EXERCISE_SVG[exoId]) return EXERCISE_SVG[exoId];
   const cat = exoId.split('-')[0];
-  const gen = DEFAULT_SVG[cat];
-  return gen ? gen(exoId) : DEFAULT_SVG.push(exoId);
+  return (DEFAULT_SVG[cat] || DEFAULT_SVG.push)();
 }
 
-/**
- * Rendu image exercice : vraie photo si internet, SVG sinon
- * Retourne le HTML à injecter dans .exo-photo-wrap
- */
 function getExoImageHTML(exoId) {
-  const photoUrl = (typeof EXERCISE_PHOTOS !== 'undefined' && EXERCISE_PHOTOS[exoId])
-    ? EXERCISE_PHOTOS[exoId] : null;
+  const photoUrl = (typeof EXERCISE_PHOTOS !== 'undefined' && EXERCISE_PHOTOS[exoId]) ? EXERCISE_PHOTOS[exoId] : null;
   const svg = getExoSVG(exoId);
-
   if (photoUrl) {
-    // Vraie photo Unsplash + SVG inline en fallback
-    return `<div class="exo-photo exo-photo-has-img">
-      <img src="${photoUrl}" class="exo-photo-img" 
-        onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
-        style="width:100%;height:100%;object-fit:cover;display:block">
-      <div class="exo-photo-svg" style="display:none;width:100%;height:100%">${svg}</div>
-    </div>`;
+    return `<div class="exo-photo exo-photo-has-img"><img src="${photoUrl}" class="exo-photo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" style="width:100%;height:100%;object-fit:cover;display:block"><div class="exo-photo-svg" style="display:none;width:100%;height:100%">${svg}</div></div>`;
   }
-  // SVG inline direct — marche partout sans serveur
   return `<div class="exo-photo exo-photo-svg-only">${svg}</div>`;
 }
 
-/**
- * Rendu image session hero
- */
 function getSessionImageHTML(sessId) {
-  // Retourne maintenant le HTML complet au lieu d'un style CSS
-  const photoUrl = (typeof SESSION_PHOTOS !== 'undefined' && SESSION_PHOTOS[sessId])
-    ? SESSION_PHOTOS[sessId] : null;
+  const photoUrl = (typeof SESSION_PHOTOS !== 'undefined' && SESSION_PHOTOS[sessId]) ? SESSION_PHOTOS[sessId] : null;
   const svg = SESSION_SVG[sessId] || SESSION_SVG.push;
-
   if (photoUrl) {
-    return `<img src="${photoUrl}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"
-      onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-    <div style="display:none;position:absolute;inset:0">${svg}</div>`;
+    return `<img src="${photoUrl}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div style="display:none;position:absolute;inset:0">${svg}</div>`;
   }
   return `<div style="position:absolute;inset:0">${svg}</div>`;
 }
