@@ -2181,7 +2181,11 @@ RÈGLE ABSOLUE : Ne jamais donner de conseils génériques. Toujours baser sur s
       }),
     });
 
-    if (!response.ok) throw new Error(`API error: ${response.status}`);
+    if (!response.ok) {
+      let errMsg = `Erreur ${response.status}`;
+      try { const t = await response.text(); const j = JSON.parse(t); errMsg = j.error?.message || j.error || t; } catch {}
+      throw new Error(errMsg);
+    }
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();

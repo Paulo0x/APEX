@@ -1,59 +1,53 @@
 /**
  * APEX — Proxy Claude API (Vercel Edge Function)
- * 
- * Pourquoi ce fichier existe :
- * - La clé API Anthropic ne peut pas être dans le HTML (visible par tout le monde)
- * - Ce fichier tourne sur les serveurs Vercel, côté serveur, invisible
- * - Il reçoit les messages du client, ajoute la clé API secrète, et transmet à Claude
- * 
- * Configuration requise dans Vercel :
- * → Settings → Environment Variables → ajouter ANTHROPIC_API_KEY = sk-ant-...
+ * La clé ANTHROPIC_API_KEY est dans les env vars Vercel
  */
 export const config = { runtime: 'edge' };
 
 export default async function handler(req) {
-  // Autoriser seulement les requêtes POST
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Méthode non autorisée' }), { status: 405 });
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
   }
 
-  // Récupérer les données envoyées par le client (messages, system prompt, etc.)
+  // Vérifier que la clé est bien présente côté serveur
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return new Response(
+      JSON.stringify({ error: 'ANTHROPIC_API_KEY manquante dans les variables Vercel' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
   const { system, messages, max_tokens = 1500 } = await req.json();
 
-  // Appel à l'API Claude avec la clé secrète côté serveur
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY,   // clé secrète dans les env vars Vercel
+      'x-api-key': apiKey,
       'anthropic-version': '2023-06-01',
-      'anthropic-beta': 'messages-2023-12-15',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-5',                    // modèle Claude le plus capable
+      model: 'claude-sonnet-4-5',
       max_tokens,
       system,
       messages,
-      stream: true,                                   // streaming pour réponse en temps réel
+      stream: true,
     }),
   });
 
-  // Si Claude renvoie une erreur, la transmettre au client
   if (!response.ok) {
-    const err = await response.text();
-    return new Response(JSON.stringify({ error: err }), {
+    const errText = await response.text();
+    return new Response(errText, {
       status: response.status,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
-  // Streamer la réponse de Claude directement vers le client
   return new Response(response.body, {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Access-Control-Allow-Origin': '*',
     },
   });
 }
-// Redeploy Sun Apr 26 17:31:38 UTC 2026
