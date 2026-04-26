@@ -595,6 +595,61 @@ body::before {
   font-family: var(--font); font-size: 14px; font-weight: 700; color: #fff; cursor: pointer;
 }
 
+
+/* ─── COACH DASHBOARD ─── */
+.coach-score-wrap { display:flex; align-items:center; gap:14px; padding:14px 16px; background:var(--bg2); border-radius:16px; margin-bottom:10px; border:1px solid var(--border); }
+.coach-score-ring { position:relative; width:64px; height:64px; flex-shrink:0; }
+.coach-score-ring svg { transform:rotate(-90deg); }
+.coach-score-val { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.coach-score-num { font-size:20px; font-weight:900; color:var(--gold); line-height:1; }
+.coach-score-lbl { font-size:8px; color:var(--text3); letter-spacing:1px; text-transform:uppercase; }
+.coach-score-info { flex:1; }
+.coach-score-title { font-size:15px; font-weight:800; margin-bottom:3px; }
+.coach-score-sub { font-size:12px; color:var(--text2); line-height:1.4; }
+
+.coach-focus-card { background:linear-gradient(135deg,rgba(245,197,24,.07),rgba(245,197,24,.03)); border:1px solid rgba(245,197,24,.18); border-radius:16px; padding:14px 16px; margin-bottom:10px; }
+.coach-focus-title { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:10px; }
+.coach-focus-item { display:flex; align-items:flex-start; gap:10px; margin-bottom:8px; }
+.coach-focus-num { width:22px; height:22px; background:var(--gold); color:#000; border-radius:50%; font-size:11px; font-weight:900; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+.coach-focus-text { font-size:13px; color:var(--text); line-height:1.45; }
+.coach-focus-sub { font-size:11px; color:var(--text2); margin-top:2px; }
+
+.coach-session-tabs { display:flex; gap:6px; margin-bottom:10px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px; }
+.coach-session-tabs::-webkit-scrollbar { display:none; }
+.coach-tab { flex-shrink:0; padding:7px 14px; border-radius:20px; font-size:12px; font-weight:700; border:1px solid var(--border); background:var(--bg2); color:var(--text2); cursor:pointer; transition:all .15s; }
+.coach-tab.active { background:var(--red); color:#fff; border-color:var(--red); }
+.coach-tab:active { transform:scale(.96); }
+
+.coach-exo-table { background:var(--bg2); border-radius:14px; overflow:hidden; margin-bottom:10px; border:1px solid var(--border); }
+.coach-exo-row { display:flex; align-items:center; gap:10px; padding:11px 14px; border-bottom:1px solid rgba(255,255,255,.04); }
+.coach-exo-row:last-child { border-bottom:none; }
+.coach-exo-trend { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.trend-up   { background:var(--green-dim); }
+.trend-down { background:var(--red-dim); }
+.trend-flat { background:var(--blue-dim); }
+.trend-plateau { background:var(--gold-dim); }
+.coach-exo-info { flex:1; min-width:0; }
+.coach-exo-name { font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.coach-exo-detail { font-size:11px; color:var(--text3); margin-top:2px; }
+.coach-exo-rec { text-align:right; flex-shrink:0; }
+.coach-exo-weight { font-size:14px; font-weight:900; color:var(--gold); }
+.coach-exo-action { font-size:10px; color:var(--text3); margin-top:1px; }
+.action-up   { color:var(--green)!important; }
+.action-down { color:var(--red)!important; }
+
+.coach-balance-card { background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+.coach-balance-title { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--text3); text-transform:uppercase; margin-bottom:12px; }
+.coach-balance-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.coach-balance-lbl { font-size:11px; font-weight:700; width:50px; flex-shrink:0; color:var(--text2); }
+.coach-balance-bar-wrap { flex:1; height:8px; background:var(--bg3); border-radius:4px; overflow:hidden; }
+.coach-balance-bar { height:100%; border-radius:4px; transition:width .6s ease; }
+.coach-balance-val { font-size:11px; font-weight:700; width:40px; text-align:right; flex-shrink:0; }
+
+.coach-alert { display:flex; gap:10px; background:var(--bg2); border-radius:12px; padding:10px 13px; margin-bottom:8px; border-left:3px solid var(--gold); }
+.coach-alert-icon { font-size:18px; flex-shrink:0; }
+.coach-alert-text { font-size:12px; color:var(--text); line-height:1.5; }
+.coach-alert-title { font-weight:700; font-size:13px; margin-bottom:2px; }
+
 /* ── COACH CHAT amélioré ── */
 .coach-insight-card {
   background: var(--bg3); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;
@@ -3893,40 +3948,497 @@ function validatePlan() {
 // ================================================================
 // COACH SCREEN
 // ================================================================
+
+// ================================================================
+// MOTEUR D'ANALYSE AVANCÉ — Coach 100% local
+// ================================================================
+
+// Analyse complète de tous les exercices et groupes musculaires
+function analyzeAllProgress() {
+  const allHistory = DB.get('history', []);
+  const increment = S.increment || 2.5;
+
+  // Construire la liste de tous les exercices avec leur groupe
+  const allExos = [];
+  const GROUP_ORDER = ['push','pull','legs','upper','arms'];
+  GROUP_ORDER.forEach(gid => {
+    PROGRAM.sessions[gid].exercises.forEach(exo => {
+      allExos.push({ ...exo, group: gid });
+    });
+  });
+
+  const byExo = {};
+  const byGroup = { push:[], pull:[], legs:[], upper:[], arms:[] };
+
+  allExos.forEach(exo => {
+    // Récupérer l'historique de cet exercice (toutes sessions confondues)
+    const dataPoints = [];
+    allHistory.forEach(entry => {
+      const data = DB.get(entry.key);
+      if (!data?.sets?.[exo.id]) return;
+      const sets = data.sets[exo.id].filter(s => s.done && s.weight && s.reps);
+      if (!sets.length) return;
+      const maxW    = Math.max(...sets.map(s => parseFloat(s.weight) || 0));
+      const maxRM   = Math.max(...sets.map(s => calc1RM(parseFloat(s.weight), parseInt(s.reps))));
+      const volume  = sets.reduce((a,s) => a + (parseFloat(s.weight)||0)*(parseInt(s.reps)||0), 0);
+      const doneN   = sets.length;
+      const compRate = Math.min(doneN / exo.sets, 1);
+      dataPoints.push({ date: entry.date, week: entry.week, maxW, maxRM, volume, doneN, compRate, sets });
+    });
+
+    if (!dataPoints.length) {
+      byExo[exo.id] = { ...exo, status: 'no-data', dataPoints: [] };
+      return;
+    }
+
+    dataPoints.sort((a,b) => new Date(a.date) - new Date(b.date));
+    const last  = dataPoints[dataPoints.length - 1];
+    const prev  = dataPoints.length >= 2 ? dataPoints[dataPoints.length - 2] : null;
+    const recent4 = dataPoints.slice(-4);
+
+    // Détection tendance sur les 4 dernières sessions
+    let trend = 'stable';
+    let trendPct = 0;
+    if (recent4.length >= 2) {
+      const rmFirst = recent4[0].maxRM;
+      const rmLast  = recent4[recent4.length-1].maxRM;
+      trendPct = rmFirst > 0 ? Math.round((rmLast - rmFirst) / rmFirst * 100) : 0;
+      if (trendPct >= 4)      trend = 'up';
+      else if (trendPct <= -4) trend = 'down';
+      // Plateau = même poids sur 3+ séances consécutives
+      else if (recent4.length >= 3) {
+        const weights = recent4.map(p => p.maxW);
+        const allSame = weights.every(w => Math.abs(w - weights[0]) < 1.5);
+        if (allSame) trend = 'plateau';
+        else trend = 'stable';
+      }
+    }
+
+    // Recommandation poids prochaine séance
+    let nextW = last.maxW;
+    let nextAction = 'maintenir';
+    let nextReason = 'Maintiens le poids et vise le maximum de reps propres.';
+    const deload = S.week === 7;
+
+    if (deload) {
+      nextW = Math.round(last.maxW * 0.8 * 2) / 2;
+      nextAction = 'deload';
+      nextReason = 'Semaine de déload : -20% sur les charges, focus technique.';
+    } else if (last.compRate >= 0.95 && trend !== 'down') {
+      nextW = last.maxW + increment;
+      nextAction = 'augmenter';
+      nextReason = `Tu as complété ${Math.round(last.compRate*100)}% des séries → +${increment}kg la prochaine fois.`;
+    } else if (last.compRate < 0.70) {
+      nextW = Math.max(last.maxW - increment, 0);
+      nextAction = 'réduire';
+      nextReason = `Tu n'as complété que ${Math.round(last.compRate*100)}% des séries → réduis de ${increment}kg.`;
+    } else if (trend === 'plateau') {
+      // Sur un plateau : suggérer une technique de déblocage
+      nextAction = 'debloquer';
+      nextReason = 'Plateau détecté. Essaie les techniques ci-dessous pour relancer la progression.';
+    }
+
+    // Calcul du score individuel (0-100)
+    let score = 50;
+    if (trend === 'up')     score = Math.min(50 + Math.abs(trendPct) * 3, 100);
+    else if (trend === 'stable') score = 55;
+    else if (trend === 'plateau') score = 40;
+    else if (trend === 'down')   score = Math.max(50 - Math.abs(trendPct) * 3, 0);
+    score = Math.round(score * (0.5 + last.compRate * 0.5));
+
+    const exoData = {
+      ...exo,
+      trend, trendPct, dataPoints, last, prev,
+      nextW, nextAction, nextReason, score,
+      sessCount: dataPoints.length,
+      best1RM: Math.max(...dataPoints.map(p => p.maxRM)),
+    };
+    byExo[exo.id] = exoData;
+    byGroup[exo.group].push(exoData);
+  });
+
+  // Score global (moyenne pondérée)
+  const scored = Object.values(byExo).filter(e => e.dataPoints?.length);
+  const globalScore = scored.length
+    ? Math.round(scored.reduce((a,e) => a+e.score, 0) / scored.length)
+    : 0;
+
+  // Volume par groupe (semaine courante)
+  const groupVolume = {};
+  GROUP_ORDER.forEach(gid => {
+    const sessData = DB.get(sKey(gid));
+    let vol = 0;
+    if (sessData?.sets) {
+      Object.values(sessData.sets).forEach(arr => arr.forEach(s => {
+        if (s.done && s.weight) vol += (parseFloat(s.weight)||0)*(parseInt(s.reps)||0);
+      }));
+    }
+    groupVolume[gid] = vol;
+  });
+
+  // Alertes intelligentes
+  const alerts = [];
+  const plateauxExos = Object.values(byExo).filter(e => e.trend === 'plateau');
+  const regressExos  = Object.values(byExo).filter(e => e.trend === 'down');
+  const pushVol = (groupVolume.push||0) + (groupVolume.upper||0);
+  const pullVol = (groupVolume.pull||0);
+  if (pushVol > 0 && pullVol > 0 && pushVol / pullVol > 1.5)
+    alerts.push({ icon:'⚖️', title:'Déséquilibre Push/Pull', text:`Tu pousses ${Math.round(pushVol/1000*10)/10}t mais tires ${Math.round(pullVol/1000*10)/10}t. Augmente le volume Pull pour protéger tes épaules.` });
+  if (plateauxExos.length >= 3)
+    alerts.push({ icon:'⏸', title:'Plusieurs plateaux détectés', text:`${plateauxExos.slice(0,3).map(e=>e.name.split(' ')[0]).join(', ')} stagnent depuis plusieurs séances. Voir conseils dans chaque exercice.` });
+  if (regressExos.length >= 2)
+    alerts.push({ icon:'📉', title:'Régression détectée', text:`${regressExos.slice(0,2).map(e=>e.name.split(' ')[0]).join(', ')} régressent. Vérifie ta récupération et ton sommeil.` });
+
+  // Focus de la semaine (top 3 priorités)
+  const focus = [];
+  const topAugment = Object.values(byExo)
+    .filter(e => e.nextAction === 'augmenter' && e.dataPoints?.length >= 2)
+    .sort((a,b) => b.score - a.score).slice(0, 2);
+  topAugment.forEach(e => focus.push({
+    text: `Augmente ${e.name.split(' ')[0]} → ${e.nextW}kg`,
+    sub: e.nextReason,
+  }));
+  if (plateauxExos.length)
+    focus.push({ text: `Débloque le plateau sur ${plateauxExos[0].name.split(' ')[0]}`, sub: "Essaie un drop set ou une technique d'intensification." });
+  if (alerts.some(a => a.title.includes('Déséquilibre')))
+    focus.push({ text: 'Ajoute 1 série de tirage vertical', sub: 'Le ratio Push/Pull est déséquilibré cette semaine.' });
+  if (focus.length === 0 && scored.length > 0)
+    focus.push({ text: 'Continue sur ta lancée 💪', sub: 'Progression régulière détectée. Garde le rythme.' });
+
+  return { byExo, byGroup, globalScore, groupVolume, alerts, focus, GROUP_ORDER };
+}
+
+// ================================================================
+// GÉNÉRATION DE RÉPONSE COACH LOCAL (sans API)
+// ================================================================
+function generateLocalCoachResponse(question) {
+  const analysis = analyzeAllProgress();
+  const { byExo, byGroup, globalScore, alerts, focus } = analysis;
+  const allHistory = DB.get('history', []);
+  const summary = buildCoachSummary();
+  const q = question.toLowerCase();
+
+  // ── Détection du sujet ──
+  const isProgression  = /propress|progress|évolu|évolut|améli/.test(q);
+  const isPlateau      = /plateau|stag|bloqu/.test(q);
+  const isNextSession  = /proch|semain|demain|conseil|que faire|fais-je/.test(q);
+  const isBalance      = /déséquil|equilibr|ratio|push.*pull|pull.*push/.test(q);
+  const isVolume       = /volume|optimal|suffis|trop|assez/.test(q);
+  const isRecovery     = /récup|douleur|fatigue|sommeil/.test(q);
+  const isArms         = /bras|bicep|tricep|arm/.test(q);
+  const isChest        = /poitrine|pecto|chest/.test(q);
+  const isBack         = /dos|dorsal|pull|tirage/.test(q);
+  const isLegs         = /jamb|quad|ischio|fessier|leg/.test(q);
+  const isShoulders    = /épaul|delt|shoulder/.test(q);
+  const isPR           = /pr|record|personnel|max/.test(q);
+  const isGeneral      = !isProgression && !isPlateau && !isNextSession && !isBalance && !isVolume && !isRecovery && !isArms && !isChest && !isBack && !isLegs && !isShoulders && !isPR;
+
+  if (!allHistory.length) {
+    return "Tu n'as pas encore de séances enregistrées. Complète quelques entraînements et je pourrai analyser ta progression en détail ! 💪";
+  }
+
+  let response = '';
+
+  // ── Analyse générale ──
+  if (isGeneral || isProgression) {
+    const up   = Object.values(byExo).filter(e => e.trend === 'up');
+    const down = Object.values(byExo).filter(e => e.trend === 'down');
+    const plat = Object.values(byExo).filter(e => e.trend === 'plateau');
+    response += `Sur les ${allHistory.length} séances enregistrées, ton score global de progression est de ${globalScore}/100. `;
+    if (up.length)   response += `${up.length} exercice${up.length>1?'s progressent':' progresse'} bien (${up.slice(0,3).map(e=>e.name.split(' ')[0]).join(', ')}). `;
+    if (plat.length) response += `${plat.length} exercice${plat.length>1?'s sont':'est'} en plateau (${plat.slice(0,2).map(e=>e.name.split(' ')[0]).join(', ')}). `;
+    if (down.length) response += `${down.length} exercice${down.length>1?'s régressent':' régresse'} (${down.slice(0,2).map(e=>e.name.split(' ')[0]).join(', ')}) — vérifie ta récupération.`;
+    response += '';
+  }
+
+  // ── Plateaux ──
+  if (isPlateau) {
+    const plat = Object.values(byExo).filter(e => e.trend === 'plateau');
+    if (!plat.length) {
+      response += "Aucun plateau détecté actuellement. Ta progression est bien répartie. ";
+    } else {
+      response += `${plat.length} exercice${plat.length>1?'s sont':'est'} en plateau : ${plat.map(e=>e.name).join(', ')}.
+
+Pour débloquer un plateau, essaie dans l'ordre : 1) Ajoute 0,5 à 1 rep par série pendant 2 séances avant d'augmenter le poids. 2) Technique de rest-pause : termine une série, repose 15 sec, fais 2-3 reps de plus. 3) Drop set sur la dernière série : fais ta série normale, descends de 20%, fais 6-8 reps supplémentaires. 4) Vérifie ton amplitude de mouvement — souvent un plateau vient d'une technique raccourcie.`;
+    }
+    response += '';
+  }
+
+  // ── Prochaine séance ──
+  if (isNextSession) {
+    const nextSessions = [];
+    ['push','pull','legs','upper','arms'].forEach(gid => {
+      const saved = DB.get(sKey(gid));
+      if (!saved?.finished) {
+        const topExos = byGroup[gid].filter(e => e.nextAction !== 'maintenir' && e.dataPoints?.length);
+        if (topExos.length) nextSessions.push({ gid, name: PROGRAM.sessions[gid].name, exos: topExos.slice(0,3) });
+      }
+    });
+    if (nextSessions.length) {
+      response += `Voici les ajustements clés pour tes prochaines séances :
+
+`;
+      nextSessions.slice(0,2).forEach(s => {
+        response += `${s.name} : `;
+        response += s.exos.map(e => `${e.name.split(' ')[0]} → ${e.nextW}kg (${e.nextAction})`).join(', ');
+        response += '.';
+      });
+    } else {
+      response += `Toutes tes séances de cette semaine sont terminées. Repose-toi bien avant la semaine ${S.week+1}. `;
+    }
+    response += '';
+  }
+
+  // ── Volume ──
+  if (isVolume) {
+    const totalVol = Object.values(analysis.groupVolume).reduce((a,b)=>a+b,0);
+    response += `Ton volume total cette semaine est de ${Math.round(totalVol/1000*10)/10}t. `;
+    response += `Pour l'hypertrophie maximale, vise 10-20 séries par groupe musculaire par semaine. `;
+    const lowVol = ['legs','pull','arms'].filter(g => (analysis.groupVolume[g]||0) === 0);
+    if (lowVol.length) response += `Tu n'as pas encore de volume enregistré pour : ${lowVol.map(g=>PROGRAM.sessions[g].name).join(', ')} cette semaine. `;
+    response += '';
+  }
+
+  // ── Récupération ──
+  if (isRecovery) {
+    const journal = DB.get('journal', []).slice(0,5);
+    if (!journal.length) {
+      response += "Tu n'as pas encore de données de récupération enregistrées. Utilise le journal de récupération avant chaque séance pour que je puisse analyser tes tendances. ";
+    } else {
+      const avgFatigue = Math.round(journal.reduce((a,e)=>a+(e.fatigue||0),0)/journal.length * 10)/10;
+      const avgSommeil = Math.round(journal.reduce((a,e)=>a+(e.sommeil||0),0)/journal.length * 10)/10;
+      response += `Sur tes ${journal.length} dernières entrées : fatigue moyenne ${avgFatigue}/5, qualité de sommeil ${avgSommeil}/5. `;
+      if (avgFatigue >= 3.5) response += "Ton niveau de fatigue est élevé — envisage une journée de repos supplémentaire ou réduis le volume de 20%. ";
+      if (avgSommeil <= 2.5) response += "Ton sommeil est insuffisant — c'est là que se fait 80% de la récupération musculaire. Priorise 7-8h de sommeil. ";
+      if (avgFatigue < 3 && avgSommeil >= 3.5) response += "Ta récupération semble bonne. Continue dans cette direction. ";
+    }
+    response += '';
+  }
+
+  // ── Bras ──
+  if (isArms) {
+    const armsExos = byGroup.arms.filter(e => e.dataPoints?.length);
+    if (!armsExos.length) {
+      response += "Pas encore de données sur tes exercices de bras. Complète quelques séances Arms pour que j'analyse ta progression.";
+    } else {
+      const biceps = armsExos.filter(e => (e.muscles||[]).some(m => m.includes('Biceps')));
+      const triceps = armsExos.filter(e => (e.muscles||[]).some(m => m.includes('Triceps')));
+      response += `Analyse Bras :
+`;
+      if (biceps.length) response += `Biceps — meilleure performance : ${biceps.sort((a,b)=>b.best1RM-a.best1RM)[0].name} à ${biceps[0].last?.maxW}kg. `;
+      if (triceps.length) response += `Triceps — meilleure performance : ${triceps.sort((a,b)=>b.best1RM-a.best1RM)[0].name} à ${triceps[0].last?.maxW}kg. `;
+      response += "Pour maximiser la croissance des bras, assure-toi d'avoir au moins 6 séries de biceps et 6 séries de triceps par semaine.";
+    }
+    response += '';
+  }
+
+  // ── Poitrine ──
+  if (isChest) {
+    const pushExos = byGroup.push.filter(e => (e.muscles||[]).some(m=>m.includes('Pectoral')) && e.dataPoints?.length);
+    if (!pushExos.length) {
+      response += "Pas encore assez de données sur tes exercices de poitrine.";
+    } else {
+      const best = pushExos.sort((a,b)=>b.best1RM-a.best1RM)[0];
+      response += `Ton exercice principal de poitrine : ${best.name} — 1RM estimé ${best.best1RM}kg. `;
+      response += `Tendance : ${best.trend === 'up' ? 'en progression ↑' : best.trend === 'plateau' ? 'en plateau — essaie de varier les angles (incliné/décliné)' : 'stable'}. `;
+      response += "Pour l'hypertrophie pectorale maximale, vise 10-16 séries/semaine avec des angles variés.";
+    }
+    response += '';
+  }
+
+  // ── Dos ──
+  if (isBack) {
+    const pullExos = byGroup.pull.filter(e => e.dataPoints?.length);
+    if (!pullExos.length) {
+      response += "Pas encore assez de données sur tes exercices de dos.";
+    } else {
+      const progPull = pullExos.filter(e=>e.trend==='up').length;
+      response += `${pullExos.length} exercices de dos analysés, ${progPull} en progression. `;
+      const best = pullExos.sort((a,b)=>b.best1RM-a.best1RM)[0];
+      response += `Ton meilleur exercice de dos : ${best.name} (1RM: ${best.best1RM}kg). `;
+      response += "Pour un dos épais, assure-toi d'avoir du rowing horizontal ET du tirage vertical chaque semaine.";
+    }
+    response += '';
+  }
+
+  // ── Jambes ──
+  if (isLegs) {
+    const legsExos = byGroup.legs.filter(e => e.dataPoints?.length);
+    if (!legsExos.length) {
+      response += "Pas encore de données sur tes jambes. N'oublie pas les jambes — elles représentent 50% de ta masse musculaire totale !";
+    } else {
+      response += `${legsExos.length} exercices de jambes suivis. `;
+      const quad = legsExos.filter(e=>(e.muscles||[]).some(m=>m.includes('Quadricep')));
+      const post = legsExos.filter(e=>(e.muscles||[]).some(m=>m.includes('Ischio')||m.includes('Fessier')));
+      if (quad.length && post.length) response += `Bon équilibre quadriceps/chaîne postérieure. `;
+      response += legsExos.filter(e=>e.nextAction==='augmenter').map(e=>`${e.name.split(' ')[0]} → passe à ${e.nextW}kg`).join(', ');
+    }
+    response += '';
+  }
+
+  // ── PRs ──
+  if (isPR) {
+    const allExosList = Object.values(byExo).filter(e => e.best1RM > 0).sort((a,b)=>b.best1RM-a.best1RM);
+    if (!allExosList.length) {
+      response += "Aucun PR enregistré pour l'instant. Complète quelques séances !";
+    } else {
+      response += `Tes 5 meilleurs 1RM estimés :
+`;
+      allExosList.slice(0,5).forEach((e,i) => {
+        response += `${i+1}. ${e.name} — ${e.best1RM}kg (1RM Epley)
+`;
+      });
+    }
+    response += '';
+  }
+
+  // ── Déséquilibre ──
+  if (isBalance) {
+    const pushV = (analysis.groupVolume.push||0) + (analysis.groupVolume.upper||0);
+    const pullV = analysis.groupVolume.pull||0;
+    if (pushV === 0 && pullV === 0) {
+      response += "Pas encore de volume cette semaine pour analyser l'équilibre Push/Pull.";
+    } else {
+      const ratio = pullV > 0 ? Math.round(pushV/pullV*10)/10 : '∞';
+      response += `Ratio Push/Pull cette semaine : ${ratio}:1. `;
+      if (typeof ratio === 'number' && ratio > 1.4) response += "⚠️ Trop de volume en push par rapport au pull. Un ratio 1:1 protège les épaules et développe le dos harmonieusement. Ajoute une série de rowing ou de tractions.";
+      else if (typeof ratio === 'number' && ratio < 0.7) response += "Tu tires plus que tu ne pousses. Équilibre avec plus de push.";
+      else response += "✅ Bon équilibre Push/Pull. Continue ainsi.";
+    }
+    response += '';
+  }
+
+  // Fallback si réponse vide
+  if (!response.trim()) {
+    response = `Score global : ${globalScore}/100 — ${allHistory.length} séances. `;
+    if (focus.length) response += `
+
+Focus cette semaine : ${focus[0].text}. ${focus[0].sub}`;
+  }
+
+  return response.trim();
+}
+
 function renderCoach() {
   const el = document.getElementById('coach-content');
-  // Questions intelligentes basées sur l'état actuel
-  const briefingQ = DB.get('coach-briefing');
-  const summary = buildCoachSummary();
+  if (!el) return;
+
+  // === Analyse complète ===
+  const A = analyzeAllProgress();   // { byExo, byGroup, globalScore, groupVolume, alerts, focus, GROUP_ORDER }
+  const score = A.globalScore;      // 0-100
+  // Couleur du score
+  const scoreColor = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--amber)' : 'var(--red)';
+  // Arc SVG (cercle 60px, rayon 26, circonférence ~163)
+  const circ = 163;
+  const dash = Math.round((score / 100) * circ);
+
+  // === Questions dynamiques ===
   const QQ = [];
+  const briefingQ = DB.get('coach-briefing');
   if (briefingQ?.sessionName) QQ.push(`Que fais-je différemment pour ma prochaine ${briefingQ.sessionName} ?`);
-  if (summary?.stagnating?.length) QQ.push(`Comment débloquer le plateau sur ${summary.stagnating[0].name} ?`);
-  if (summary?.progressing?.length) QQ.push(`Je progresse sur ${summary.progressing[0].name}, quelle est la suite ?`);
+  const plateaux = Object.values(A.byExo).filter(e => e.trend === 'plateau');
+  if (plateaux.length) QQ.push(`Comment débloquer le plateau sur ${plateaux[0].name} ?`);
+  const ups = Object.values(A.byExo).filter(e => e.trend === 'up');
+  if (ups.length) QQ.push(`Je progresse sur ${ups[0].name}, quelle est la suite ?`);
+  if (A.alerts.some(a => a.type === 'balance')) QQ.push('Mon équilibre push/pull est-il correct ?');
   QQ.push('Mon volume est-il optimal pour hypertrophie ?');
   QQ.push('Dois-je changer quelque chose à mon programme ?');
   QQ.push('Analyse ma récupération et mes résultats.');
   const QQfinal = QQ.slice(0, 5);
+
+  // === Onglets sessions ===
+  const TABS = A.GROUP_ORDER; // ['push','pull','legs','upper','arms']
+  const firstTab = TABS[0];
+
+  // === HTML principal ===
   el.innerHTML = `
+    <!-- En-tête coach -->
     <div class="coach-hdr-card">
       <div class="coach-av">🤖</div>
-      <div><div class="coach-hdr-title">Coach APEX</div><div class="coach-hdr-sub">Analyse tes données · Programme ta progression</div></div>
+      <div>
+        <div class="coach-hdr-title">Coach APEX</div>
+        <div class="coach-hdr-sub">Analyse locale · Surcharge progressive · 100% privé</div>
+      </div>
     </div>
-    ${summary ? `<div class="coach-summary">
-      <div class="coach-summary-title">Résumé de progression</div>
-      ${summary.progressing.length ? `<div class="coach-summary-row">📈 <span style="color:var(--green)">En hausse :</span> ${summary.progressing.map(p=>`${p.name} (${p.gain})`).join(', ')}</div>` : ''}
-      ${summary.stagnating.length  ? `<div class="coach-summary-row">➡️ <span style="color:var(--amber)">Stagnants :</span> ${summary.stagnating.map(p=>p.name).join(', ')}</div>` : ''}
-      ${summary.declining.length   ? `<div class="coach-summary-row">📉 <span style="color:var(--red)">En baisse :</span> ${summary.declining.map(p=>`${p.name} (${p.loss})`).join(', ')}</div>` : ''}
-      ${!summary.progressing.length && !summary.stagnating.length && !summary.declining.length ? '<div style="color:var(--text3);font-size:12px">Complète quelques séances pour débloquer l\'analyse.</div>' : ''}
-    </div>` : '<div class="coach-summary"><div class="coach-summary-title">Résumé de progression</div><div style="color:var(--text3);font-size:12px">Complète tes premières séances pour débloquer les analyses 💪</div></div>'}
-    <div class="coach-quick-btns">${QQfinal.map(q=>`<button class="coach-q" onclick="sendQ(this.dataset.q)" data-q="${q}">${q}</button>`).join('')}</div>
+
+    <!-- Score global -->
+    <div class="coach-score-wrap">
+      <svg viewBox="0 0 60 60" width="90" height="90">
+        <circle cx="30" cy="30" r="26" fill="none" stroke="var(--bg3)" stroke-width="7"/>
+        <circle cx="30" cy="30" r="26" fill="none" stroke="${scoreColor}" stroke-width="7"
+          stroke-dasharray="${dash} ${circ}" stroke-dashoffset="41"
+          stroke-linecap="round" transform="rotate(-90 30 30)"/>
+        <text x="30" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="${scoreColor}">${score}</text>
+      </svg>
+      <div style="margin-top:6px;font-size:12px;color:var(--text2)">Score progression</div>
+      <div style="font-size:11px;color:var(--text3)">${score>=70?'🔥 Excellent':score>=40?'⚡ Bien':'💤 À booster'}</div>
+    </div>
+
+    <!-- Alertes intelligentes -->
+    ${A.alerts.length ? `<div class="coach-alerts-wrap">${A.alerts.map(a=>`<div class="coach-alert coach-alert-${a.severity}">${a.icon} ${a.msg}</div>`).join('')}</div>` : ''}
+
+    <!-- Focus semaine (top 3 priorités) -->
+    ${A.focus.length ? `
+    <div class="coach-focus-card">
+      <div class="coach-focus-title">🎯 Focus de la semaine</div>
+      ${A.focus.map((f,i)=>`<div class="coach-focus-item"><span class="coach-focus-num">${i+1}</span><div><div class="coach-focus-name">${f.name}</div><div class="coach-focus-why">${f.reason}</div></div></div>`).join('')}
+    </div>` : ''}
+
+    <!-- Onglets par session -->
+    <div class="coach-session-tabs" id="coach-tabs">
+      ${TABS.map(g=>`<button class="coach-tab ${g===firstTab?'active':''}" onclick="setCoachTab('${g}')">${g.charAt(0).toUpperCase()+g.slice(1)}</button>`).join('')}
+    </div>
+
+    <!-- Tables exercices par session -->
+    ${TABS.map(g=>`
+    <div class="coach-tab-panel ${g===firstTab?'active':''}" id="ctab-${g}">
+      <table class="coach-exo-table">
+        <thead><tr><th>Exercice</th><th>1RM est.</th><th>Tendance</th><th>Recommandation</th></tr></thead>
+        <tbody>
+          ${(A.byGroup[g]||[]).map(exo=>{
+            const tIcon = exo.trend==='up'?'📈':exo.trend==='down'?'📉':exo.trend==='plateau'?'➡️':'—';
+            const tColor = exo.trend==='up'?'var(--green)':exo.trend==='down'?'var(--red)':exo.trend==='plateau'?'var(--amber)':'var(--text3)';
+            return `<tr>
+              <td style="font-size:12px">${exo.name}</td>
+              <td style="text-align:center;font-weight:700">${exo.best1rm?exo.best1rm.toFixed(1)+'kg':'—'}</td>
+              <td style="text-align:center;color:${tColor}">${tIcon}${exo.trendPct?` <span style="font-size:10px">${exo.trendPct>0?'+':''}${exo.trendPct}%</span>`:''}</td>
+              <td style="font-size:11px;color:var(--text2)">${exo.nextAction||'Continue normalement'} — <em>${exo.nextReason||''}</em></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`).join('')}
+
+    <!-- Volume balance par groupe -->
+    <div class="coach-balance-card">
+      <div class="coach-balance-title">⚖️ Balance volumique</div>
+      ${A.GROUP_ORDER.map(g=>{
+        const vol = A.groupVolume[g]||0;
+        const maxVol = Math.max(...Object.values(A.groupVolume),1);
+        const pct = Math.round((vol/maxVol)*100);
+        return `<div class="coach-balance-row">
+          <span class="coach-balance-lbl">${g.charAt(0).toUpperCase()+g.slice(1)}</span>
+          <div class="coach-balance-bar-bg"><div class="coach-balance-bar" style="width:${pct}%"></div></div>
+          <span class="coach-balance-val">${vol>=1000?(vol/1000).toFixed(1)+'t':Math.round(vol)+'kg'}</span>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Questions rapides -->
+    <div class="coach-quick-btns">
+      ${QQfinal.map(q=>`<button class="coach-q" onclick="sendQ(this.dataset.q)" data-q="${q}">${q}</button>`).join('')}
+    </div>
+
+    <!-- Chat -->
     <div class="coach-chat" id="coach-chat">
-      <div class="cmsg ai">Bonjour ! Je suis ton coach personnel APEX. Je connais toutes tes performances depuis le début. Pose-moi n'importe quelle question sur ta progression, ton programme, ou ta récupération. 💪</div>
+      <div class="cmsg ai">Bonjour ! Je suis ton Coach APEX — 100% local, no API. J'analyse toutes tes données en temps réel. Pose-moi n'importe quelle question sur ta progression 💪</div>
     </div>
     <div class="coach-input-row">
       <textarea class="coach-textarea" id="coach-inp" placeholder="Pose une question..."></textarea>
       <button class="coach-send" id="coach-send-btn" onclick="sendMsg()">Envoyer</button>
     </div>`;
 
+  // Rejouer l'historique de la session
   S.coachHistory.forEach(msg => {
     const div = document.createElement('div');
     div.className = `cmsg ${msg.role==='user'?'user':'ai'}`;
@@ -3938,45 +4450,62 @@ function renderCoach() {
   if (inp) inp.addEventListener('keydown', e => { if (e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} });
 }
 
-function sendQ(q) { const inp=document.getElementById('coach-inp'); if(inp){inp.value=q;sendMsg();} }
+function setCoachTab(gid) {
+  // Change l'onglet actif dans le coach
+  document.querySelectorAll('.coach-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.coach-tab-panel').forEach(p => p.classList.remove('active'));
+  const btn = document.querySelector(`.coach-tab[onclick="setCoachTab('${gid}')"]`);
+  const panel = document.getElementById(`ctab-${gid}`);
+  if (btn) btn.classList.add('active');
+  if (panel) panel.classList.add('active');
+}
 
-async function sendMsg() {
+function sendQ(q) {
+  const inp = document.getElementById('coach-inp');
+  if (inp) { inp.value = q; sendMsg(); }
+}
+
+function sendMsg() {
+  // Coach 100% local — utilise generateLocalCoachResponse() au lieu de l'API
   const inp  = document.getElementById('coach-inp');
   const btn  = document.getElementById('coach-send-btn');
   const chat = document.getElementById('coach-chat');
   if (!inp || !chat) return;
-  const q = inp.value.trim(); if (!q) return;
+  const q = inp.value.trim();
+  if (!q) return;
 
-  const uDiv = document.createElement('div'); uDiv.className='cmsg user'; uDiv.textContent=q; chat.appendChild(uDiv);
-  S.coachHistory.push({role:'user', content:q});
+  // Afficher la question de l'utilisateur
+  const uDiv = document.createElement('div');
+  uDiv.className = 'cmsg user';
+  uDiv.textContent = q;
+  chat.appendChild(uDiv);
+  S.coachHistory.push({ role: 'user', content: q });
   inp.value = '';
   chat.scrollTop = chat.scrollHeight;
 
-  const thinkDiv = document.createElement('div'); thinkDiv.className='cmsg ai thinking'; chat.appendChild(thinkDiv);
+  // Indicateur "en train de réfléchir..."
+  const thinkDiv = document.createElement('div');
+  thinkDiv.className = 'cmsg ai thinking';
+  thinkDiv.textContent = '⏳ Analyse en cours...';
+  chat.appendChild(thinkDiv);
   if (btn) btn.disabled = true;
 
-  try {
-    let resp = '';
-    const rDiv = document.createElement('div'); rDiv.className='cmsg ai';
-    await askCoachAI(q, chunk => {
-      if (chat.contains(thinkDiv)) { chat.removeChild(thinkDiv); chat.appendChild(rDiv); }
-      resp += chunk; rDiv.textContent = resp; chat.scrollTop = chat.scrollHeight;
-    });
-    if (resp) { S.coachHistory.push({role:'assistant', content:resp}); if(chat.contains(thinkDiv)){chat.removeChild(thinkDiv);chat.appendChild(rDiv);rDiv.textContent=resp;} }
-    else { if(chat.contains(thinkDiv)){chat.removeChild(thinkDiv);} const e=document.createElement('div');e.className='cmsg ai';e.textContent="Réponse vide. Réessaie.";chat.appendChild(e); }
-  } catch(err) {
-    if(chat.contains(thinkDiv)) chat.removeChild(thinkDiv);
-    const e=document.createElement('div'); e.className='cmsg ai';
-    e.textContent=`⚠️ ${err.message} — Le Coach IA nécessite internet. L'algo de progression fonctionne hors-ligne.`;
-    chat.appendChild(e);
-  } finally {
-    if(btn) btn.disabled=false; chat.scrollTop=chat.scrollHeight;
-  }
+  // Réponse locale (légère latence simulée pour UX)
+  setTimeout(() => {
+    const response = generateLocalCoachResponse(q);
+    chat.removeChild(thinkDiv);
+
+    const rDiv = document.createElement('div');
+    rDiv.className = 'cmsg ai';
+    rDiv.textContent = response;
+    chat.appendChild(rDiv);
+    S.coachHistory.push({ role: 'assistant', content: response });
+
+    if (btn) btn.disabled = false;
+    chat.scrollTop = chat.scrollHeight;
+  }, 400);
 }
 
-// ================================================================
-// STATS
-// ================================================================
 function renderStats() {
   const hist = DB.get('history', []);
   let vol=0, sets=0;
