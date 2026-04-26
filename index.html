@@ -3491,7 +3491,7 @@ function finishSession() {
   showToast('🔥 Séance terminée ! Beau boulot.', 'success');
 
   // Générer le briefing coach en arrière-plan (ne bloque pas le retour à l'accueil)
-  generateSessionBriefing(id).catch(() => {});
+  generateSessionBriefing(id);
 
   if (S.week === 7) {
     // En S7 (deload), compter combien de séances ont été faites cette semaine
@@ -3697,100 +3697,91 @@ function showFloatingTimer(sec) {
 
 // Génère un bilan + conseil pour la prochaine séance
 // Appelée en arrière-plan après finishSession()
-async function generateSessionBriefing(sessionId) {
+function generateSessionBriefing(sessionId) {
+  // Version locale — analyse les données sans API
   try {
     const hist = DB.get('history', []);
-    const lastEntry = hist[0]; // la séance qu'on vient de terminer
+    const lastEntry = hist[0];
     if (!lastEntry) return;
 
     const lastData = DB.get(lastEntry.key);
     const sess = PROGRAM.sessions[sessionId];
+    if (!sess) return;
 
-    // Construire le résumé de la séance
-    let sessionDetail = `Séance ${sess.name} terminée le ${new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'})}\n`;
-    sessionDetail += `${lastEntry.doneSets}/${lastEntry.totalSets} séries complétées\n\nDétail par exercice :\n`;
+    // ── Calcul des stats de la séance ──
+    let totalVol = 0, doneSets = lastEntry.doneSets || 0, totalSets = lastEntry.totalSets || 0;
+    const exoStats = [];
 
     if (lastData?.sets) {
       sess.exercises.forEach(exo => {
-        const arr = (lastData.sets[exo.id] || []).filter(s => s.done);
+        const arr = (lastData.sets[exo.id] || []).filter(s => s.done && s.weight && s.reps);
         if (!arr.length) return;
-        const setsStr = arr.map(s => `${s.weight||'?'}kg×${s.reps||'?'}`).join(' / ');
-        const maxRM = Math.max(...arr.filter(s=>s.weight&&s.reps).map(s=>calc1RM(parseFloat(s.weight),parseInt(s.reps))));
-        sessionDetail += `• ${exo.name} : ${setsStr}${maxRM>0?' → 1RM estimé '+maxRM+'kg':''}\n`;
+        const vol = arr.reduce((s,r) => s + (parseFloat(r.weight)||0)*(parseInt(r.reps)||0), 0);
+        const best1rm = Math.max(...arr.map(s => calc1RM(parseFloat(s.weight), parseInt(s.reps))));
+        totalVol += vol;
+        exoStats.push({ name: exo.name, vol, best1rm, sets: arr });
       });
     }
 
-    // Historique des 2 sessions précédentes du même type
-    const sameTypeSessions = hist.filter(e => e.sessionId === sessionId).slice(1, 3);
-    if (sameTypeSessions.length) {
-      sessionDetail += `\nComparaison (sessions précédentes ${sess.name}) :\n`;
-      sameTypeSessions.forEach(entry => {
-        const d = DB.get(entry.key);
-        const dateStr = new Date(entry.date).toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
-        sessionDetail += `  ${dateStr} : ${entry.doneSets}/${entry.totalSets} séries`;
-        if (d?.sets) {
-          // Résumé des poids
-          const weights = [];
-          sess.exercises.slice(0, 3).forEach(exo => {
-            const arr = (d.sets[exo.id]||[]).filter(s=>s.done&&s.weight);
-            if (arr.length) weights.push(`${exo.name.split(' ')[0]} ${arr[0].weight}kg`);
-          });
-          if (weights.length) sessionDetail += ` (${weights.join(', ')})`;
-        }
-        sessionDetail += '\n';
-      });
-    }
-
-    // Demander un briefing court à Claude
-    const systemPrompt = `Tu es le coach personnel de Paulo ROSA. Après chaque séance, tu rédiges un bilan ultra-court (2-3 phrases max) + 1 conseil clé pour la prochaine fois.
-FORMAT STRICT — réponds en JSON uniquement :
-{
-  "verdict": "1 phrase sur la séance (ex: Bonne séance Push, volume en hausse de 8%)",
-  "insight": "1 phrase d'analyse (ex: Ton développé couché stagne — essaie 2.5kg de plus la prochaine fois)",
-  "nextTip": "1 conseil actionnable pour la prochaine séance du même type"
-}`;
-
-    let jsonStr = '';
-    await (async () => {
-      const response = await fetch('/api/coach', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system: systemPrompt,
-          messages: [{ role: 'user', content: sessionDetail }],
-          max_tokens: 300,
-        }),
-      });
-      if (!response.ok) return;
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop();
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          const data = line.slice(6).trim();
-          if (data === '[DONE]') continue;
-          try { const p = JSON.parse(data); jsonStr += p.delta?.text || ''; } catch {}
-        }
+    // ── Comparer avec la dernière session du même type ──
+    const prevSessions = hist.filter(e => e.sessionId === sessionId).slice(1, 2);
+    let prevVol = 0;
+    if (prevSessions.length) {
+      const prevData = DB.get(prevSessions[0].key);
+      if (prevData?.sets) {
+        Object.values(prevData.sets).forEach(arr =>
+          arr.filter(s => s.done && s.weight && s.reps)
+             .forEach(s => { prevVol += (parseFloat(s.weight)||0)*(parseInt(s.reps)||0); })
+        );
       }
-    })();
-
-    // Parser le JSON retourné par Claude
-    const match = jsonStr.match(/\{[\s\S]*\}/);
-    if (match) {
-      const briefing = JSON.parse(match[0]);
-      briefing.sessionId = sessionId;
-      briefing.sessionName = sess.name;
-      briefing.date = new Date().toISOString();
-      DB.set('coach-briefing', briefing); // stocker pour l'accueil
     }
+
+    // ── Générer les 3 champs ──
+    const completion = totalSets > 0 ? Math.round((doneSets / totalSets) * 100) : 100;
+    const volFmt = totalVol >= 1000 ? (totalVol/1000).toFixed(1)+'t' : Math.round(totalVol)+'kg';
+    const volDiff = prevVol > 0 ? Math.round(((totalVol - prevVol) / prevVol) * 100) : null;
+
+    // Verdict
+    let verdict = '';
+    if (completion === 100) verdict = `Séance ${sess.name} complète — ${volFmt} soulevés`;
+    else verdict = `${doneSets}/${totalSets} séries terminées sur la séance ${sess.name}`;
+    if (volDiff !== null) {
+      if (volDiff > 3) verdict += ` · volume +${volDiff}% vs dernière fois 🔥`;
+      else if (volDiff < -3) verdict += ` · volume ${volDiff}% vs dernière fois`;
+      else verdict += ' · volume stable par rapport à la dernière fois';
+    }
+
+    // Insight (exercice le plus notable)
+    let insight = '';
+    const A = analyzeAllProgress();
+    const sessExos = (A.byGroup[sessionId] || []);
+    const plateau = sessExos.find(e => e.trend === 'plateau');
+    const progressing = sessExos.find(e => e.trend === 'up');
+    const regressing = sessExos.find(e => e.trend === 'down');
+    if (progressing)
+      insight = `${progressing.name.split(' ')[0]} est en bonne progression (+${progressing.trendPct}%). Continue à cette allure.`;
+    else if (plateau)
+      insight = `${plateau.name.split(' ')[0]} stagne depuis quelques séances. Essaie d'ajouter 2.5kg la prochaine fois.`;
+    else if (regressing)
+      insight = `${regressing.name.split(' ')[0]} régresse légèrement. Vérifie ta récupération et ton sommeil.`;
+    else if (exoStats.length)
+      insight = `${exoStats[0].name.split(' ')[0]} : 1RM estimé à ${exoStats[0].best1rm.toFixed(1)}kg. Continue le travail progressif.`;
+
+    // Conseil pour la prochaine fois
+    let nextTip = '';
+    if (completion < 100)
+      nextTip = 'La prochaine fois, essaie de terminer toutes les séries pour maximiser le stimulus.';
+    else if (volDiff !== null && volDiff < 0)
+      nextTip = 'Vise +2.5kg sur ton exercice principal pour relancer la progression.';
+    else if (plateau)
+      nextTip = `Pour ${plateau.name.split(' ')[0]}, essaie les séries descendantes ou augmente les répétitions.`;
+    else
+      nextTip = 'Maintiens la même structure et augmente de 2.5kg sur 1-2 exercices la prochaine séance.';
+
+    const briefing = { verdict, insight, nextTip, sessionId, sessionName: sess.name, date: new Date().toISOString() };
+    DB.set('coach-briefing', briefing);
   } catch(e) {
-    // Silencieux si pas de réseau ou clé API non configurée
+    // Silencieux
   }
 }
 
@@ -4375,7 +4366,7 @@ function renderCoach() {
     </div>
 
     <!-- Alertes intelligentes -->
-    ${A.alerts.length ? `<div class="coach-alerts-wrap">${A.alerts.map(a=>`<div class="coach-alert coach-alert-${a.severity}">${a.icon} ${a.msg}</div>`).join('')}</div>` : ''}
+    ${A.alerts.length ? `<div class="coach-alerts-wrap">${A.alerts.map(a=>`<div class="coach-alert"><div class="coach-alert-icon">${a.icon}</div><div class="coach-alert-text"><div class="coach-alert-title">${a.title}</div>${a.text}</div></div>`).join('')}</div>` : ''}
 
     <!-- Focus semaine (top 3 priorités) -->
     ${A.focus.length ? `
