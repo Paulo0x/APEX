@@ -1,25 +1,36 @@
 // ================================================================
-// APEX — Service Worker v3 (compatible iOS Safari + Android Chrome)
+// APEX — Service Worker v4 (compatible iOS Safari + Android Chrome)
 // ================================================================
 // IMPORTANT : changer CACHE_NAME force le navigateur à réinstaller
-// le SW et vider l'ancien cache. Toujours incrémenter lors d'un déploiement.
-const CACHE_NAME = 'apex-v4';
+// le SW et vider l'ancien cache. Incrémenter à chaque déploiement.
+const CACHE_NAME = 'apex-v5';
 
-// Installation : mise en cache de l'app (fetche la NOUVELLE version)
+// Fichiers à mettre en cache lors de l'installation
+const ASSETS_TO_CACHE = [
+  '/',
+  '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/icon-180.png',
+  '/icons/icon-167.png',
+  '/icons/icon-152.png',
+  '/icons/icon-120.png',
+  '/icons/icon-any.png',
+];
+
+// Installation : met en cache tous les assets de l'app
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      // Force le fetch réseau (pas de cache) pour avoir la version fraîche
-      return fetch('/?nocache=' + Date.now())
-        .then(response => cache.put('/', response))
-        .catch(() => cache.addAll(['/']));
-    }).catch(() => {})
+      // addAll fetch chaque URL et la met en cache
+      return cache.addAll(ASSETS_TO_CACHE);
+    }).catch(err => console.warn('[SW] Cache partiel:', err))
   );
   // Active immédiatement sans attendre la fermeture des onglets
   self.skipWaiting();
 });
 
-// Activation : supprime TOUS les vieux caches (apex-v1, v2, v3...)
+// Activation : supprime TOUS les vieux caches (apex-v1, v2, v3, v4...)
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys => Promise.all(
@@ -33,7 +44,7 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch : réseau en priorité (network-first) pour toujours avoir le contenu frais,
+// Fetch : network-first (réseau en priorité pour les mises à jour),
 // cache en fallback si hors ligne
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
@@ -42,7 +53,7 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     fetch(e.request)
       .then(response => {
-        // Réponse réseau réussie → met à jour le cache et retourne la réponse
+        // Réponse réseau OK → met à jour le cache et retourne la réponse
         if (response && response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
@@ -52,7 +63,10 @@ self.addEventListener('fetch', e => {
       .catch(() => {
         // Réseau indisponible → fallback sur le cache (mode hors-ligne)
         return caches.match(e.request).then(cached => {
-          return cached || new Response('Hors ligne', { status: 503 });
+          return cached || new Response('Hors ligne — Ouvre APEX avec une connexion au moins une fois.', {
+            status: 503,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+          });
         });
       })
   );
