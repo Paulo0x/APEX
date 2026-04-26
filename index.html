@@ -4332,7 +4332,8 @@ Focus cette semaine : ${focus[0].text}. ${focus[0].sub}`;
 
 function renderCoach() {
   const el = document.getElementById('coach-content');
-  if (!el) return;
+  if (!el) { console.error('[Coach] #coach-content introuvable'); return; }
+  console.log('[Coach] renderCoach() appelé');
   try {
   // === Analyse complète ===
   const A = analyzeAllProgress();   // { byExo, byGroup, globalScore, groupVolume, alerts, focus, GROUP_ORDER }
