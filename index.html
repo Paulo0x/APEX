@@ -469,19 +469,62 @@ body::before {
 .btn-finish.btn-green:active { background: #1ab850; }
 
 /* ── TIMER ── */
-.rest-timer { position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%); background: var(--bg2); border: 1px solid rgba(245,197,24,0.2); border-radius: 22px; padding: 16px 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); z-index: 200; text-align: center; min-width: 256px; animation: timerUp 0.3s cubic-bezier(0.34,1.4,0.64,1); }
+/* ===== TIMER FLOTTANT DÉPLAÇABLE ===== */
+.rest-timer {
+  position: fixed;
+  /* Position initiale : coin bas-droit au-dessus de la nav */
+  bottom: 96px; right: 16px;
+  background: var(--bg2);
+  border: 1px solid rgba(245,197,24,0.25);
+  border-radius: 18px;
+  padding: 0;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+  z-index: 300;
+  text-align: center;
+  width: 160px;
+  animation: timerPop 0.25s cubic-bezier(0.34,1.4,0.64,1);
+  touch-action: none;   /* important : empêche le scroll pendant le drag */
+  user-select: none;
+}
 .rest-timer.hidden { display: none; }
-@keyframes timerUp { from{transform:translateX(-50%) translateY(30px);opacity:0;} to{transform:translateX(-50%) translateY(0);opacity:1;} }
-.timer-ring-wrap { position: relative; width: 110px; height: 110px; margin: 0 auto 12px; }
+@keyframes timerPop {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* Poignée de déplacement (en haut de la carte) */
+.timer-drag-handle {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px 4px;
+  cursor: grab;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.timer-drag-handle:active { cursor: grabbing; }
+.timer-drag-dots {
+  display: flex; gap: 3px; align-items: center;
+}
+.timer-drag-dot {
+  width: 4px; height: 4px; border-radius: 50%; background: var(--text3);
+}
+.timer-drag-label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; color: var(--text3); text-transform: uppercase; }
+.timer-close-btn {
+  background: none; border: none; color: var(--text3); font-size: 14px;
+  cursor: pointer; padding: 0 2px; line-height: 1; transition: color 0.15s;
+}
+.timer-close-btn:hover { color: var(--red); }
+
+/* Corps du timer */
+.timer-body { padding: 10px 12px 12px; }
+.timer-ring-wrap { position: relative; width: 88px; height: 88px; margin: 0 auto 8px; }
 .timer-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .ring-bg { fill: none; stroke: var(--bg3); stroke-width: 8; }
 .ring-fill { fill: none; stroke: var(--gold); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 327; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear, stroke 0.3s; }
 .ring-fill.ending { stroke: var(--red); }
 .ring-fill.done { stroke: var(--green); }
 .timer-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.timer-time { font-size: 28px; font-weight: 900; color: var(--text); line-height: 1; }
+.timer-time { font-size: 26px; font-weight: 900; color: var(--text); line-height: 1; }
 .timer-lbl { font-size: 9px; color: var(--text3); letter-spacing: 2px; margin-top: 2px; text-transform: uppercase; }
-.timer-row { display: flex; gap: 6px; justify-content: center; }
+.timer-row { display: flex; gap: 5px; justify-content: center; padding: 0 8px 10px; }
 .tbtn { background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 7px 12px; border-radius: 10px; font-family: var(--font); font-size: 12px; cursor: pointer; transition: all 0.15s; }
 .tbtn:active { background: var(--bg4); }
 .tbtn-main { background: var(--gold-dim); color: var(--gold); border-color: rgba(245,197,24,0.2); font-size: 17px; padding: 7px 14px; }
@@ -942,21 +985,33 @@ canvas { width: 100% !important; }
 </div>
 
 <div id="rest-timer" class="rest-timer hidden">
-  <div class="timer-ring-wrap">
-    <svg class="timer-svg" viewBox="0 0 120 120">
-      <circle class="ring-bg" cx="60" cy="60" r="52"/>
-      <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52" stroke-dasharray="327" stroke-dashoffset="0"/>
-    </svg>
-    <div class="timer-inner">
-      <div class="timer-time" id="timer-display">2:30</div>
-      <div class="timer-lbl">Repos</div>
+  <!-- Poignée de déplacement -->
+  <div class="timer-drag-handle" id="timer-drag-handle">
+    <div class="timer-drag-dots">
+      <div class="timer-drag-dot"></div><div class="timer-drag-dot"></div>
+      <div class="timer-drag-dot"></div><div class="timer-drag-dot"></div>
+      <div class="timer-drag-dot"></div><div class="timer-drag-dot"></div>
     </div>
+    <div class="timer-drag-label">Repos</div>
+    <button class="timer-close-btn" onclick="closeTimer()">✕</button>
   </div>
-  <div class="timer-row">
-    <button class="tbtn" onclick="addTimerSeconds(-15)">−15s</button>
-    <button class="tbtn tbtn-main" id="timer-toggle" onclick="toggleTimer()">⏸</button>
-    <button class="tbtn" onclick="addTimerSeconds(15)">+15s</button>
-    <button class="tbtn tbtn-close" onclick="closeTimer()">✕</button>
+  <!-- Corps : anneau + boutons -->
+  <div class="timer-body">
+    <div class="timer-ring-wrap">
+      <svg class="timer-svg" viewBox="0 0 120 120">
+        <circle class="ring-bg" cx="60" cy="60" r="52"/>
+        <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52" stroke-dasharray="327" stroke-dashoffset="0"/>
+      </svg>
+      <div class="timer-inner">
+        <div class="timer-time" id="timer-display">2:30</div>
+        <div class="timer-lbl">sec</div>
+      </div>
+    </div>
+    <div class="timer-row">
+      <button class="tbtn" onclick="addTimerSeconds(-15)" title="−15 sec">−15s</button>
+      <button class="tbtn tbtn-main" id="timer-toggle" onclick="toggleTimer()">⏸</button>
+      <button class="tbtn" onclick="addTimerSeconds(15)" title="+15 sec">+15s</button>
+    </div>
   </div>
 </div>
 
@@ -2850,14 +2905,8 @@ function renderExercises() {
       const isFill = !set.weight && prefill;
       const itKey  = `${exo.id}-${i}`;
       const iTimer = S.inlineTimers[itKey];
-      let timerHtml;
-      if (iTimer) {
-        const m = Math.floor(iTimer.sec/60), sc = iTimer.sec%60;
-        const cls = iTimer.sec===0 ? 'done' : iTimer.running ? 'running' : '';
-        timerHtml = `<div class="set-rest-inline ${cls}" id="inline-timer-${itKey}">${m}:${String(sc).padStart(2,'0')}</div>`;
-      } else {
-        timerHtml = `<button class="set-timer-btn" onclick="startInlineTimer('${exo.id}',${i},${exo.restSec})">⏱</button>`;
-      }
+      // Le timer de repos est géré par la carte flottante → pas de timer inline
+      const timerHtml = '';
       return `<div class="set-row ${set.done?'set-done':''} ${isActive?'active-set':''}" id="setrow-${exo.id}-${i}">
         <div class="set-num ${isActive?'current':''}">${i+1}</div>
         <div class="set-w-group">
@@ -2964,7 +3013,9 @@ function toggleDone(exoId, i) {
     if (!set.weight && !set.reps) { showToast('Entre la charge ou les reps !', 'error'); return; }
     set.done = true;
     const isPR = checkPR(exoId, parseFloat(set.weight)||0, parseInt(set.reps)||0);
-    startInlineTimer(exoId, i, PROGRAM.sessions[S.session].exercises.find(e=>e.id===exoId)?.restSec || 120);
+    // Afficher le timer flottant avec la durée de repos de l'exercice
+    const restSec = PROGRAM.sessions[S.session].exercises.find(e=>e.id===exoId)?.restSec || 120;
+    showFloatingTimer(restSec);
     if (navigator.vibrate) navigator.vibrate(40);
     if (isPR) { launchConfetti(); showToast(`🏆 Nouveau PR ! ${set.weight} kg`, 'pr'); }
   } else {
@@ -3240,6 +3291,50 @@ function updateTimerUI() {
 }
 function toggleTimer(){T.running=!T.running;updateTimerUI();}
 function addTimerSeconds(d){T.sec=Math.max(0,T.sec+d);T.total=Math.max(T.total,T.sec);if(T.sec>0&&!T.running)T.running=true;updateTimerUI();}
+
+// ================================================================
+// TIMER FLOTTANT — Affichage et contrôle
+// ================================================================
+
+// Affiche le timer flottant avec N secondes de repos
+function showFloatingTimer(sec) {
+  // Réinitialise le timer global
+  if (T.iv) clearInterval(T.iv);
+  T.sec   = sec;
+  T.total = sec;
+  T.running = true;
+
+  // Rend le timer visible
+  const el = document.getElementById('rest-timer');
+  if (el) {
+    el.classList.remove('hidden');
+    // Si pas encore positionné en absolu → le positionner en bas à droite
+    if (!el.style.left) {
+      el.style.left   = (window.innerWidth - 176) + 'px';
+      el.style.top    = (window.innerHeight - 310) + 'px';
+      el.style.right  = 'auto';
+      el.style.bottom = 'auto';
+    }
+  }
+
+  updateTimerUI();
+
+  // Lance le décompte
+  T.iv = setInterval(() => {
+    if (!T.running) return;
+    T.sec--;
+    if (T.sec <= 0) {
+      T.sec = 0;
+      T.running = false;
+      clearInterval(T.iv);
+      playBeep();               // bip de fin
+      // Ferme automatiquement après 2 secondes
+      setTimeout(() => closeTimer(), 2000);
+    }
+    updateTimerUI();
+  }, 1000);
+}
+
 function closeTimer(){if(T.iv)clearInterval(T.iv);T.running=false;document.getElementById('rest-timer')?.classList.add('hidden');}
 function playBeep(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[880,1100].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;g.gain.value=0.07;o.start(ctx.currentTime+i*.25);o.stop(ctx.currentTime+i*.25+.2);});}catch{}}
 
@@ -3705,6 +3800,87 @@ self.addEventListener('fetch', e => {
     .then(reg => console.log('[APEX] Service Worker enregistré', reg))
     .catch(err => console.warn('[APEX] Service Worker erreur:', err));
 }
+
+// ================================================================
+// TIMER FLOTTANT — DRAG & DROP (tactile + souris)
+// ================================================================
+
+(function() {
+  // On attend que le DOM soit prêt
+  document.addEventListener('DOMContentLoaded', initTimerDrag);
+
+  function initTimerDrag() {
+    const timer = document.getElementById('rest-timer');
+    const handle = document.getElementById('timer-drag-handle');
+    if (!timer || !handle) return;
+
+    // Position mémorisée (commence en bas à droite)
+    let posX = window.innerWidth - 176;    // 160px + 16px marge
+    let posY = window.innerHeight - 96 - 220; // au-dessus de la nav
+
+    // Applique la position absolue (override le CSS bottom/right)
+    function applyPos() {
+      // Garde la carte dans les limites de l'écran
+      posX = Math.max(0, Math.min(posX, window.innerWidth - timer.offsetWidth));
+      posY = Math.max(0, Math.min(posY, window.innerHeight - timer.offsetHeight));
+      timer.style.left   = posX + 'px';
+      timer.style.top    = posY + 'px';
+      timer.style.right  = 'auto';
+      timer.style.bottom = 'auto';
+    }
+
+    let dragging = false;
+    let startX, startY, origX, origY;
+
+    // === TOUCH ===
+    handle.addEventListener('touchstart', (e) => {
+      dragging = true;
+      const touch = e.touches[0];
+      // Si pas encore positionné en absolu, initialiser depuis le rendu actuel
+      if (!timer.style.left) {
+        const rect = timer.getBoundingClientRect();
+        posX = rect.left; posY = rect.top;
+      }
+      startX = touch.clientX;
+      startY = touch.clientY;
+      origX = posX; origY = posY;
+      e.preventDefault();
+    }, { passive: false });
+
+    handle.addEventListener('touchmove', (e) => {
+      if (!dragging) return;
+      const touch = e.touches[0];
+      posX = origX + (touch.clientX - startX);
+      posY = origY + (touch.clientY - startY);
+      applyPos();
+      e.preventDefault();
+    }, { passive: false });
+
+    handle.addEventListener('touchend', () => { dragging = false; });
+
+    // === SOURIS ===
+    handle.addEventListener('mousedown', (e) => {
+      dragging = true;
+      if (!timer.style.left) {
+        const rect = timer.getBoundingClientRect();
+        posX = rect.left; posY = rect.top;
+      }
+      startX = e.clientX; startY = e.clientY;
+      origX = posX; origY = posY;
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      posX = origX + (e.clientX - startX);
+      posY = origY + (e.clientY - startY);
+      applyPos();
+    });
+
+    document.addEventListener('mouseup', () => { dragging = false; });
+  }
+})();
+
 </script>
 
 </body>
