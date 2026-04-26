@@ -530,6 +530,79 @@ body::before {
 .tbtn-main { background: var(--gold-dim); color: var(--gold); border-color: rgba(245,197,24,0.2); font-size: 17px; padding: 7px 14px; }
 .tbtn-close { color: var(--text3); }
 
+
+/* ── COACH CARD (accueil) ── */
+.home-coach-card {
+  margin: 0 16px 12px;
+  background: linear-gradient(135deg, rgba(var(--red-rgb,255,59,48),0.08), rgba(245,197,24,0.06));
+  border: 1px solid rgba(245,197,24,0.15);
+  border-radius: 16px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.home-coach-card:active { transform: scale(0.98); }
+.home-coach-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.home-coach-av { width: 32px; height: 32px; background: var(--gold-dim); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.home-coach-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--gold); text-transform: uppercase; }
+.home-coach-sub { font-size: 10px; color: var(--text3); }
+.home-coach-msg { font-size: 13px; color: var(--text); line-height: 1.5; }
+.home-coach-tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; margin-right: 4px; margin-top: 6px; }
+.coach-tag-up   { background: var(--green-dim); color: var(--green); }
+.coach-tag-down { background: var(--red-dim);   color: var(--red);   }
+.coach-tag-ok   { background: var(--blue-dim);  color: var(--blue);  }
+
+/* ── TIMER WIDGET (accueil) ── */
+.home-tools-row {
+  display: flex; gap: 8px; padding: 0 16px 12px; overflow-x: auto; scrollbar-width: none;
+}
+.home-tools-row::-webkit-scrollbar { display: none; }
+.home-tool-btn {
+  flex-shrink: 0; display: flex; align-items: center; gap: 6px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 10px 14px; font-family: var(--font); font-size: 12px; font-weight: 600;
+  color: var(--text); cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.home-tool-btn:active { background: var(--bg3); transform: scale(0.96); }
+.home-tool-btn svg { opacity: 0.7; }
+
+/* ── TIMER MINI MODAL (saisie durée) ── */
+.timer-pick-modal {
+  position: fixed; inset: 0; z-index: 400; display: flex; align-items: flex-end;
+  justify-content: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+}
+.timer-pick-modal.hidden { display: none; }
+.timer-pick-sheet {
+  background: var(--bg2); border-radius: 24px 24px 0 0; width: 100%;
+  max-width: 480px; padding: 20px 20px 40px; animation: sheetUp 0.3s cubic-bezier(0.34,1.2,0.64,1);
+}
+.timer-pick-title { font-size: 17px; font-weight: 800; margin-bottom: 16px; text-align: center; }
+.timer-pick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.timer-pick-btn {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px 8px; font-family: var(--font); font-size: 15px; font-weight: 700;
+  color: var(--text); cursor: pointer; transition: all 0.15s;
+}
+.timer-pick-btn:active { background: var(--red); color: #fff; }
+.timer-pick-custom { display: flex; gap: 8px; align-items: center; }
+.timer-pick-input {
+  flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 14px; font-family: var(--font); font-size: 15px; color: var(--text);
+  text-align: center;
+}
+.timer-pick-ok {
+  background: var(--red); border: none; border-radius: 12px; padding: 12px 20px;
+  font-family: var(--font); font-size: 14px; font-weight: 700; color: #fff; cursor: pointer;
+}
+
+/* ── COACH CHAT amélioré ── */
+.coach-insight-card {
+  background: var(--bg3); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;
+  border-left: 3px solid var(--gold);
+}
+.coach-insight-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; }
+.coach-insight-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+
 /* ── MODAL ── */
 .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 300; display: flex; align-items: flex-end; justify-content: center; animation: fadeIn 0.2s; }
 .modal-backdrop.hidden { display: none; }
@@ -857,6 +930,25 @@ canvas { width: 100% !important; }
         <div class="quote-author" id="quote-author"></div>
       </div>
 
+      <!-- Outils rapides (timer + coach) -->
+      <div class="home-tools-row">
+        <button class="home-tool-btn" onclick="openTimerPick()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Chrono de repos
+        </button>
+        <button class="home-tool-btn" onclick="showScreen('coach')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Demander au coach
+        </button>
+        <button class="home-tool-btn" onclick="showScreen('stats')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Mes stats
+        </button>
+      </div>
+
+      <!-- Carte coach IA (bilan + conseil personnalisé) -->
+      <div id="home-coach-card"></div>
+
       <div class="section-hdr">
         <div class="section-title">Programme</div>
         <div class="section-link" id="plan-badge" style="display:none">🤖 Plan prêt →</div>
@@ -981,6 +1073,25 @@ canvas { width: 100% !important; }
 
     <button class="recovery-btn-start" onclick="confirmRecovery()">🚀 Lancer la séance</button>
     <button class="recovery-btn-skip" onclick="skipRecovery()">Passer sans noter</button>
+  </div>
+</div>
+
+<!-- MODAL CHOIX DURÉE TIMER (accessible depuis accueil) -->
+<div class="timer-pick-modal hidden" id="timer-pick-modal" onclick="if(event.target===this)closeTimerPick()">
+  <div class="timer-pick-sheet">
+    <div class="timer-pick-title">⏱ Chrono de repos</div>
+    <div class="timer-pick-grid">
+      <button class="timer-pick-btn" onclick="launchHomeTimer(60)">1 min</button>
+      <button class="timer-pick-btn" onclick="launchHomeTimer(90)">1:30</button>
+      <button class="timer-pick-btn" onclick="launchHomeTimer(120)">2 min</button>
+      <button class="timer-pick-btn" onclick="launchHomeTimer(150)">2:30</button>
+      <button class="timer-pick-btn" onclick="launchHomeTimer(180)">3 min</button>
+      <button class="timer-pick-btn" onclick="launchHomeTimer(300)">5 min</button>
+    </div>
+    <div class="timer-pick-custom">
+      <input type="number" class="timer-pick-input" id="timer-custom-inp" placeholder="Secondes..." min="10" max="600" inputmode="numeric">
+      <button class="timer-pick-ok" onclick="launchHomeTimerCustom()">OK</button>
+    </div>
   </div>
 </div>
 
@@ -2063,6 +2174,7 @@ function buildCoachSummary() {
 
 // =================================================================
 // APPEL API CLAUDE — Coach conversationnel
+// Via proxy Vercel (/api/coach) — la clé API est côté serveur
 // =================================================================
 async function askCoachAI(userQuestion, onChunk) {
   const summary = buildCoachSummary();
@@ -2070,28 +2182,39 @@ async function askCoachAI(userQuestion, onChunk) {
   const week = DB.get('week', 1);
   const nextPlan = generateNextWeekPlan(week);
 
-  // Construire le contexte détaillé
+  // Contexte ultra-détaillé incluant chaque série, chaque exercice
   const context = buildDetailedContext(allHistory, nextPlan, summary, week);
 
-  const systemPrompt = `Tu es le coach sportif personnel de Paulo ROSA, 42 ans, 75 kg, 1m72.
-Son programme : 5 séances/semaine (Push/Pull/Legs/Upper Hypertrophie/Arms & Shoulders).
-Objectif : hypertrophie maximale du haut du corps + recomposition corporelle.
-Tu connais toutes ses performances depuis le début du programme.
-Réponds en français, de façon directe et bienveillante. Maximum 3-4 paragraphes.
-Donne des conseils concrets et actionnables basés sur SES données réelles.`;
+  // System prompt complet — le coach connaît tout de Paulo
+  const systemPrompt = `Tu es le coach personnel d'élite de Paulo ROSA (42 ans, 75 kg, 1m72, objectif hypertrophie maximale du haut du corps).
 
-  const userMsg = `Voici mes données récentes :\n${context}\n\nMa question : ${userQuestion}`;
+Programme : 5 séances/semaine — Push (Poitrine/Épaules/Triceps), Pull (Dos/Biceps), Legs (Jambes/Fessiers), Upper Hypertrophie (Haut du corps), Arms & Shoulders.
+Méthode : Progressive Overload — augmenter les charges de 2,5 à 5 kg dès que les reps cibles sont atteintes sur toutes les séries.
+Cycle : 7 semaines (S1-S6 progression, S7 deload à -20%).
+
+ACCÈS AUX DONNÉES : Tu as toutes ses performances réelles — poids × reps × séries, PRs, progression par exercice, volume par session, tendances.
+
+STYLE DE COACHING :
+- Parle comme un vrai coach qui le connaît depuis des mois
+- Sois direct, précis, factuel — utilise ses vrais chiffres
+- Identifie les patterns : ce qui progresse, ce qui stagne, ce qui régresse
+- Donne des conseils ACTIONNABLES pour la prochaine séance
+- Maximum 3-4 paragraphes, pas de listes à puces
+- Si tu n'as pas assez de données, dis-le clairement
+
+RÈGLE ABSOLUE : Ne jamais donner de conseils génériques. Toujours baser sur ses données réelles.`;
+
+  const userMsg = `Voici mes données complètes :\n${context}\n\nMa question : ${userQuestion}`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Appel via le proxy Vercel (cache la clé API côté serveur)
+    const response = await fetch('/api/coach', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userMsg }],
-        stream: true,
+        max_tokens: 1500,
       }),
     });
 
@@ -2124,30 +2247,58 @@ Donne des conseils concrets et actionnables basés sur SES données réelles.`;
 }
 
 function buildDetailedContext(history, nextPlan, summary, currentWeek) {
-  let ctx = `Semaine actuelle : ${currentWeek}/7\n`;
-  ctx += `Séances totales : ${summary?.totalSessions || 0}\n`;
+  let ctx = `=== PROFIL ===\nSemaine actuelle : ${currentWeek}/7\n`;
+  ctx += `Séances totales effectuées : ${summary?.totalSessions || 0}\n`;
   ctx += `Volume total soulevé : ${Math.round((summary?.totalVolume || 0)/1000)} tonnes\n\n`;
 
-  if (summary?.progressing?.length) {
-    ctx += `Exercices en progression : ${summary.progressing.map(p=>`${p.name} (${p.gain})`).join(', ')}\n`;
-  }
-  if (summary?.stagnating?.length) {
-    ctx += `Exercices stagnants : ${summary.stagnating.map(p=>p.name).join(', ')}\n`;
-  }
-  if (summary?.declining?.length) {
-    ctx += `Exercices en régression : ${summary.declining.map(p=>`${p.name} (${p.loss})`).join(', ')}\n`;
-  }
+  // Tendances par exercice
+  if (summary?.progressing?.length)
+    ctx += `📈 En progression : ${summary.progressing.map(p=>`${p.name} (+${p.gain})`).join(', ')}\n`;
+  if (summary?.stagnating?.length)
+    ctx += `➡️ Stagnants (>2 séances sans progression) : ${summary.stagnating.map(p=>p.name).join(', ')}\n`;
+  if (summary?.declining?.length)
+    ctx += `📉 En régression : ${summary.declining.map(p=>`${p.name} (${p.loss})`).join(', ')}\n`;
 
-  ctx += `\nPlan suggéré semaine suivante :\n`;
-  Object.entries(nextPlan).slice(0, 10).forEach(([id, plan]) => {
-    const exo = findExo(id);
-    if (exo) ctx += `- ${exo.name} : ${plan.suggestedWeight}kg × ${plan.suggestedReps} (${plan.reason})\n`;
+  // Détail des 5 dernières séances avec chaque exercice et chaque série
+  ctx += `\n=== HISTORIQUE DÉTAILLÉ (5 dernières séances) ===\n`;
+  history.slice(0, 5).forEach((entry, i) => {
+    const d = DB.get(entry.key);
+    const dateStr = new Date(entry.date).toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
+    ctx += `\n--- ${dateStr} · ${entry.sessionName} · S${entry.week} · ${entry.doneSets}/${entry.totalSets} séries ---\n`;
+    if (d?.sets) {
+      // Pour chaque exercice de cette séance
+      Object.entries(d.sets).forEach(([exoId, arr]) => {
+        const exo = findExo(exoId);
+        const name = exo?.name || exoId;
+        const doneSets = arr.filter(s => s.done);
+        if (!doneSets.length) return;
+        // Afficher chaque série : poids × reps
+        const setsStr = doneSets.map(s => `${s.weight||'?'}kg×${s.reps||'?'}`).join(' / ');
+        // Calculer le 1RM max de la séance pour cet exo
+        const maxRM = Math.max(...doneSets.filter(s=>s.weight&&s.reps).map(s=>calc1RM(parseFloat(s.weight),parseInt(s.reps))));
+        ctx += `  ${name} : ${setsStr}${maxRM>0?' (1RM estimé: '+maxRM+'kg)':''}\n`;
+      });
+    }
+    // Notes de récupération si présentes
+    if (d?.fatigue||d?.sleep) ctx += `  [Récup: fatigue ${d.fatigue}/5, sommeil ${d.sleep}/5]\n`;
   });
 
-  const recent = history.slice(0, 5);
-  if (recent.length) {
-    ctx += `\n5 dernières séances : ${recent.map(e => `${e.sessionName} (S${e.week}, ${e.doneSets}/${e.totalSets} séries)`).join(' | ')}\n`;
-  }
+  // Plan recommandé pour la prochaine séance (top 8 exercices)
+  ctx += `\n=== PLAN RECOMMANDÉ (prochaine séance) ===\n`;
+  Object.entries(nextPlan).slice(0, 8).forEach(([id, plan]) => {
+    const exo = findExo(id);
+    if (exo) ctx += `${exo.name} : ${plan.suggestedWeight}kg × ${plan.suggestedReps} reps (${plan.reason})\n`;
+  });
+
+  // PRs actuels (top 6)
+  ctx += `\n=== RECORDS PERSONNELS ===\n`;
+  const allExos = []; Object.values(PROGRAM.sessions).forEach(s=>s.exercises.forEach(e=>allExos.push(e)));
+  let prCount = 0;
+  allExos.slice(0, 6).forEach(exo => {
+    const pr = DB.get(`pr-${exo.id}`);
+    if (pr?.weight) { ctx += `${exo.name} : ${pr.weight}kg × ${pr.reps} reps (1RM: ${calc1RM(pr.weight,pr.reps)}kg)\n`; prCount++; }
+  });
+  if (!prCount) ctx += `Pas encore de PRs enregistrés.\n`;
 
   return ctx;
 }
@@ -2828,6 +2979,9 @@ function renderHome() {
   document.getElementById('quote-text').textContent = `"${q.text}"`;
   document.getElementById('quote-author').textContent = `— ${q.author.toUpperCase()}`;
 
+  // Coach card (briefing + tendances)
+  renderHomeCoachCard();
+
   // Streak
   const streak = computeStreak();
   document.getElementById('streak-num').textContent = streak;
@@ -3314,6 +3468,9 @@ function finishSession() {
   launchConfetti();
   showToast('🔥 Séance terminée ! Beau boulot.', 'success');
 
+  // Générer le briefing coach en arrière-plan (ne bloque pas le retour à l'accueil)
+  generateSessionBriefing(id).catch(() => {});
+
   if (S.week === 7) {
     // En S7 (deload), compter combien de séances ont été faites cette semaine
     const ORDER = ['push','pull','legs','upper','arms'];
@@ -3510,6 +3667,206 @@ function showFloatingTimer(sec) {
   }, 1000);
 }
 
+
+
+// ================================================================
+// BRIEFING COACH POST-SÉANCE (généré automatiquement)
+// ================================================================
+
+// Génère un bilan + conseil pour la prochaine séance
+// Appelée en arrière-plan après finishSession()
+async function generateSessionBriefing(sessionId) {
+  try {
+    const hist = DB.get('history', []);
+    const lastEntry = hist[0]; // la séance qu'on vient de terminer
+    if (!lastEntry) return;
+
+    const lastData = DB.get(lastEntry.key);
+    const sess = PROGRAM.sessions[sessionId];
+
+    // Construire le résumé de la séance
+    let sessionDetail = `Séance ${sess.name} terminée le ${new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'})}\n`;
+    sessionDetail += `${lastEntry.doneSets}/${lastEntry.totalSets} séries complétées\n\nDétail par exercice :\n`;
+
+    if (lastData?.sets) {
+      sess.exercises.forEach(exo => {
+        const arr = (lastData.sets[exo.id] || []).filter(s => s.done);
+        if (!arr.length) return;
+        const setsStr = arr.map(s => `${s.weight||'?'}kg×${s.reps||'?'}`).join(' / ');
+        const maxRM = Math.max(...arr.filter(s=>s.weight&&s.reps).map(s=>calc1RM(parseFloat(s.weight),parseInt(s.reps))));
+        sessionDetail += `• ${exo.name} : ${setsStr}${maxRM>0?' → 1RM estimé '+maxRM+'kg':''}\n`;
+      });
+    }
+
+    // Historique des 2 sessions précédentes du même type
+    const sameTypeSessions = hist.filter(e => e.sessionId === sessionId).slice(1, 3);
+    if (sameTypeSessions.length) {
+      sessionDetail += `\nComparaison (sessions précédentes ${sess.name}) :\n`;
+      sameTypeSessions.forEach(entry => {
+        const d = DB.get(entry.key);
+        const dateStr = new Date(entry.date).toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
+        sessionDetail += `  ${dateStr} : ${entry.doneSets}/${entry.totalSets} séries`;
+        if (d?.sets) {
+          // Résumé des poids
+          const weights = [];
+          sess.exercises.slice(0, 3).forEach(exo => {
+            const arr = (d.sets[exo.id]||[]).filter(s=>s.done&&s.weight);
+            if (arr.length) weights.push(`${exo.name.split(' ')[0]} ${arr[0].weight}kg`);
+          });
+          if (weights.length) sessionDetail += ` (${weights.join(', ')})`;
+        }
+        sessionDetail += '\n';
+      });
+    }
+
+    // Demander un briefing court à Claude
+    const systemPrompt = `Tu es le coach personnel de Paulo ROSA. Après chaque séance, tu rédiges un bilan ultra-court (2-3 phrases max) + 1 conseil clé pour la prochaine fois.
+FORMAT STRICT — réponds en JSON uniquement :
+{
+  "verdict": "1 phrase sur la séance (ex: Bonne séance Push, volume en hausse de 8%)",
+  "insight": "1 phrase d'analyse (ex: Ton développé couché stagne — essaie 2.5kg de plus la prochaine fois)",
+  "nextTip": "1 conseil actionnable pour la prochaine séance du même type"
+}`;
+
+    let jsonStr = '';
+    await (async () => {
+      const response = await fetch('/api/coach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system: systemPrompt,
+          messages: [{ role: 'user', content: sessionDetail }],
+          max_tokens: 300,
+        }),
+      });
+      if (!response.ok) return;
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const data = line.slice(6).trim();
+          if (data === '[DONE]') continue;
+          try { const p = JSON.parse(data); jsonStr += p.delta?.text || ''; } catch {}
+        }
+      }
+    })();
+
+    // Parser le JSON retourné par Claude
+    const match = jsonStr.match(/\{[\s\S]*\}/);
+    if (match) {
+      const briefing = JSON.parse(match[0]);
+      briefing.sessionId = sessionId;
+      briefing.sessionName = sess.name;
+      briefing.date = new Date().toISOString();
+      DB.set('coach-briefing', briefing); // stocker pour l'accueil
+    }
+  } catch(e) {
+    // Silencieux si pas de réseau ou clé API non configurée
+  }
+}
+
+// ================================================================
+// AFFICHAGE COACH CARD SUR L'ACCUEIL
+// ================================================================
+
+function renderHomeCoachCard() {
+  const el = document.getElementById('home-coach-card');
+  if (!el) return;
+
+  const briefing = DB.get('coach-briefing');
+  const summary = buildCoachSummary();
+
+  if (!briefing && !summary?.totalSessions) {
+    // Pas encore de données → message d'invitation
+    el.innerHTML = `
+      <div class="home-coach-card" onclick="showScreen('coach')">
+        <div class="home-coach-hdr">
+          <div class="home-coach-av">🤖</div>
+          <div><div class="home-coach-title">Coach APEX</div><div class="home-coach-sub">Ton coach personnel IA</div></div>
+        </div>
+        <div class="home-coach-msg" style="color:var(--text3)">
+          Complète ta première séance pour débloquer les analyses personnalisées. Je suivrai chaque série, chaque kilo 💪
+        </div>
+      </div>`;
+    return;
+  }
+
+  // Construire les tags de tendance
+  let tags = '';
+  if (summary?.progressing?.length)
+    tags += summary.progressing.slice(0,2).map(p=>`<span class="home-coach-tag coach-tag-up">↑ ${p.name.split(' ')[0]}</span>`).join('');
+  if (summary?.stagnating?.length)
+    tags += summary.stagnating.slice(0,2).map(p=>`<span class="home-coach-tag coach-tag-ok">→ ${p.name.split(' ')[0]}</span>`).join('');
+  if (summary?.declining?.length)
+    tags += summary.declining.slice(0,1).map(p=>`<span class="home-coach-tag coach-tag-down">↓ ${p.name.split(' ')[0]}</span>`).join('');
+
+  if (briefing) {
+    const dateStr = briefing.date ? new Date(briefing.date).toLocaleDateString('fr-FR', {day:'numeric', month:'short'}) : '';
+    el.innerHTML = `
+      <div class="home-coach-card" onclick="showScreen('coach')">
+        <div class="home-coach-hdr">
+          <div class="home-coach-av">🤖</div>
+          <div><div class="home-coach-title">Coach · ${briefing.sessionName || ''} ${dateStr ? '· '+dateStr : ''}</div><div class="home-coach-sub">Tap pour ouvrir le chat →</div></div>
+        </div>
+        <div class="home-coach-msg">
+          ${briefing.verdict || ''}${briefing.insight ? '<br><span style="color:var(--text2);font-size:12px;margin-top:4px;display:block">' + briefing.insight + '</span>' : ''}
+          ${briefing.nextTip ? '<span style="color:var(--gold);font-size:12px;margin-top:6px;display:block">💡 ' + briefing.nextTip + '</span>' : ''}
+        </div>
+        ${tags ? '<div style="margin-top:6px">'+tags+'</div>' : ''}
+      </div>`;
+  } else if (summary) {
+    // Pas de briefing mais des données → afficher tendances
+    el.innerHTML = `
+      <div class="home-coach-card" onclick="showScreen('coach')">
+        <div class="home-coach-hdr">
+          <div class="home-coach-av">🤖</div>
+          <div><div class="home-coach-title">Coach APEX</div><div class="home-coach-sub">${summary.totalSessions} séances · ${Math.round(summary.totalVolume/1000*10)/10}t soulevées</div></div>
+        </div>
+        <div class="home-coach-msg">Analyse de ta progression disponible. Ouvre le chat pour des conseils personnalisés.</div>
+        ${tags ? '<div style="margin-top:6px">'+tags+'</div>' : ''}
+      </div>`;
+  }
+}
+
+// ================================================================
+// TIMER DEPUIS L'ACCUEIL
+// ================================================================
+
+// Ouvre le modal de choix de durée
+function openTimerPick() {
+  document.getElementById('timer-pick-modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('timer-custom-inp')?.focus(), 300);
+}
+
+// Ferme le modal sans lancer le timer
+function closeTimerPick() {
+  document.getElementById('timer-pick-modal').classList.add('hidden');
+}
+
+// Lance le timer avec une durée prédéfinie (en secondes)
+function launchHomeTimer(sec) {
+  closeTimerPick();
+  showFloatingTimer(sec);
+}
+
+// Lance le timer avec la durée saisie manuellement
+function launchHomeTimerCustom() {
+  const inp = document.getElementById('timer-custom-inp');
+  const sec = parseInt(inp?.value);
+  if (!sec || sec < 5 || sec > 3600) {
+    showToast('Durée invalide (5s à 3600s)', 'error'); return;
+  }
+  closeTimerPick();
+  showFloatingTimer(sec);
+}
+
 function closeTimer(){if(T.iv)clearInterval(T.iv);T.running=false;document.getElementById('rest-timer')?.classList.add('hidden');}
 function playBeep(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[880,1100].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;g.gain.value=0.07;o.start(ctx.currentTime+i*.25);o.stop(ctx.currentTime+i*.25+.2);});}catch{}}
 
@@ -3572,7 +3929,17 @@ function validatePlan() {
 function renderCoach() {
   const summary = buildCoachSummary();
   const el = document.getElementById('coach-content');
-  const QQ = ['Est-ce que je progresse bien ?','Dois-je faire une deload ?','Quels muscles sont en retard ?','Comment améliorer mes épaules ?','Mon volume est-il optimal ?'];
+  // Questions intelligentes basées sur l'état actuel
+  const briefingQ = DB.get('coach-briefing');
+  const summary = buildCoachSummary();
+  const QQ = [];
+  if (briefingQ?.sessionName) QQ.push(`Que fais-je différemment pour ma prochaine ${briefingQ.sessionName} ?`);
+  if (summary?.stagnating?.length) QQ.push(`Comment débloquer le plateau sur ${summary.stagnating[0].name} ?`);
+  if (summary?.progressing?.length) QQ.push(`Je progresse sur ${summary.progressing[0].name}, quelle est la suite ?`);
+  QQ.push('Mon volume est-il optimal pour hypertrophie ?');
+  QQ.push('Dois-je changer quelque chose à mon programme ?');
+  QQ.push('Analyse ma récupération et mes résultats.');
+  const QQfinal = QQ.slice(0, 5);
   el.innerHTML = `
     <div class="coach-hdr-card">
       <div class="coach-av">🤖</div>
@@ -3585,7 +3952,7 @@ function renderCoach() {
       ${summary.declining.length   ? `<div class="coach-summary-row">📉 <span style="color:var(--red)">En baisse :</span> ${summary.declining.map(p=>`${p.name} (${p.loss})`).join(', ')}</div>` : ''}
       ${!summary.progressing.length && !summary.stagnating.length && !summary.declining.length ? '<div style="color:var(--text3);font-size:12px">Complète quelques séances pour débloquer l\'analyse.</div>' : ''}
     </div>` : '<div class="coach-summary"><div class="coach-summary-title">Résumé de progression</div><div style="color:var(--text3);font-size:12px">Complète tes premières séances pour débloquer les analyses 💪</div></div>'}
-    <div class="coach-quick-btns">${QQ.map(q=>`<button class="coach-q" onclick="sendQ('${q}')">${q}</button>`).join('')}</div>
+    <div class="coach-quick-btns">${QQfinal.map(q=>`<button class="coach-q" onclick="sendQ('${q.replace(/'/g,\"\\'\")}'">${q}</button>`).join('')}</div>
     <div class="coach-chat" id="coach-chat">
       <div class="cmsg ai">Bonjour ! Je suis ton coach personnel APEX. Je connais toutes tes performances depuis le début. Pose-moi n'importe quelle question sur ta progression, ton programme, ou ta récupération. 💪</div>
     </div>
