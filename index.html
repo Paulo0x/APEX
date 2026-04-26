@@ -2649,6 +2649,7 @@ document.addEventListener('visibilitychange', () => {
 // NAVIGATION
 // ================================================================
 function showScreen(id) {
+  S.screen = id; // mémoriser l'écran actuel (utilisé par goBack)
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(`screen-${id}`);
   if (!el) return;
@@ -2672,7 +2673,17 @@ function showScreen(id) {
 
   window.scrollTo(0, 0);
 }
-function goBack() { showScreen(S.prevScreen || 'home'); }
+function goBack() {
+  // Si on est dans une séance en cours, demander confirmation avant de quitter
+  if (S.screen === 'session') {
+    const saved = DB.get(sKey(S.session), {sets:{}, finished:false});
+    const hasProgress = Object.values(saved.sets || {}).some(arr => arr.some(s => s.done));
+    if (hasProgress && !saved.finished) {
+      if (!confirm('Quitter la séance ? Ta progression est sauvegardée automatiquement.')) return;
+    }
+  }
+  showScreen(S.prevScreen || 'home');
+}
 
 // ================================================================
 // HOME
@@ -2740,14 +2751,19 @@ function renderHome() {
     const deload = S.week === 7;
 
     if (done) {
-      return `<div class="card-normal">
+      // La carte reste cliquable même si la séance est terminée
+      // → l'utilisateur peut la revoir ou ajouter des séries
+      return `<div class="card-normal" onclick="startSession('${id}')" style="cursor:pointer">
         <div class="card-icon">${ICONS[id]}</div>
         <div class="card-info">
           <div class="card-day">${sess.day.toUpperCase()}</div>
           <div class="card-name done-name">${sess.name}${deload?' ❄️':''}</div>
           <div class="card-meta">${saved.doneSets}/${saved.totalSets} séries · ${fmtTime(saved.date)} · il y a ${daysSince(saved.date)}j</div>
         </div>
-        <div class="card-done-badge">FAIT</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="card-done-badge">FAIT</div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity="0.4"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
       </div>`;
     }
 
