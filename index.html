@@ -4332,142 +4332,149 @@ Focus cette semaine : ${focus[0].text}. ${focus[0].sub}`;
 
 function renderCoach() {
   const el = document.getElementById('coach-content');
-  if (!el) { console.error('[Coach] #coach-content introuvable'); return; }
-  console.log('[Coach] renderCoach() appelé');
-  try {
-  // === Analyse complète ===
-  const A = analyzeAllProgress();   // { byExo, byGroup, globalScore, groupVolume, alerts, focus, GROUP_ORDER }
-  const score = A.globalScore;      // 0-100
-  // Couleur du score
+  if (!el) return;
+
+  // Analyse locale des données
+  let A;
+  try { A = analyzeAllProgress(); }
+  catch(e) { A = { globalScore:0, alerts:[], focus:[], byGroup:{push:[],pull:[],legs:[],upper:[],arms:[]}, groupVolume:{}, GROUP_ORDER:['push','pull','legs','upper','arms'] }; }
+
+  const score = A.globalScore || 0;
   const scoreColor = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--amber)' : 'var(--red)';
-  // Arc SVG (cercle 60px, rayon 26, circonférence ~163)
+  const TABS = A.GROUP_ORDER || ['push','pull','legs','upper','arms'];
+  const ICONS = {push:'🔥',pull:'🎯',legs:'🦵',upper:'💪',arms:'💥'};
+
+  // Questions dynamiques
+  const QQ = ['Mon volume est-il optimal pour hypertrophie ?', 'Dois-je changer quelque chose à mon programme ?', 'Analyse ma récupération et mes résultats.'];
+  const plateaux = Object.values(A.byExo||{}).filter(e=>e.trend==='plateau');
+  if (plateaux.length) QQ.unshift('Comment débloquer le plateau sur ' + plateaux[0].name.split(' ')[0] + ' ?');
+
+  // Construire le HTML en morceaux simples
+  let html = '';
+
+  // En-tête
+  html += '<div class="coach-hdr-card"><div class="coach-av">🤖</div><div>';
+  html += '<div class="coach-hdr-title">Coach APEX</div>';
+  html += '<div class="coach-hdr-sub">Analyse locale · 100% privé · Sans API</div>';
+  html += '</div></div>';
+
+  // Score
   const circ = 163;
   const dash = Math.round((score / 100) * circ);
+  html += '<div class="coach-score-wrap">';
+  html += '<svg viewBox="0 0 60 60" width="90" height="90">';
+  html += '<circle cx="30" cy="30" r="26" fill="none" stroke="var(--bg3)" stroke-width="7"/>';
+  html += '<circle cx="30" cy="30" r="26" fill="none" stroke="' + scoreColor + '" stroke-width="7"';
+  html += ' stroke-dasharray="' + dash + ' ' + circ + '" stroke-dashoffset="41"';
+  html += ' stroke-linecap="round" transform="rotate(-90 30 30)"/>';
+  html += '<text x="30" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="' + scoreColor + '">' + score + '</text>';
+  html += '</svg>';
+  html += '<div style="margin-top:6px;font-size:12px;color:var(--text2)">Score progression</div>';
+  html += '</div>';
 
-  // === Questions dynamiques ===
-  const QQ = [];
-  const briefingQ = DB.get('coach-briefing');
-  if (briefingQ?.sessionName) QQ.push(`Que fais-je différemment pour ma prochaine ${briefingQ.sessionName} ?`);
-  const plateaux = Object.values(A.byExo).filter(e => e.trend === 'plateau');
-  if (plateaux.length) QQ.push(`Comment débloquer le plateau sur ${plateaux[0].name} ?`);
-  const ups = Object.values(A.byExo).filter(e => e.trend === 'up');
-  if (ups.length) QQ.push(`Je progresse sur ${ups[0].name}, quelle est la suite ?`);
-  if (A.alerts.some(a => a.type === 'balance')) QQ.push('Mon équilibre push/pull est-il correct ?');
-  QQ.push('Mon volume est-il optimal pour hypertrophie ?');
-  QQ.push('Dois-je changer quelque chose à mon programme ?');
-  QQ.push('Analyse ma récupération et mes résultats.');
-  const QQfinal = QQ.slice(0, 5);
+  // Alertes
+  if (A.alerts && A.alerts.length) {
+    html += '<div class="coach-alerts-wrap">';
+    A.alerts.forEach(function(a) {
+      html += '<div class="coach-alert"><div class="coach-alert-icon">' + a.icon + '</div>';
+      html += '<div class="coach-alert-text"><div class="coach-alert-title">' + a.title + '</div>' + a.text + '</div></div>';
+    });
+    html += '</div>';
+  }
 
-  // === Onglets sessions ===
-  const TABS = A.GROUP_ORDER; // ['push','pull','legs','upper','arms']
-  const firstTab = TABS[0];
+  // Focus
+  if (A.focus && A.focus.length) {
+    html += '<div class="coach-focus-card"><div class="coach-focus-title">🎯 Focus de la semaine</div>';
+    A.focus.forEach(function(f, i) {
+      html += '<div class="coach-focus-item"><span class="coach-focus-num">' + (i+1) + '</span>';
+      html += '<div><div class="coach-focus-name">' + (f.text||f.name||'') + '</div>';
+      html += '<div class="coach-focus-why">' + (f.sub||f.reason||'') + '</div></div></div>';
+    });
+    html += '</div>';
+  }
 
-  // === HTML principal ===
-  el.innerHTML = `
-    <!-- En-tête coach -->
-    <div class="coach-hdr-card">
-      <div class="coach-av">🤖</div>
-      <div>
-        <div class="coach-hdr-title">Coach APEX</div>
-        <div class="coach-hdr-sub">Analyse locale · Surcharge progressive · 100% privé</div>
-      </div>
-    </div>
+  // Onglets
+  html += '<div class="coach-session-tabs" id="coach-tabs">';
+  TABS.forEach(function(g) {
+    html += '<button class="coach-tab" onclick="setCoachTab(&apos;' + g + '&apos;)">' + (ICONS[g]||"") + " " + g.charAt(0).toUpperCase() + g.slice(1) + '</button>';
+  });
+  html += '</div>';
 
-    <!-- Score global -->
-    <div class="coach-score-wrap">
-      <svg viewBox="0 0 60 60" width="90" height="90">
-        <circle cx="30" cy="30" r="26" fill="none" stroke="var(--bg3)" stroke-width="7"/>
-        <circle cx="30" cy="30" r="26" fill="none" stroke="${scoreColor}" stroke-width="7"
-          stroke-dasharray="${dash} ${circ}" stroke-dashoffset="41"
-          stroke-linecap="round" transform="rotate(-90 30 30)"/>
-        <text x="30" y="35" text-anchor="middle" font-size="14" font-weight="700" fill="${scoreColor}">${score}</text>
-      </svg>
-      <div style="margin-top:6px;font-size:12px;color:var(--text2)">Score progression</div>
-      <div style="font-size:11px;color:var(--text3)">${score>=70?'🔥 Excellent':score>=40?'⚡ Bien':'💤 À booster'}</div>
-    </div>
-
-    <!-- Alertes intelligentes -->
-    ${A.alerts.length ? `<div class="coach-alerts-wrap">${A.alerts.map(a=>`<div class="coach-alert"><div class="coach-alert-icon">${a.icon}</div><div class="coach-alert-text"><div class="coach-alert-title">${a.title}</div>${a.text}</div></div>`).join('')}</div>` : ''}
-
-    <!-- Focus semaine (top 3 priorités) -->
-    ${A.focus.length ? `
-    <div class="coach-focus-card">
-      <div class="coach-focus-title">🎯 Focus de la semaine</div>
-      ${A.focus.map((f,i)=>`<div class="coach-focus-item"><span class="coach-focus-num">${i+1}</span><div><div class="coach-focus-name">${f.text||f.name||''}</div><div class="coach-focus-why">${f.sub||f.reason||''}</div></div></div>`).join('')}
-    </div>` : ''}
-
-    <!-- Onglets par session -->
-    <div class="coach-session-tabs" id="coach-tabs">
-      ${TABS.map(g=>`<button class="coach-tab ${g===firstTab?'active':''}" onclick="setCoachTab('${g}')">${g.charAt(0).toUpperCase()+g.slice(1)}</button>`).join('')}
-    </div>
-
-    <!-- Tables exercices par session -->
-    ${TABS.map(g=>`
-    <div class="coach-tab-panel ${g===firstTab?'active':''}" id="ctab-${g}">
-      <table class="coach-exo-table">
-        <thead><tr><th>Exercice</th><th>1RM est.</th><th>Tendance</th><th>Recommandation</th></tr></thead>
-        <tbody>
-          ${(A.byGroup[g]||[]).map(exo=>{
-            const tIcon = exo.trend==='up'?'📈':exo.trend==='down'?'📉':exo.trend==='plateau'?'➡️':'—';
-            const tColor = exo.trend==='up'?'var(--green)':exo.trend==='down'?'var(--red)':exo.trend==='plateau'?'var(--amber)':'var(--text3)';
-            return `<tr>
-              <td style="font-size:12px">${exo.name}</td>
-              <td style="text-align:center;font-weight:700">${exo.best1rm?exo.best1rm.toFixed(1)+'kg':'—'}</td>
-              <td style="text-align:center;color:${tColor}">${tIcon}${exo.trendPct?` <span style="font-size:10px">${exo.trendPct>0?'+':''}${exo.trendPct}%</span>`:''}</td>
-              <td style="font-size:11px;color:var(--text2)">${exo.nextAction||'Continue normalement'} — <em>${exo.nextReason||''}</em></td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>`).join('')}
-
-    <!-- Volume balance par groupe -->
-    <div class="coach-balance-card">
-      <div class="coach-balance-title">⚖️ Balance volumique</div>
-      ${A.GROUP_ORDER.map(g=>{
-        const vol = A.groupVolume[g]||0;
-        const maxVol = Math.max(...Object.values(A.groupVolume),1);
-        const pct = Math.round((vol/maxVol)*100);
-        return `<div class="coach-balance-row">
-          <span class="coach-balance-lbl">${g.charAt(0).toUpperCase()+g.slice(1)}</span>
-          <div class="coach-balance-bar-bg"><div class="coach-balance-bar" style="width:${pct}%"></div></div>
-          <span class="coach-balance-val">${vol>=1000?(vol/1000).toFixed(1)+'t':Math.round(vol)+'kg'}</span>
-        </div>`;
-      }).join('')}
-    </div>
-
-    <!-- Questions rapides -->
-    <div class="coach-quick-btns">
-      ${QQfinal.map(q=>`<button class="coach-q" onclick="sendQ(this.dataset.q)" data-q="${q}">${q}</button>`).join('')}
-    </div>
-
-    <!-- Chat -->
-    <div class="coach-chat" id="coach-chat">
-      <div class="cmsg ai">Bonjour ! Je suis ton Coach APEX — 100% local, no API. J'analyse toutes tes données en temps réel. Pose-moi n'importe quelle question sur ta progression 💪</div>
-    </div>
-    <div class="coach-input-row">
-      <textarea class="coach-textarea" id="coach-inp" placeholder="Pose une question..."></textarea>
-      <button class="coach-send" id="coach-send-btn" onclick="sendMsg()">Envoyer</button>
-    </div>`;
-
-  // Rejouer l'historique de la session
-  S.coachHistory.forEach(msg => {
-    const div = document.createElement('div');
-    div.className = `cmsg ${msg.role==='user'?'user':'ai'}`;
-    div.textContent = msg.content;
-    document.getElementById('coach-chat').appendChild(div);
+  // Tables par session
+  TABS.forEach(function(g, gi) {
+    const exos = (A.byGroup && A.byGroup[g]) || [];
+    html += '<div class="coach-tab-panel" id="ctab-' + g + '" style="' + (gi===0?'':'display:none') + '">';
+    if (exos.length === 0) {
+      html += '<div style="text-align:center;color:var(--text3);padding:24px;font-size:13px">Complète une séance ' + g + ' pour voir l\'analyse 💪</div>';
+    } else {
+      html += '<table class="coach-exo-table"><thead><tr><th>Exercice</th><th>1RM</th><th>Tendance</th><th>Conseil</th></tr></thead><tbody>';
+      exos.forEach(function(exo) {
+        const tIcon = exo.trend==='up'?'📈':exo.trend==='down'?'📉':exo.trend==='plateau'?'➡️':'—';
+        const rm = exo.best1rm && exo.best1rm > 0 ? exo.best1rm.toFixed(1)+'kg' : '—';
+        html += '<tr>';
+        html += '<td style="font-size:12px">' + (exo.name||'') + '</td>';
+        html += '<td style="text-align:center;font-weight:700">' + rm + '</td>';
+        html += '<td style="text-align:center">' + tIcon + '</td>';
+        html += '<td style="font-size:11px;color:var(--text2)">' + (exo.nextAction||'Continue') + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+    }
+    html += '</div>';
   });
 
+  // Balance volumique
+  const groupVol = A.groupVolume || {};
+  const maxVol = Math.max.apply(null, TABS.map(function(g){ return groupVol[g]||0; }).concat([1]));
+  html += '<div class="coach-balance-card"><div class="coach-balance-title">⚖️ Balance volumique</div>';
+  TABS.forEach(function(g) {
+    const vol = groupVol[g] || 0;
+    const pct = Math.round((vol / maxVol) * 100);
+    const volStr = vol >= 1000 ? (vol/1000).toFixed(1)+'t' : Math.round(vol)+'kg';
+    html += '<div class="coach-balance-row">';
+    html += '<span class="coach-balance-lbl">' + g.charAt(0).toUpperCase()+g.slice(1) + '</span>';
+    html += '<div class="coach-balance-bar-bg"><div class="coach-balance-bar" style="width:' + pct + '%"></div></div>';
+    html += '<span class="coach-balance-val">' + volStr + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Questions rapides
+  html += '<div class="coach-quick-btns">';
+  QQ.slice(0,4).forEach(function(q) {
+    html += '<button class="coach-q" onclick="sendQ(this.dataset.q)" data-q="' + q.replace(/"/g,'&quot;') + '">' + q + '</button>';
+  });
+  html += '</div>';
+
+  // Chat
+  html += '<div class="coach-chat" id="coach-chat">';
+  html += '<div class="cmsg ai">Bonjour ! Coach APEX 100% local. Pose-moi n\'importe quelle question sur ta progression 💪</div>';
+  html += '</div>';
+  html += '<div class="coach-input-row">';
+  html += '<textarea class="coach-textarea" id="coach-inp" placeholder="Pose une question..."></textarea>';
+  html += '<button class="coach-send" id="coach-send-btn" onclick="sendMsg()">Envoyer</button>';
+  html += '</div>';
+
+  el.innerHTML = html;
+
+  // Activer le premier onglet
+  const firstTab = document.querySelector('.coach-tab');
+  if (firstTab) firstTab.classList.add('active');
+  const firstPanel = document.getElementById('ctab-' + TABS[0]);
+  if (firstPanel) firstPanel.style.display = '';
+
+  // Rejouer historique
+  (S.coachHistory || []).forEach(function(msg) {
+    const div = document.createElement('div');
+    div.className = 'cmsg ' + (msg.role==='user'?'user':'ai');
+    div.textContent = msg.content;
+    const chat = document.getElementById('coach-chat');
+    if (chat) chat.appendChild(div);
+  });
+
+  // Keydown sur textarea
   const inp = document.getElementById('coach-inp');
-  if (inp) inp.addEventListener('keydown', e => { if (e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} });
-  } catch(err) {
-    console.error('[Coach] Erreur renderCoach:', err);
-    if (el) el.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text2)">
-      <div style="font-size:32px;margin-bottom:12px">🤖</div>
-      <div style="font-weight:700;margin-bottom:8px">Coach disponible après ta 1ère séance</div>
-      <div style="font-size:12px;color:var(--text3)">Complète une séance pour débloquer les analyses.</div>
-    </div>`;
-  }
+  if (inp) inp.addEventListener('keydown', function(e) { if (e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} });
 }
 
 function setCoachTab(gid) {
