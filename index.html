@@ -2948,7 +2948,7 @@ function showScreen(id, fromPopState) {
   S.screen = id; // mémoriser l'écran actuel (utilisé par goBack)
   // Pousser dans l'historique du navigateur (gère le bouton retour du téléphone)
   if (!fromPopState) {
-    history.pushState({ screen: id }, '', '');
+    history.pushState({ screen: id }, '', '#' + id);
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(`screen-${id}`);
@@ -4886,9 +4886,23 @@ window.addEventListener('load', init);
 // (Cache l'app à la première visite, la sert ensuite sans internet)
 // ================================================================
 if ('serviceWorker' in navigator) {
-  // Enregistrement du Service Worker depuis /sw.js (compatible mobile)
+  // D'abord supprimer les anciens SW (notamment les Blob URL de la v1)
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(reg => {
+      // Supprimer si ce n'est pas notre /sw.js officiel
+      if (!reg.active?.scriptURL?.endsWith('/sw.js')) {
+        reg.unregister();
+        console.log('[APEX] Ancien SW supprimé:', reg.active?.scriptURL);
+      }
+    });
+  });
+  // Enregistrer le nouveau SW depuis /sw.js (compatible iOS + Android)
   navigator.serviceWorker.register('/sw.js', { scope: '/' })
-    .then(reg => console.log('[APEX] SW enregistré', reg.scope))
+    .then(reg => {
+      console.log('[APEX] SW enregistré:', reg.scope);
+      // Forcer la mise à jour si une nouvelle version est disponible
+      reg.update();
+    })
     .catch(err => console.warn('[APEX] SW non disponible:', err));
 }
 

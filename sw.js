@@ -1,7 +1,7 @@
 // ================================================================
 // APEX — Service Worker v2 (compatible iOS Safari + Android Chrome)
 // ================================================================
-const CACHE_NAME = 'apex-v2';
+const CACHE_NAME = 'apex-v3';
 
 // Installation : mise en cache de l'app
 self.addEventListener('install', e => {
