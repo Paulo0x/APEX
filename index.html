@@ -4062,7 +4062,7 @@ function analyzeAllProgress() {
       trend, trendPct, dataPoints, last, prev,
       nextW, nextAction, nextReason, score,
       sessCount: dataPoints.length,
-      best1RM: Math.max(...dataPoints.map(p => p.maxRM)),
+      best1rm: dataPoints.length ? Math.max(...dataPoints.map(p => p.maxRM)) : 0,
     };
     byExo[exo.id] = exoData;
     byGroup[exo.group].push(exoData);
@@ -4333,7 +4333,7 @@ Focus cette semaine : ${focus[0].text}. ${focus[0].sub}`;
 function renderCoach() {
   const el = document.getElementById('coach-content');
   if (!el) return;
-
+  try {
   // === Analyse complète ===
   const A = analyzeAllProgress();   // { byExo, byGroup, globalScore, groupVolume, alerts, focus, GROUP_ORDER }
   const score = A.globalScore;      // 0-100
@@ -4392,7 +4392,7 @@ function renderCoach() {
     ${A.focus.length ? `
     <div class="coach-focus-card">
       <div class="coach-focus-title">🎯 Focus de la semaine</div>
-      ${A.focus.map((f,i)=>`<div class="coach-focus-item"><span class="coach-focus-num">${i+1}</span><div><div class="coach-focus-name">${f.name}</div><div class="coach-focus-why">${f.reason}</div></div></div>`).join('')}
+      ${A.focus.map((f,i)=>`<div class="coach-focus-item"><span class="coach-focus-num">${i+1}</span><div><div class="coach-focus-name">${f.text||f.name||''}</div><div class="coach-focus-why">${f.sub||f.reason||''}</div></div></div>`).join('')}
     </div>` : ''}
 
     <!-- Onglets par session -->
@@ -4459,6 +4459,14 @@ function renderCoach() {
 
   const inp = document.getElementById('coach-inp');
   if (inp) inp.addEventListener('keydown', e => { if (e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} });
+  } catch(err) {
+    console.error('[Coach] Erreur renderCoach:', err);
+    if (el) el.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text2)">
+      <div style="font-size:32px;margin-bottom:12px">🤖</div>
+      <div style="font-weight:700;margin-bottom:8px">Coach disponible après ta 1ère séance</div>
+      <div style="font-size:12px;color:var(--text3)">Complète une séance pour débloquer les analyses.</div>
+    </div>`;
+  }
 }
 
 function setCoachTab(gid) {
