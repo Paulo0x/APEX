@@ -650,6 +650,100 @@ canvas { width: 100% !important; }
 .exo-photo-svg svg { width: 100%; height: 100%; display: block; }
 .exo-photo-has-img { position: relative; }
 
+
+/* === APEX UPGRADES === */
+
+/* Timer global de séance */
+.sess-chrono {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(245,197,24,0.08); border: 1px solid rgba(245,197,24,0.18);
+  border-radius: 20px; padding: 4px 12px; font-size: 13px; font-weight: 800;
+  color: var(--gold); letter-spacing: 1px; cursor: pointer;
+}
+.sess-chrono svg { opacity: 0.7; }
+
+/* Modal de récupération */
+.recovery-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+  z-index: 500; display: flex; align-items: flex-end; justify-content: center;
+}
+.recovery-backdrop.hidden { display: none; }
+.recovery-sheet {
+  background: var(--bg2); border-radius: 20px 20px 0 0;
+  padding: 24px 20px 36px; width: 100%; max-width: 480px;
+  border-top: 1px solid var(--border);
+}
+.recovery-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 0 auto 20px; }
+.recovery-title { font-size: 18px; font-weight: 900; color: var(--text); margin-bottom: 6px; }
+.recovery-sub { font-size: 13px; color: var(--text2); margin-bottom: 22px; }
+.recovery-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
+.recovery-stars { display: flex; gap: 8px; margin-bottom: 18px; }
+.recovery-star {
+  font-size: 28px; cursor: pointer; transition: transform 0.1s;
+  filter: grayscale(1) opacity(0.4);
+}
+.recovery-star.active { filter: none; transform: scale(1.15); }
+.recovery-pain {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: var(--r); padding: 10px 12px;
+  color: var(--text); font-family: var(--font); font-size: 13px;
+  width: 100%; resize: none; height: 60px; margin-bottom: 18px;
+}
+.recovery-pain:focus { outline: none; border-color: var(--gold); }
+.recovery-btn-start {
+  width: 100%; padding: 15px; background: var(--red); border: none;
+  border-radius: var(--r); color: #fff; font-family: var(--font);
+  font-size: 16px; font-weight: 800; cursor: pointer; transition: opacity 0.15s;
+}
+.recovery-btn-start:active { opacity: 0.8; }
+.recovery-btn-skip { 
+  width: 100%; padding: 10px; background: transparent; border: none;
+  color: var(--text3); font-family: var(--font); font-size: 13px; cursor: pointer; margin-top: 8px;
+}
+
+/* Badge difficulty */
+.difficulty-badge {
+  display: inline-block; padding: 2px 7px; border-radius: 4px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase;
+}
+.diff-Débutant    { background: rgba(48,209,88,0.15);  color: #30d158; }
+.diff-Intermédiaire { background: rgba(255,159,10,0.15); color: #ff9f0a; }
+.diff-Avancé      { background: rgba(255,69,58,0.15);  color: #ff453a; }
+
+/* 1RM badge */
+.oneRM-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.2);
+  border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 700; color: var(--gold);
+}
+
+/* Section progression photos */
+.progress-photos-section { margin: 16px; }
+.progress-photos-title { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+.progress-photos-grid { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.progress-photo-card {
+  flex-shrink: 0; width: 90px; border-radius: 10px; overflow: hidden;
+  background: var(--bg2); border: 1px solid var(--border); position: relative;
+}
+.progress-photo-card img { width: 90px; height: 120px; object-fit: cover; display: block; }
+.progress-photo-date { font-size: 9px; color: var(--text3); text-align: center; padding: 4px 2px; }
+.progress-photo-add {
+  flex-shrink: 0; width: 90px; height: 148px; border-radius: 10px;
+  background: var(--bg2); border: 2px dashed var(--border2);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  cursor: pointer; gap: 6px; color: var(--text3); font-size: 11px; font-weight: 600;
+  transition: border-color 0.15s;
+}
+.progress-photo-add:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Volume chart session */
+.vol-chart-wrap { padding: 8px 0; }
+.vol-bars { display: flex; gap: 6px; align-items: flex-end; height: 80px; margin-bottom: 4px; }
+.vol-bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.vol-bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 3px; transition: height 0.4s; }
+.vol-bar-label { font-size: 9px; color: var(--text3); font-weight: 700; letter-spacing: 0.5px; }
+.vol-bar-val { font-size: 9px; color: var(--text2); }
+
 </style>
 </head>
 <body>
@@ -752,6 +846,11 @@ canvas { width: 100% !important; }
       </div>
       <div class="sess-prog-bar"><div class="sess-prog-fill" id="sess-prog-fill"></div></div>
       <div class="sess-tools">
+      <!-- Chronomètre global de séance -->
+      <div class="sess-chrono" id="sess-chrono" onclick="toggleChronoDisplay()" title="Durée de la séance">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span id="sess-chrono-display">00:00</span>
+      </div>
         <button class="tool-pill pill-fire" onclick="showWarmup()" id="btn-warmup">🔥 Échauffement <span class="pill-check" id="warmup-check"></span></button>
         <button class="tool-pill pill-copy" onclick="copyLastSession()">📋 Copier préc.</button>
         <button class="tool-pill pill-zen" onclick="showCooldown()" id="btn-cooldown">🧘 Cool-down <span class="pill-check" id="cooldown-check"></span></button>
@@ -806,6 +905,42 @@ canvas { width: 100% !important; }
 </div>
 
 <!-- TIMER -->
+
+<!-- ============================================================ -->
+<!-- MODAL RÉCUPÉRATION PRÉ-SÉANCE -->
+<!-- ============================================================ -->
+<div id="recovery-modal" class="recovery-backdrop hidden">
+  <div class="recovery-sheet">
+    <div class="recovery-handle"></div>
+    <div class="recovery-title">Comment tu te sens ? 💪</div>
+    <div class="recovery-sub">Un check rapide avant ta séance — aide le coach à t'analyser</div>
+    
+    <div class="recovery-label">Qualité du sommeil</div>
+    <div class="recovery-stars" id="recovery-sleep">
+      <span class="recovery-star" data-val="1" onclick="setRecovery('sleep',1)">😴</span>
+      <span class="recovery-star" data-val="2" onclick="setRecovery('sleep',2)">😐</span>
+      <span class="recovery-star" data-val="3" onclick="setRecovery('sleep',3)">🙂</span>
+      <span class="recovery-star" data-val="4" onclick="setRecovery('sleep',4)">😊</span>
+      <span class="recovery-star" data-val="5" onclick="setRecovery('sleep',5)">🤩</span>
+    </div>
+
+    <div class="recovery-label">Niveau de fatigue (1=épuisé · 5=au top)</div>
+    <div class="recovery-stars" id="recovery-energy">
+      <span class="recovery-star" data-val="1" onclick="setRecovery('energy',1)">🪫</span>
+      <span class="recovery-star" data-val="2" onclick="setRecovery('energy',2)">😓</span>
+      <span class="recovery-star" data-val="3" onclick="setRecovery('energy',3)">😌</span>
+      <span class="recovery-star" data-val="4" onclick="setRecovery('energy',4)">⚡</span>
+      <span class="recovery-star" data-val="5" onclick="setRecovery('energy',5)">🔥</span>
+    </div>
+
+    <div class="recovery-label">Douleurs / blessures (optionnel)</div>
+    <textarea class="recovery-pain" id="recovery-pain" placeholder="Ex: légère douleur épaule droite..."></textarea>
+
+    <button class="recovery-btn-start" onclick="confirmRecovery()">🚀 Lancer la séance</button>
+    <button class="recovery-btn-skip" onclick="skipRecovery()">Passer sans noter</button>
+  </div>
+</div>
+
 <div id="rest-timer" class="rest-timer hidden">
   <div class="timer-ring-wrap">
     <svg class="timer-svg" viewBox="0 0 120 120">
@@ -869,6 +1004,8 @@ const PROGRAM = {
           restSec: 150,
           rir: "1-2",
           tempo: "2-1-1-0",
+          difficulty: "Intermédiaire",
+          muscles: ["Pectoraux", "Deltoïdes ant.", "Triceps"],
           technique: "Haltères partent épaules serrées. Descendre contrôlé jusqu'à sentir l'étirement du pec, pause courte, remonter explosif en convergeant légèrement. Coudes à ~45° du corps."
         },
         {
@@ -880,6 +1017,8 @@ const PROGRAM = {
           restSec: 120,
           rir: "1-2",
           tempo: "2-1-1-0",
+          difficulty: "Intermédiaire",
+          muscles: ["Pectoraux bas", "Triceps"],
           technique: "Angle décliné pour cibler le BAS des pecs. Si Dips : buste fortement penché en avant, descendre lentement."
         },
         {
@@ -891,6 +1030,8 @@ const PROGRAM = {
           restSec: 90,
           rir: "0-1",
           tempo: "3-1-1-0",
+          difficulty: "Intermédiaire",
+          muscles: ["Pectoraux"],
           technique: "Debout entre 2 poulies basses. Amener les mains devant toi en les croisant légèrement. Pause 1 sec en contraction. Étirement max à l'écartement."
         },
         {
@@ -902,6 +1043,8 @@ const PROGRAM = {
           restSec: 120,
           rir: "1-2",
           tempo: "2-1-1-0",
+          difficulty: "Débutant",
+          muscles: ["Deltoïdes", "Triceps"],
           technique: "Dos plaqué au dossier. Poignées à hauteur des épaules. Pousser verticalement sans verrouiller les coudes. Descendre contrôlé."
         },
         {
@@ -913,6 +1056,8 @@ const PROGRAM = {
           restSec: 60,
           rir: "0-1",
           tempo: "2-0-1-1",
+          difficulty: "Débutant",
+          muscles: ["Deltoïdes lat."],
           technique: "Monter les bras sur les côtés jusqu'à l'horizontale SEULEMENT, coudes légèrement fléchis. Descente contrôlée. ⭐ L'exo clé pour la largeur d'épaules."
         },
         {
@@ -924,6 +1069,8 @@ const PROGRAM = {
           restSec: 60,
           rir: "0-1",
           tempo: "2-0-1-1",
+          difficulty: "Débutant",
+          muscles: ["Deltoïdes lat."],
           technique: "Debout face à la poulie basse, poignée dans la main opposée (bras qui passe devant le corps). Lever sur le côté jusqu'à l'horizontale."
         },
         {
@@ -935,6 +1082,8 @@ const PROGRAM = {
           restSec: 60,
           rir: "1",
           tempo: "2-0-1-1",
+          difficulty: "Débutant",
+          muscles: ["Triceps"],
           technique: "Coudes collés au corps et immobiles. Descendre en écartant la corde en bas pour contraction max. Remonter sans bouger les épaules."
         }
       ]
@@ -958,6 +1107,8 @@ const PROGRAM = {
           restSec: 120,
           rir: "1-2",
           tempo: "2-1-1-1",
+          difficulty: "Intermédiaire",
+          muscles: ["Grand dorsal", "Biceps", "Trapèzes"],
           technique: "Prise pronation légèrement plus large que les épaules. Tirer la barre jusqu'à la clavicule, coudes vers le bas. Poitrine ouverte, léger arc lombaire. Pause 1 sec en bas."
         },
         {
@@ -969,6 +1120,8 @@ const PROGRAM = {
           restSec: 120,
           rir: "1-2",
           tempo: "2-1-1-1",
+          difficulty: "Intermédiaire",
+          muscles: ["Grand dorsal", "Trapèzes", "Biceps"],
           technique: "Assis, dos droit. Tirer la poignée vers le bas du sternum, coudes serrés le long du corps. Pause 1 sec en contraction (serrer les omoplates)."
         },
         {
@@ -980,6 +1133,8 @@ const PROGRAM = {
           restSec: 90,
           rir: "1",
           tempo: "2-1-1-0",
+          difficulty: "Intermédiaire",
+          muscles: ["Grand dorsal"],
           technique: "Bras tendus légèrement fléchis, tirer la barre vers les cuisses en pivot à partir des épaules (sans plier les coudes). Isolation pure du grand dorsal."
         },
         {
@@ -991,6 +1146,8 @@ const PROGRAM = {
           restSec: 90,
           rir: "1",
           tempo: "2-1-1-1",
+          difficulty: "Intermédiaire",
+          muscles: ["Grand dorsal", "Trapèzes"],
           technique: "Appui une main + un genou sur un banc, dos parallèle au sol. Tirer l'haltère vers la hanche (pas vers la poitrine), coude serré."
         },
         {
@@ -1002,6 +1159,8 @@ const PROGRAM = {
           restSec: 60,
           rir: "0-1",
           tempo: "2-0-1-1",
+          difficulty: "Débutant",
+          muscles: ["Deltoïdes post.", "Trapèzes"],
           technique: "Entre 2 poulies croisées. Bras légèrement fléchis, tirer les bras en ARRIÈRE en écartant. Pause 1 sec en contraction max (serrer les omoplates)."
         },
         {
@@ -1013,6 +1172,8 @@ const PROGRAM = {
           restSec: 60,
           rir: "0-1",
           tempo: "2-1-1-1",
+          difficulty: "Débutant",
+          muscles: ["Biceps"],
           technique: "Poulie haute à hauteur visage, corde prise pronation. Tirer vers le visage en écartant les mains, coudes hauts. Pause 1 sec mains près des oreilles."
         },
         {
@@ -1024,6 +1185,8 @@ const PROGRAM = {
           restSec: 60,
           rir: "1",
           tempo: "3-0-1-0",
+          difficulty: "Débutant",
+          muscles: ["Biceps", "Brachio-radial"],
           technique: "Assis banc 45°, dos plaqué. Bras pendants (étirement max du biceps). Curler sans bouger les épaules en avant. Descente lente 3 sec."
         }
       ]
@@ -1047,6 +1210,8 @@ const PROGRAM = {
           restSec: 180,
           rir: "1-2",
           tempo: "3-1-1-0",
+          difficulty: "Avancé",
+          muscles: ["Quadriceps", "Fessiers", "Ischios"],
           technique: "Dos et bassin plaqués. Pieds largeur épaules. Descendre contrôlé (3 sec) jusqu'à ~90° au genou. Pousser sans verrouiller. Pieds bas = quadris, pieds hauts = fessiers."
         },
         {
@@ -1058,6 +1223,8 @@ const PROGRAM = {
           restSec: 150,
           rir: "1-2",
           tempo: "3-1-1-0",
+          difficulty: "Débutant",
+          muscles: ["Quadriceps", "Fessiers"],
           technique: "Dos et épaules plaqués contre la plaque. Descendre lentement jusqu'à 90°. Pousser sans verrouiller."
         },
         {
@@ -1069,6 +1236,8 @@ const PROGRAM = {
           restSec: 90,
           rir: "1-2",
           tempo: "3-0-1-0",
+          difficulty: "Intermédiaire",
+          muscles: ["Quadriceps", "Fessiers"],
           technique: "Pied arrière sur banc, pied avant ~60cm devant. Descendre verticalement en pliant le genou avant jusqu'à ~90°, buste droit. Genou avant dans l'axe du pied."
         },
         {
@@ -1080,6 +1249,8 @@ const PROGRAM = {
           restSec: 120,
           rir: "1-2",
           tempo: "3-1-1-0",
+          difficulty: "Débutant",
+          muscles: ["Ischios"],
           technique: "Haltères dans chaque main, jambes quasi-tendues. Descendre en poussant les hanches en arrière, dos droit. Haltères longent les cuisses. Étirement max des ischios."
         },
         {
@@ -1091,6 +1262,8 @@ const PROGRAM = {
           restSec: 90,
           rir: "0-1",
           tempo: "3-0-1-1",
+          difficulty: "Intermédiaire",
+          muscles: ["Ischios", "Fessiers", "Dorsaux"],
           technique: "Allongé face au banc, chevilles sous le rouleau. Plier les genoux pour ramener les talons vers les fessiers. Pause 1 sec en contraction max."
         },
         {
@@ -1102,6 +1275,8 @@ const PROGRAM = {
           restSec: 120,
           rir: "1-2",
           tempo: "2-1-1-1",
+          difficulty: "Intermédiaire",
+          muscles: ["Fessiers"],
           technique: "Machine dédiée OU haut du dos sur banc + haltère vertical sur hanches (avec serviette). Pousser avec les talons jusqu'à alignement hanches-épaules."
         },
         {
@@ -1113,6 +1288,8 @@ const PROGRAM = {
           restSec: 90,
           rir: "0-1",
           tempo: "2-0-1-1",
+          difficulty: "Débutant",
+          muscles: ["Quadriceps"],
           technique: "Assis, dos plaqué, chevilles sous le rouleau. Extension complète, pause 1 sec en contraction max. Descente contrôlée."
         },
         {
@@ -1124,6 +1301,8 @@ const PROGRAM = {
           restSec: 90,
           rir: "1",
           tempo: "2-2-1-1",
+          difficulty: "Débutant",
+          muscles: ["Mollets"],
           technique: "Pointes sur la marche, talons dans le vide. Descendre TRÈS bas (2 sec étirement) puis monter le plus haut possible. Amplitude complète = clé."
         }
       ]
@@ -1147,6 +1326,8 @@ const PROGRAM = {
           restSec: 150,
           rir: "1-2",
           tempo: "2-1-1-0",
+          difficulty: "Avancé",
+          muscles: ["Pectoraux", "Deltoïdes", "Triceps"],
           technique: "Banc incliné 30° max. Haltères partent épaules serrées, descente jusqu'à étirement du pec sup. Montée en convergeant légèrement."
         },
         {
@@ -1158,6 +1339,8 @@ const PROGRAM = {
           restSec: 150,
           rir: "1-2",
           tempo: "2-0-1-0",
+          difficulty: "Intermédiaire",
+          muscles: ["Grand dorsal", "Biceps"],
           technique: "Prise pronation large. Tirer jusqu'à ce que le menton dépasse la barre. Si manque de force : tirage vertical poulie 4×8-10."
         },
         {
@@ -1169,6 +1352,8 @@ const PROGRAM = {
           restSec: 120,
           rir: "1-2",
           tempo: "2-1-1-0",
+          difficulty: "Intermédiaire",
+          muscles: ["Deltoïdes", "Triceps"],
           technique: "Assis banc 90° avec dossier. Haltères à hauteur des épaules. Pousser vers le plafond sans verrouiller. Descendre contrôlé."
         },
         {
@@ -1180,6 +1365,8 @@ const PROGRAM = {
           restSec: 90,
           rir: "1-2",
           tempo: "2-1-1-1",
+          difficulty: "Intermédiaire",
+          muscles: ["Grand dorsal", "Trapèzes"],
           technique: "Appui sur banc, dos parallèle au sol. Tirer vers la hanche, coude serré. Pause 1 sec en contraction."
         },
         {
@@ -1191,6 +1378,8 @@ const PROGRAM = {
           restSec: 120,
           rir: "1-2",
           tempo: "2-0-1-0",
+          difficulty: "Avancé",
+          muscles: ["Triceps", "Pectoraux bas"],
           technique: "Buste légèrement penché en avant = plus de pecs. Descendre jusqu'à 90° au coude. Pousser fort en haut. Ajouter du lest dès que 10 reps propres."
         },
         {
@@ -1202,6 +1391,8 @@ const PROGRAM = {
           restSec: 90,
           rir: "1",
           tempo: "2-1-1-1",
+          difficulty: "Débutant",
+          muscles: ["Deltoïdes", "Trapèzes"],
           technique: "Debout, haltères lourds bras tendus. Soulever les épaules VERTICALEMENT, pause 1 sec en haut. Redescendre contrôlé. Ne pas rouler les épaules."
         }
       ]
@@ -1225,6 +1416,8 @@ const PROGRAM = {
           restSec: 90,
           rir: "0",
           tempo: "2-0-1-1",
+          difficulty: "Débutant",
+          muscles: ["Deltoïdes lat."],
           technique: "10 reps strictes, puis SANS repos prendre des haltères ~40% plus légers et continuer jusqu'à l'échec (4-6 reps). 1 drop set = 1 série."
         },
         {
@@ -1236,6 +1429,8 @@ const PROGRAM = {
           restSec: 60,
           rir: "1",
           tempo: "2-0-1-1",
+          difficulty: "Débutant",
+          muscles: ["Deltoïdes ant."],
           technique: "Debout, haltère ou disque devant les cuisses. Monter bras tendus devant jusqu'à hauteur des yeux. Descendre contrôlé."
         },
         {
@@ -1247,6 +1442,8 @@ const PROGRAM = {
           restSec: 60,
           rir: "0-1",
           tempo: "2-1-1-1",
+          difficulty: "Débutant",
+          muscles: ["Deltoïdes post."],
           technique: "Assis en bout de banc, buste sur les cuisses. Haltères légers bras tendus. Lever sur les côtés en serrant les omoplates. Pause 1 sec en haut."
         },
         {
@@ -1258,6 +1455,8 @@ const PROGRAM = {
           restSec: 90,
           rir: "1",
           tempo: "2-0-1-0",
+          difficulty: "Débutant",
+          muscles: ["Biceps"],
           technique: "Barre EZ en prise large. Coudes collés au corps. Curler jusqu'à hauteur des pecs. Pause 1 sec en contraction. Descente contrôlée."
         },
         {
@@ -1269,6 +1468,8 @@ const PROGRAM = {
           restSec: 60,
           rir: "1",
           tempo: "2-0-1-0",
+          difficulty: "Débutant",
+          muscles: ["Biceps"],
           technique: "Prise neutre (paumes face à face). Curler sans tourner le poignet. Alterner ou ensemble. Cible le BRACHIAL = épaisseur du bras."
         },
         {
@@ -1280,6 +1481,8 @@ const PROGRAM = {
           restSec: 60,
           rir: "1",
           tempo: "3-0-1-0",
+          difficulty: "Débutant",
+          muscles: ["Triceps"],
           technique: "Un haltère tenu à 2 mains au-dessus de la tête (prise diamant). Descendre derrière la nuque, remonter en contractant les triceps."
         },
         {
@@ -1291,6 +1494,8 @@ const PROGRAM = {
           restSec: 60,
           rir: "0-1",
           tempo: "2-0-1-1",
+          difficulty: "Débutant",
+          muscles: ["Triceps"],
           technique: "Buste penché 45°, bras collé au corps coude à 90°. Tendre le bras en arrière jusqu'à extension. Pause 1 sec en contraction max."
         },
         {
@@ -1302,6 +1507,8 @@ const PROGRAM = {
           restSec: 60,
           rir: "0",
           tempo: "3-0-1-0",
+          difficulty: "Intermédiaire",
+          muscles: ["Biceps"],
           technique: "Pupitre Scott ou dossier de banc incliné. Coudes bloqués, curler avec amplitude complète. Descente très lente (3 sec). Finisher à l'échec."
         }
       ]
@@ -1537,35 +1744,35 @@ const EXERCISE_PHOTOS = {
   "push-6": "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800&h=500&fit=crop&q=80",
   "push-7": "https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d?w=800&h=500&fit=crop&q=80",
   "pull-1": "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=800&h=500&fit=crop&q=80",
-  "pull-2": "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=800&h=500&fit=crop&q=80",
-  "pull-3": "https://images.unsplash.com/photo-1571731956672-f2b94d7dd0cb?w=800&h=500&fit=crop&q=80",
-  "pull-4": "https://images.unsplash.com/photo-1534367610401-9f5ed68180aa?w=800&h=500&fit=crop&q=80",
-  "pull-5": "https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&h=500&fit=crop&q=80",
-  "pull-6": "https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&h=500&fit=crop&q=80",
-  "pull-7": "https://images.unsplash.com/photo-1581009137042-c552e485697a?w=800&h=500&fit=crop&q=80",
+  "pull-2": "https://images.unsplash.com/photo-1597347316205-36f6c451902a?w=800&h=500&fit=crop&q=80",
+  "pull-3": "https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?w=800&h=500&fit=crop&q=80",
+  "pull-4": "https://images.unsplash.com/photo-1581009137042-c552e485697a?w=800&h=500&fit=crop&q=80",
+  "pull-5": "https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=800&h=500&fit=crop&q=80",
+  "pull-6": "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&h=500&fit=crop&q=80",
+  "pull-7": "https://images.unsplash.com/photo-1590487988256-9ed24133863e?w=800&h=500&fit=crop&q=80",
   "legs-1": "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800&h=500&fit=crop&q=80",
-  "legs-2": "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800&h=500&fit=crop&q=80",
-  "legs-3": "https://images.unsplash.com/photo-1434682881908-b43d0467b798?w=800&h=500&fit=crop&q=80",
-  "legs-4": "https://images.unsplash.com/photo-1516481265257-97e5f4bc50d5?w=800&h=500&fit=crop&q=80",
-  "legs-5": "https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?w=800&h=500&fit=crop&q=80",
-  "legs-6": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=500&fit=crop&q=80",
-  "legs-7": "https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?w=800&h=500&fit=crop&q=80",
-  "legs-8": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=500&fit=crop&q=80",
+  "legs-2": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=500&fit=crop&q=80",
+  "legs-3": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=500&fit=crop&q=80",
+  "legs-4": "https://images.unsplash.com/photo-1530822847156-5df684ec5ee1?w=800&h=500&fit=crop&q=80",
+  "legs-5": "https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&h=500&fit=crop&q=80",
+  "legs-6": "https://images.unsplash.com/photo-1544033527-b192daee1f5b?w=800&h=500&fit=crop&q=80",
+  "legs-7": "https://images.unsplash.com/photo-1520785643438-5bf77931f493?w=800&h=500&fit=crop&q=80",
+  "legs-8": "https://images.unsplash.com/photo-1598575285675-0ea87add27b3?w=800&h=500&fit=crop&q=80",
   "upper-1": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=500&fit=crop&q=80",
   "upper-2": "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=800&h=500&fit=crop&q=80",
   "upper-3": "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=800&h=500&fit=crop&q=80",
-  "upper-4": "https://images.unsplash.com/photo-1534367610401-9f5ed68180aa?w=800&h=500&fit=crop&q=80",
-  "upper-5": "https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d?w=800&h=500&fit=crop&q=80",
-  "upper-6": "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&h=500&fit=crop&q=80",
+  "upper-4": "https://images.unsplash.com/photo-1581009137042-c552e485697a?w=800&h=500&fit=crop&q=80",
+  "upper-5": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=500&fit=crop&q=80",
+  "upper-6": "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800&h=500&fit=crop&q=80",
   "arms-1": "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800&h=500&fit=crop&q=80",
-  "arms-2": "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800&h=500&fit=crop&q=80",
-  "arms-3": "https://images.unsplash.com/photo-1576678927484-cc907957088c?w=800&h=500&fit=crop&q=80",
-  "arms-4": "https://images.unsplash.com/photo-1581009137042-c552e485697a?w=800&h=500&fit=crop&q=80",
-  "arms-5": "https://images.unsplash.com/photo-1581009137042-c552e485697a?w=800&h=500&fit=crop&q=80",
+  "arms-2": "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=800&h=500&fit=crop&q=80",
+  "arms-3": "https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=800&h=500&fit=crop&q=80",
+  "arms-4": "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&h=500&fit=crop&q=80",
+  "arms-5": "https://images.unsplash.com/photo-1590487988256-9ed24133863e?w=800&h=500&fit=crop&q=80",
   "arms-6": "https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d?w=800&h=500&fit=crop&q=80",
   "arms-7": "https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d?w=800&h=500&fit=crop&q=80",
-  "arms-8": "https://images.unsplash.com/photo-1581009137042-c552e485697a?w=800&h=500&fit=crop&q=80",
-};
+  "arms-8": "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&h=500&fit=crop&q=80"
+};;
 
 // Photos hero par séance
 const SESSION_PHOTOS = {
@@ -1946,63 +2153,63 @@ const EXERCISE_SVG = {
 
 "push-7":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('push')}${mkFloor('push')}<line x1="340" y1="0" x2="340" y2="180" stroke="#1e2848" stroke-width="5"/><circle cx="340" cy="25" r="12" fill="#2a3870"/><line x1="340" y1="37" x2="264" y2="80" stroke="#4466aa" stroke-width="2.5"/><rect x="254" y="75" width="18" height="10" rx="4" fill="#4455aa"/>${sil(170,8,"#4050a0")}<ellipse cx="204" cy="72" rx="13" ry="11" fill="#cc3333" opacity=".85"/><line x1="188" y1="70" x2="256" y2="78" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="260" cy="80" rx="9" ry="7" fill="#c8845a"/><line x1="152" y1="70" x2="124" y2="62" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="118" cy="60" rx="9" ry="7" fill="#c8845a"/>${mkLegend("Triceps")}${mkOv('push')}</svg>`,
 
-"pull-1":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('pull')}${mkFloor('pull')}${MTIRAGE}${SIEGE}<rect x="174" y="78" width="52" height="54" rx="10" fill="#3a5098"/><path d="M174 82 Q158 97 165 127 L185 120 Z" fill="#cc3333" opacity=".82"/><path d="M226 82 Q242 97 235 127 L215 120 Z" fill="#cc3333" opacity=".82"/><ellipse cx="200" cy="74" rx="22" ry="8" fill="#4a60b0" opacity=".6"/><ellipse cx="200" cy="63" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="46" rx="17" ry="9" fill="#1a0e08"/><rect x="193" y="80" width="14" height="8" rx="4" fill="#c8845a"/><line x1="176" y1="84" x2="132" y2="57" stroke="#cc3333" stroke-width="14" stroke-linecap="round" opacity=".7"/><line x1="176" y1="84" x2="132" y2="57" stroke="#3a5098" stroke-width="9" stroke-linecap="round"/><line x1="132" y1="57" x2="116" y2="57" stroke="#c8845a" stroke-width="10" stroke-linecap="round"/><line x1="224" y1="84" x2="268" y2="57" stroke="#cc3333" stroke-width="14" stroke-linecap="round" opacity=".7"/><line x1="224" y1="84" x2="268" y2="57" stroke="#3a5098" stroke-width="9" stroke-linecap="round"/><line x1="268" y1="57" x2="284" y2="57" stroke="#c8845a" stroke-width="10" stroke-linecap="round"/><line x1="200" y1="58" x2="200" y2="78" stroke="rgba(245,197,24,0.3)" stroke-width="2" stroke-dasharray="4,3"/><polygon points="200,82 194,70 206,70" fill="rgba(245,197,24,0.3)"/>${mkLegend("Grand dorsal")}${mkOv('pull')}</svg>`,
+"pull-1":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#3b82f6" opacity="0.7"/>   <rect x="192" y="5" width="16" height="45" rx="6" fill="#2a2a2a"/>   <circle cx="200" cy="20" r="12" fill="#444"/>   <circle cx="200" cy="35" r="12" fill="#444"/>  <!-- barre tirage -->  <rect x="120" y="48" width="160" height="8" rx="3" fill="#555"/>  <rect x="118" y="38" width="14" height="20" rx="4" fill="#444"/>  <rect x="268" y="38" width="14" height="20" rx="4" fill="#444"/>  <!-- câble -->  <line x1="200" y1="56" x2="200" y2="38" stroke="#666" stroke-width="3"/>  <!-- figure assise -->  <ellipse cx="200" cy="155" rx="20" ry="8" fill="#1a1a1a"/><!-- siège -->  <rect x="190" y="135" width="20" height="25" rx="6" fill="#ccc" opacity="0.8"/><!-- bassin+jambes -->  <rect x="184" y="155" width="32" height="10" rx="4" fill="#bbb" opacity="0.8"/>  <rect x="186" y="110" width="28" height="28" rx="7" fill="#e0e0e0" opacity="0.9"/><!-- torse -->  <circle cx="200" cy="97" r="13" fill="#e0e0e0" opacity="0.9"/><!-- tête -->  <!-- bras tendus vers la barre -->  <line x1="192" y1="112" x2="135" y2="55" stroke="#e0e0e0" stroke-width="10" stroke-linecap="round"/>  <line x1="208" y1="112" x2="265" y2="55" stroke="#e0e0e0" stroke-width="10" stroke-linecap="round"/>  <!-- muscles dos en rouge -->  <ellipse cx="195" cy="118" rx="22" ry="14" fill="#ef4444" opacity="0.5"/>  <ellipse cx="205" cy="118" rx="22" ry="14" fill="#ef4444" opacity="0.5"/>  <!-- flèche mouvement vers le bas -->  <line x1="200" y1="55" x2="200" y2="110" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="6,4"/>  <polygon points="200,115 194,100 206,100" fill="#3b82f6"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#3b82f6" text-anchor="middle" font-weight="600">Grand dorsal · Biceps</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#3b82f6" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#3b82f6" letter-spacing="1">PULL</text> </svg>`,
 
-"pull-2":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('pull')}${mkFloor('pull')}<rect x="100" y="10" width="200" height="9" rx="4" fill="#1a3060"/><rect x="155" y="0" width="90" height="14" rx="5" fill="#1e3878"/><rect x="195" y="14" width="10" height="30" rx="3" fill="#1a2850"/><rect x="96" y="14" width="18" height="22" rx="5" fill="#2e2888"/><rect x="286" y="14" width="18" height="22" rx="5" fill="#2e2888"/><ellipse cx="200" cy="75" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="58" rx="17" ry="9" fill="#1a0e08"/><rect x="193" y="92" width="14" height="10" rx="4" fill="#c8845a"/><rect x="180" y="100" width="40" height="54" rx="10" fill="#3a5098"/><path d="M180 104 Q162 120 168 148 L188 140 Z" fill="#cc3333" opacity=".8"/><path d="M220 104 Q238 120 232 148 L212 140 Z" fill="#cc3333" opacity=".8"/><line x1="182" y1="74" x2="104" y2="20" stroke="#cc3333" stroke-width="14" stroke-linecap="round" opacity=".7"/><line x1="182" y1="74" x2="104" y2="20" stroke="#3a5098" stroke-width="9" stroke-linecap="round"/><line x1="218" y1="74" x2="296" y2="20" stroke="#cc3333" stroke-width="14" stroke-linecap="round" opacity=".7"/><line x1="218" y1="74" x2="296" y2="20" stroke="#3a5098" stroke-width="9" stroke-linecap="round"/><rect x="180" y="152" width="14" height="28" rx="6" fill="#2a3e80"/><rect x="206" y="152" width="14" height="28" rx="6" fill="#2a3e80"/>${mkLegend("Grand dorsal")}${mkOv('pull')}</svg>`,
+"pull-2":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#3b82f6" opacity="0.7"/>   <rect x="352" y="5" width="16" height="180" rx="6" fill="#2a2a2a"/>   <circle cx="360" cy="20" r="12" fill="#444"/>   <circle cx="360" cy="170" r="12" fill="#444"/>  <!-- câble horizontal -->  <line x1="220" y1="120" x2="352" y2="120" stroke="#666" stroke-width="3"/>  <!-- poignée -->  <rect x="210" y="112" width="16" height="16" rx="4" fill="#555"/>  <!-- figure assise de profil -->  <rect x="50" y="155" width="120" height="12" rx="4" fill="#2a2a2a"/><!-- banc -->  <rect x="55" y="125" width="110" height="32" rx="6" fill="#222"/><!-- jambes -->  <rect x="160" y="95" width="28" height="36" rx="7" fill="#e0e0e0" opacity="0.9"/><!-- torse -->  <circle cx="174" cy="83" r="13" fill="#e0e0e0" opacity="0.9"/><!-- tête -->  <!-- bras tendu vers câble -->  <line x1="163" y1="105" x2="226" y2="118" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <!-- muscles dos -->  <ellipse cx="162" cy="105" rx="18" ry="18" fill="#ef4444" opacity="0.55"/>  <!-- flèche -->  <line x1="310" y1="120" x2="230" y2="120" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="6,4"/>  <polygon points="225,120 238,113 238,127" fill="#3b82f6"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#3b82f6" text-anchor="middle" font-weight="600">Grand dorsal · Trapèzes</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#3b82f6" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#3b82f6" letter-spacing="1">PULL</text> </svg>`,
 
-"pull-3":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('pull')}${mkFloor('pull')}${MTIRAGE}${SIEGE}<rect x="174" y="78" width="52" height="54" rx="10" fill="#3a5098"/><path d="M174 82 Q158 97 165 127 L185 120 Z" fill="#cc3333" opacity=".8"/><path d="M226 82 Q242 97 235 127 L215 120 Z" fill="#cc3333" opacity=".8"/><ellipse cx="200" cy="63" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="46" rx="17" ry="9" fill="#1a0e08"/><rect x="193" y="80" width="14" height="8" rx="4" fill="#c8845a"/><line x1="176" y1="84" x2="132" y2="57" stroke="#3a5098" stroke-width="13" stroke-linecap="round"/><line x1="132" y1="57" x2="116" y2="57" stroke="#c8845a" stroke-width="10" stroke-linecap="round"/><line x1="224" y1="84" x2="268" y2="57" stroke="#3a5098" stroke-width="13" stroke-linecap="round"/><line x1="268" y1="57" x2="284" y2="57" stroke="#c8845a" stroke-width="10" stroke-linecap="round"/>${mkLegend("Grand dorsal")}${mkOv('pull')}</svg>`,
+"pull-3":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#3b82f6" opacity="0.7"/>   <rect x="192" y="5" width="16" height="55" rx="6" fill="#2a2a2a"/>   <circle cx="200" cy="20" r="12" fill="#444"/>   <circle cx="200" cy="45" r="12" fill="#444"/>  <!-- barre -->  <rect x="160" y="58" width="80" height="8" rx="3" fill="#555"/>  <!-- figure debout, bras en avant vers le bas -->  <rect x="186" y="155" width="28" height="35" rx="6" fill="#ccc" opacity="0.8"/><!-- jambes -->  <rect x="183" y="118" width="34" height="40" rx="8" fill="#e0e0e0" opacity="0.9"/><!-- torse -->  <circle cx="200" cy="105" r="13" fill="#e0e0e0" opacity="0.9"/>  <!-- bras légèrement fléchis, tenant la barre en avant -->  <line x1="188" y1="125" x2="162" y2="66" stroke="#e0e0e0" stroke-width="10" stroke-linecap="round"/>  <line x1="212" y1="125" x2="238" y2="66" stroke="#e0e0e0" stroke-width="10" stroke-linecap="round"/>  <ellipse cx="200" cy="125" rx="25" ry="16" fill="#ef4444" opacity="0.55"/>  <!-- flèche arc de mouvement -->  <path d="M 200 66 Q 250 110 200 155" stroke="#3b82f6" stroke-width="2.5" fill="none" stroke-dasharray="6,4"/>  <polygon points="200,150 193,137 207,137" fill="#3b82f6"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#3b82f6" text-anchor="middle" font-weight="600">Grand dorsal (isolation)</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#3b82f6" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#3b82f6" letter-spacing="1">PULL</text> </svg>`,
 
-"pull-4":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('pull')}${mkFloor('pull')}<rect x="80" y="90" width="160" height="14" rx="5" fill="#1e3060"/><rect x="86" y="86" width="148" height="8" rx="4" fill="#2a4278"/><rect x="88" y="104" width="16" height="38" rx="4" fill="#162855"/><rect x="222" y="104" width="16" height="38" rx="4" fill="#162855"/><ellipse cx="186" cy="60" rx="20" ry="20" fill="#c8845a"/><ellipse cx="186" cy="43" rx="17" ry="9" fill="#1a0e08"/><rect x="179" y="77" width="14" height="9" rx="4" fill="#c8845a"/><rect x="165" y="80" width="38" height="16" rx="6" fill="#4050a0" transform="rotate(-30 184 88)"/><rect x="155" y="90" width="38" height="44" rx="10" fill="#4050a0" transform="rotate(-30 174 112)"/><path d="M162 88 Q145 102 150 128 L170 120 Z" fill="#cc3333" opacity=".8" transform="rotate(-30 160 108)"/><line x1="175" y1="84" x2="178" y2="126" stroke="#4050a0" stroke-width="13" stroke-linecap="round" transform="rotate(-30 176 105)"/><rect x="160" y="118" width="28" height="11" rx="5.5" fill="#4a5580" transform="rotate(-30 174 123)"/>${hal(156,0,112)}<text x="165" y="120" fill="#6677aa" font-size="0">.</text>${mkLegend("Grand dorsal")}${mkOv('pull')}</svg>`,
+"pull-4":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#3b82f6" opacity="0.7"/>   <!-- banc -->  <rect x="80" y="140" width="160" height="16" rx="5" fill="#2a2a2a"/>  <rect x="88" y="156" width="14" height="30" rx="4" fill="#222"/>  <rect x="222" y="156" width="14" height="30" rx="4" fill="#222"/>  <!-- figure penchée, genou sur banc -->  <rect x="110" y="124" width="20" height="18" rx="5" fill="#ddd" opacity="0.9"/><!-- genou/jambe -->  <rect x="150" y="95" width="60" height="50" rx="8" fill="#e0e0e0" opacity="0.9"/><!-- torse incliné -->  <circle cx="220" cy="88" r="13" fill="#e0e0e0" opacity="0.9"/><!-- tête -->  <rect x="125" y="108" width="18" height="16" rx="4" fill="#ddd" opacity="0.9"/><!-- bras appui -->  <!-- bras droit tenant haltère vers le bas -->  <line x1="210" y1="108" x2="210" y2="160" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <g transform="rotate(0,210,163)">   <rect x="185" y="159" width="50" height="8" rx="3" fill="#555"/>   <rect x="178" y="154" width="10" height="18" rx="4" fill="#444"/>   <rect x="232" y="154" width="10" height="18" rx="4" fill="#444"/>   </g>  <ellipse cx="180" cy="105" rx="30" ry="18" fill="#ef4444" opacity="0.5"/>  <!-- flèche montée -->  <line x1="210" y1="158" x2="210" y2="115" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="210,110 203,125 217,125" fill="#3b82f6"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#3b82f6" text-anchor="middle" font-weight="600">Grand dorsal · Trapèzes</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#3b82f6" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#3b82f6" letter-spacing="1">PULL</text> </svg>`,
 
-"pull-5":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('pull')}${mkFloor('pull')}<line x1="320" y1="0" x2="320" y2="180" stroke="#1a2448" stroke-width="5"/><circle cx="320" cy="70" r="10" fill="#2a3870"/><line x1="320" y1="70" x2="258" y2="85" stroke="#4466aa" stroke-width="2.5"/>${sil(180,8,"#4050a0")}<path d="M198 60 Q182 74 188 100 L206 93 Z" fill="#cc3333" opacity=".8"/><line x1="198" y1="62" x2="250" y2="82" stroke="#4050a0" stroke-width="13" stroke-linecap="round"/><ellipse cx="254" cy="84" rx="9" ry="7" fill="#c8845a"/><line x1="162" y1="62" x2="124" y2="52" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="118" cy="50" rx="9" ry="7" fill="#c8845a"/>${mkLegend("Grand dorsal")}${mkOv('pull')}</svg>`,
+"pull-5":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#3b82f6" opacity="0.7"/>   <rect x="352" y="5" width="16" height="95" rx="6" fill="#2a2a2a"/>   <circle cx="360" cy="20" r="12" fill="#444"/>   <circle cx="360" cy="85" r="12" fill="#444"/>  <!-- corde -->  <line x1="230" y1="90" x2="352" y2="90" stroke="#666" stroke-width="3"/>  <line x1="222" y1="82" x2="232" y2="90" stroke="#666" stroke-width="3"/>  <line x1="222" y1="98" x2="232" y2="90" stroke="#666" stroke-width="3"/>  <!-- figure debout de profil -->  <rect x="155" y="148" width="26" height="42" rx="6" fill="#ccc" opacity="0.8"/>  <rect x="152" y="108" width="32" height="44" rx="8" fill="#e0e0e0" opacity="0.9"/>  <circle cx="168" cy="95" r="13" fill="#e0e0e0" opacity="0.9"/>  <!-- bras tendus, tirent la corde vers le visage -->  <line x1="175" y1="115" x2="228" y2="90" stroke="#e0e0e0" stroke-width="10" stroke-linecap="round"/>  <!-- muscles delto postérieur -->  <ellipse cx="168" cy="115" rx="20" ry="14" fill="#ef4444" opacity="0.6"/>  <ellipse cx="168" cy="108" rx="16" ry="10" fill="#ef4444" opacity="0.45"/>  <!-- flèche -->  <line x1="320" y1="90" x2="240" y2="90" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="6,4"/>  <polygon points="234,90 247,83 247,97" fill="#3b82f6"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#3b82f6" text-anchor="middle" font-weight="600">Deltoïdes post. · Trapèzes</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#3b82f6" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#3b82f6" letter-spacing="1">PULL</text> </svg>`,
 
-"pull-6":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('pull')}${mkFloor('pull')}<line x1="320" y1="0" x2="320" y2="180" stroke="#1a2448" stroke-width="5"/><circle cx="320" cy="55" r="10" fill="#2a3870"/><line x1="320" y1="55" x2="262" y2="72" stroke="#4466aa" stroke-width="2.5"/>${sil(180,8,"#4050a0")}<ellipse cx="164" cy="58" rx="16" ry="13" fill="#cc3333" opacity=".82"/><ellipse cx="196" cy="56" rx="16" ry="13" fill="#cc3333" opacity=".82"/><line x1="196" y1="60" x2="254" y2="70" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="258" cy="72" rx="9" ry="7" fill="#c8845a"/><line x1="164" y1="60" x2="126" y2="52" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="120" cy="50" rx="9" ry="7" fill="#c8845a"/>${mkLegend("Deltoïde post.")}${mkOv('pull')}</svg>`,
+"pull-6":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#3b82f6" opacity="0.7"/>   <!-- figure debout face -->  <rect x="181" y="148" width="38" height="42" rx="7" fill="#ccc" opacity="0.8"/>  <rect x="178" y="105" width="44" height="47" rx="9" fill="#e0e0e0" opacity="0.9"/>  <circle cx="200" cy="93" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- bras fléchis tenant barre EZ -->  <line x1="185" y1="120" x2="150" y2="155" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <line x1="215" y1="120" x2="250" y2="155" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <!-- barre EZ -->  <path d="M 140 158 Q 155 152 170 158 Q 185 164 200 158 Q 215 152 230 158 Q 245 164 260 158" stroke="#555" stroke-width="7" fill="none" stroke-linecap="round"/>  <rect x="118" y="150" width="22" height="18" rx="5" fill="#333"/>  <rect x="260" y="150" width="22" height="18" rx="5" fill="#333"/>  <!-- muscles biceps en surbrillance -->  <ellipse cx="160" cy="135" rx="14" ry="22" fill="#ef4444" opacity="0.65"/>  <ellipse cx="240" cy="135" rx="14" ry="22" fill="#ef4444" opacity="0.65"/>  <!-- flèches mouvement -->  <path d="M 150 158 Q 130 120 155 110" stroke="#3b82f6" stroke-width="2.5" fill="none" stroke-dasharray="5,4"/>  <polygon points="158,106 148,118 162,120" fill="#3b82f6"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#3b82f6" text-anchor="middle" font-weight="600">Biceps (chef long + court)</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#3b82f6" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#3b82f6" letter-spacing="1">PULL</text> </svg>`,
 
-"pull-7":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('pull')}${mkFloor('pull')}<line x1="340" y1="0" x2="340" y2="180" stroke="#1a2448" stroke-width="5"/><circle cx="340" cy="60" r="10" fill="#2a3870"/><line x1="340" y1="60" x2="272" y2="80" stroke="#4466aa" stroke-width="2.5"/><rect x="262" y="74" width="18" height="10" rx="4" fill="#4455aa"/>${sil(190,8,"#4050a0")}<ellipse cx="200" cy="72" rx="14" ry="12" fill="#cc3333" opacity=".85"/><line x1="206" y1="70" x2="264" y2="78" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="268" cy="80" rx="9" ry="7" fill="#c8845a"/><line x1="174" y1="70" x2="140" y2="62" stroke="#4050a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="134" cy="60" rx="9" ry="7" fill="#c8845a"/>${mkLegend("Biceps")}${mkOv('pull')}</svg>`,
+"pull-7":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#3b82f6" opacity="0.7"/>   <!-- figure debout -->  <rect x="181" y="148" width="38" height="42" rx="7" fill="#ccc" opacity="0.8"/>  <rect x="178" y="105" width="44" height="47" rx="9" fill="#e0e0e0" opacity="0.9"/>  <circle cx="200" cy="93" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- bras droit fléchi - prise neutre (paume face au corps) -->  <line x1="216" y1="118" x2="248" y2="160" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <!-- haltère vertical (prise marteau) -->  <rect x="242" y="158" width="14" height="30" rx="4" fill="#555"/>  <rect x="234" y="155" width="30" height="10" rx="4" fill="#444"/>  <rect x="234" y="178" width="30" height="10" rx="4" fill="#444"/>  <!-- bras gauche haltère bas -->  <line x1="184" y1="118" x2="155" y2="158" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <rect x="147" y="158" width="14" height="30" rx="4" fill="#555"/>  <rect x="139" y="155" width="30" height="10" rx="4" fill="#333"/>  <!-- muscles -->  <ellipse cx="248" cy="135" rx="13" ry="20" fill="#ef4444" opacity="0.65"/>  <ellipse cx="155" cy="145" rx="12" ry="14" fill="#ef4444" opacity="0.45"/>  <line x1="248" y1="162" x2="230" y2="125" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="227,120 222,133 236,132" fill="#3b82f6"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#3b82f6" text-anchor="middle" font-weight="600">Biceps · Brachio-radial</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#3b82f6" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#3b82f6" letter-spacing="1">PULL</text> </svg>`,
 
-"legs-1":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}<line x1="58" y1="170" x2="340" y2="10" stroke="#1a3050" stroke-width="16" stroke-linecap="round"/><line x1="58" y1="170" x2="18" y2="95" stroke="#142640" stroke-width="12" stroke-linecap="round"/><rect x="292" y="5" width="72" height="52" rx="6" fill="#1e3a50" transform="rotate(-45 328 31)"/><rect x="294" y="7" width="68" height="48" rx="5" fill="#162e42" transform="rotate(-45 328 31)"/><rect x="56" y="108" width="82" height="40" rx="8" fill="#1a3050" transform="rotate(-25 97 128)"/><rect x="36" y="80" width="18" height="52" rx="7" fill="#122440"/><rect x="104" y="88" width="42" height="60" rx="10" fill="#3a6050" transform="rotate(-40 125 118)"/><ellipse cx="70" cy="76" rx="20" ry="20" fill="#c8845a"/><ellipse cx="70" cy="59" rx="17" ry="9" fill="#1a0e08"/><rect x="63" y="93" width="14" height="8" rx="4" fill="#c8845a"/><line x1="114" y1="112" x2="218" y2="60" stroke="#cc3333" stroke-width="22" stroke-linecap="round" opacity=".7"/><line x1="114" y1="112" x2="218" y2="60" stroke="#3a6050" stroke-width="15" stroke-linecap="round"/><line x1="130" y1="122" x2="234" y2="70" stroke="#cc3333" stroke-width="22" stroke-linecap="round" opacity=".7"/><line x1="130" y1="122" x2="234" y2="70" stroke="#3a6050" stroke-width="15" stroke-linecap="round"/><line x1="218" y1="60" x2="262" y2="32" stroke="#2e5038" stroke-width="12" stroke-linecap="round"/><line x1="234" y1="70" x2="278" y2="42" stroke="#2e5038" stroke-width="12" stroke-linecap="round"/><ellipse cx="268" cy="28" rx="14" ry="7" fill="#c8845a" transform="rotate(-45 268 28)"/><ellipse cx="284" cy="38" rx="14" ry="7" fill="#c8845a" transform="rotate(-45 284 38)"/><line x1="90" y1="96" x2="54" y2="118" stroke="#3a6050" stroke-width="11" stroke-linecap="round"/><line x1="106" y1="106" x2="70" y2="128" stroke="#3a6050" stroke-width="11" stroke-linecap="round"/>${mkLegend("Quadriceps")}${mkOv('legs')}</svg>`,
+"legs-1":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#22c55e" opacity="0.7"/>   <!-- rack barbell sur les épaules -->  <rect x="125" y="84" width="150" height="8" rx="3" fill="#555"/>   <rect x="107" y="74" width="20" height="28" rx="5" fill="#333"/>   <rect x="95" y="76" width="14" height="24" rx="4" fill="#444"/>   <rect x="273" y="74" width="20" height="28" rx="5" fill="#333"/>   <rect x="291" y="76" width="14" height="24" rx="4" fill="#444"/>  <!-- figure en position squat -->  <rect x="174" y="150" width="26" height="40" rx="6" fill="#ccc" opacity="0.8"/><!-- jambe g -->  <rect x="200" y="150" width="26" height="40" rx="6" fill="#ccc" opacity="0.8"/><!-- jambe d -->  <rect x="175" y="105" width="50" height="50" rx="8" fill="#e0e0e0" opacity="0.9"/><!-- torse + bassin -->  <circle cx="200" cy="93" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- cuisses en surbrillance (quadri) -->  <ellipse cx="185" cy="145" rx="16" ry="22" fill="#ef4444" opacity="0.6"/>  <ellipse cx="215" cy="145" rx="16" ry="22" fill="#ef4444" opacity="0.6"/>  <ellipse cx="188" cy="165" rx="16" ry="14" fill="#ef4444" opacity="0.4"/><!-- fessiers -->  <ellipse cx="212" cy="165" rx="16" ry="14" fill="#ef4444" opacity="0.4"/>  <!-- flèches haut/bas -->  <line x1="320" y1="88" x2="320" y2="155" stroke="#22c55e" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="320,160 313,145 327,145" fill="#22c55e"/>  <line x1="320" y1="155" x2="320" y2="92" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3,5" opacity="0.5"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#22c55e" text-anchor="middle" font-weight="600">Quadriceps · Fessiers · Ischios</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#22c55e" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#22c55e" letter-spacing="1">LEGS</text> </svg>`,
 
-"legs-2":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}<rect x="145" y="60" width="110" height="95" rx="10" fill="#1a3828"/><rect x="138" y="55" width="124" height="15" rx="6" fill="#2a4838"/><rect x="135" y="50" width="14" height="100" rx="5" fill="#122e20"/><rect x="251" y="50" width="14" height="100" rx="5" fill="#122e20"/>${sil(200,0,"#3a7050")}<ellipse cx="185" cy="118" rx="14" ry="11" fill="#cc3333" opacity=".8"/><ellipse cx="215" cy="118" rx="14" ry="11" fill="#cc3333" opacity=".8"/><line x1="185" y1="120" x2="154" y2="148" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".7"/><line x1="185" y1="120" x2="154" y2="148" stroke="#3a7050" stroke-width="12" stroke-linecap="round"/><line x1="215" y1="120" x2="246" y2="148" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".7"/><line x1="215" y1="120" x2="246" y2="148" stroke="#3a7050" stroke-width="12" stroke-linecap="round"/>${mkLegend("Quadriceps")}${mkOv('legs')}</svg>`,
+"legs-2":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#22c55e" opacity="0.7"/>   <!-- machine leg press (châssis incliné) -->  <rect x="50" y="60" width="200" height="130" rx="10" fill="#181818"/>  <rect x="50" y="60" width="200" height="14" rx="5" fill="#222"/>  <rect x="50" y="174" width="200" height="14" rx="5" fill="#222"/>  <!-- plateau à pousser -->  <rect x="55" y="90" width="180" height="70" rx="6" fill="#2a2a2a"/>  <rect x="60" y="95" width="170" height="60" rx="4" fill="#333"/>  <!-- figure allongée de profil, jambes pliées -->  <circle cx="290" cy="100" r="16" fill="#e0e0e0" opacity="0.9"/><!-- tête -->  <rect x="268" y="115" width="36" height="35" rx="7" fill="#e0e0e0" opacity="0.9"/><!-- buste -->  <line x1="276" y1="148" x2="195" y2="100" stroke="#e0e0e0" stroke-width="14" stroke-linecap="round"/>  <line x1="286" y1="148" x2="205" y2="100" stroke="#e0e0e0" stroke-width="14" stroke-linecap="round"/>  <!-- muscles -->  <ellipse cx="240" cy="130" rx="20" ry="20" fill="#ef4444" opacity="0.55"/>  <line x1="120" y1="130" x2="180" y2="130" stroke="#22c55e" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="186,130 173,123 173,137" fill="#22c55e"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#22c55e" text-anchor="middle" font-weight="600">Quadriceps · Fessiers</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#22c55e" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#22c55e" letter-spacing="1">LEGS</text> </svg>`,
 
-"legs-3":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}<rect x="260" y="80" width="90" height="14" rx="5" fill="#1e3828"/><rect x="266" y="94" width="16" height="42" rx="4" fill="#162e20"/><rect x="330" y="94" width="16" height="42" rx="4" fill="#162e20"/>${sil(175,5,"#3a7050")}<ellipse cx="160" cy="62" rx="15" ry="13" fill="#cc3333" opacity=".8"/><ellipse cx="190" cy="62" rx="15" ry="13" fill="#cc3333" opacity=".8"/><line x1="178" y1="100" x2="155" y2="152" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".7"/><line x1="178" y1="100" x2="155" y2="152" stroke="#3a7050" stroke-width="13" stroke-linecap="round"/><line x1="155" y1="152" x2="142" y2="155" stroke="#2e5a40" stroke-width="12" stroke-linecap="round"/><line x1="190" y1="108" x2="268" y2="144" stroke="#3a7050" stroke-width="13" stroke-linecap="round"/><rect x="142" y="108" width="22" height="10" rx="5" fill="#4a5580"/><rect x="204" y="108" width="22" height="10" rx="5" fill="#4a5580"/>${mkLegend("Quadriceps")}${mkOv('legs')}</svg>`,
+"legs-3":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#22c55e" opacity="0.7"/>   <!-- banc derrière -->  <rect x="270" y="148" width="100" height="14" rx="4" fill="#2a2a2a"/>  <rect x="278" y="162" width="14" height="22" rx="3" fill="#1a1a1a"/>  <rect x="348" y="162" width="14" height="22" rx="3" fill="#1a1a1a"/>  <!-- figure en fente avant -->  <!-- jambe arrière levée sur banc -->  <line x1="195" y1="130" x2="280" y2="155" stroke="#ccc" stroke-width="14" stroke-linecap="round" opacity="0.8"/>  <!-- jambe avant pliée -->  <line x1="195" y1="130" x2="145" y2="180" stroke="#ccc" stroke-width="14" stroke-linecap="round" opacity="0.8"/>  <line x1="145" y1="180" x2="100" y2="190" stroke="#ccc" stroke-width="12" stroke-linecap="round" opacity="0.8"/>  <!-- torse droit -->  <rect x="180" y="88" width="36" height="46" rx="8" fill="#e0e0e0" opacity="0.9"/>  <circle cx="198" cy="76" r="13" fill="#e0e0e0" opacity="0.9"/>  <!-- haltères aux mains -->  <g transform="rotate(-30,165,130)">   <rect x="140" y="126" width="50" height="8" rx="3" fill="#555"/>   <rect x="133" y="121" width="10" height="18" rx="4" fill="#444"/>   <rect x="187" y="121" width="10" height="18" rx="4" fill="#444"/>   </g>  <g transform="rotate(30,228,130)">   <rect x="203" y="126" width="50" height="8" rx="3" fill="#555"/>   <rect x="196" y="121" width="10" height="18" rx="4" fill="#444"/>   <rect x="250" y="121" width="10" height="18" rx="4" fill="#444"/>   </g>  <!-- muscles -->  <ellipse cx="160" cy="152" rx="18" ry="24" fill="#ef4444" opacity="0.6"/>  <ellipse cx="193" cy="142" rx="18" ry="14" fill="#ef4444" opacity="0.45"/>  <line x1="198" y1="175" x2="198" y2="100" stroke="#22c55e" stroke-width="2" stroke-dasharray="4,5" opacity="0.6"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#22c55e" text-anchor="middle" font-weight="600">Quadriceps · Fessiers (unilatéral)</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#22c55e" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#22c55e" letter-spacing="1">LEGS</text> </svg>`,
 
-"legs-4":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}${sil(200,5,"#3a7050")}<ellipse cx="186" cy="100" rx="14" ry="11" fill="#cc3333" opacity=".8"/><ellipse cx="214" cy="100" rx="14" ry="11" fill="#cc3333" opacity=".8"/><line x1="186" y1="108" x2="172" y2="152" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".7"/><line x1="186" y1="108" x2="172" y2="152" stroke="#3a7050" stroke-width="13" stroke-linecap="round"/><line x1="172" y1="152" x2="160" y2="155" stroke="#2e5a40" stroke-width="12" stroke-linecap="round"/><line x1="214" y1="108" x2="228" y2="152" stroke="#3a7050" stroke-width="13" stroke-linecap="round"/><line x1="228" y1="152" x2="240" y2="155" stroke="#2e5a40" stroke-width="12" stroke-linecap="round"/><rect x="140" y="98" width="22" height="10" rx="5" fill="#4a5580"/><rect x="136" y="92" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="155" y="92" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="240" y="98" width="22" height="10" rx="5" fill="#4a5580"/><rect x="236" y="92" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="255" y="92" width="10" height="22" rx="2.5" fill="#6677aa"/>${mkLegend("Ischios")}${mkOv('legs')}</svg>`,
+"legs-4":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#22c55e" opacity="0.7"/>   <!-- machine leg curl (banc plat + rouleau aux chevilles) -->  <rect x="60" y="110" width="260" height="18" rx="6" fill="#2a2a2a"/>  <rect x="68" y="128" width="16" height="52" rx="4" fill="#1a1a1a"/>  <rect x="296" y="128" width="16" height="52" rx="4" fill="#1a1a1a"/>  <!-- rouleau pivotant -->  <ellipse cx="80" cy="148" rx="14" ry="14" fill="#333"/>  <ellipse cx="80" cy="148" rx="8" ry="8" fill="#444"/>  <!-- figure allongée de ventre -->  <rect x="90" y="100" width="190" height="14" rx="5" fill="#e0e0e0" opacity="0.85"/><!-- corps -->  <circle cx="295" cy="99" r="13" fill="#e0e0e0" opacity="0.9"/><!-- tête -->  <!-- jambes pliées vers le haut -->  <line x1="100" y1="108" x2="80" y2="85" stroke="#e0e0e0" stroke-width="14" stroke-linecap="round" opacity="0.85"/>  <line x1="120" y1="108" x2="100" y2="85" stroke="#e0e0e0" stroke-width="14" stroke-linecap="round" opacity="0.85"/>  <!-- muscles ischios -->  <ellipse cx="100" cy="115" rx="30" ry="10" fill="#ef4444" opacity="0.6"/>  <ellipse cx="95" cy="98" rx="22" ry="8" fill="#ef4444" opacity="0.45"/>  <line x1="80" y1="148" x2="80" y2="90" stroke="#22c55e" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="80,85 73,98 87,98" fill="#22c55e"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#22c55e" text-anchor="middle" font-weight="600">Ischios-jambiers (isolation)</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#22c55e" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#22c55e" letter-spacing="1">LEGS</text> </svg>`,
 
-"legs-5":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}<rect x="130" y="90" width="140" height="60" rx="10" fill="#1a3828"/><rect x="124" y="82" width="152" height="14" rx="6" fill="#2a4838"/><rect x="120" y="78" width="14" height="65" rx="5" fill="#122e20"/><rect x="266" y="78" width="14" height="65" rx="5" fill="#122e20"/><rect x="170" y="60" width="60" height="32" rx="8" fill="#3a7050" transform="rotate(-10 200 76)"/><ellipse cx="200" cy="50" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="34" rx="17" ry="9" fill="#1a0e08"/><line x1="186" y1="88" x2="162" y2="140" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".75"/><line x1="186" y1="88" x2="162" y2="140" stroke="#3a7050" stroke-width="12" stroke-linecap="round"/><line x1="214" y1="88" x2="238" y2="140" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".75"/><line x1="214" y1="88" x2="238" y2="140" stroke="#3a7050" stroke-width="12" stroke-linecap="round"/><rect x="148" y="138" width="22" height="9" rx="4" fill="#4a5580"/><rect x="230" y="138" width="22" height="9" rx="4" fill="#4a5580"/>${mkLegend("Ischios")}${mkOv('legs')}</svg>`,
+"legs-5":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#22c55e" opacity="0.7"/>   <!-- figure penchée, dos droit -->  <!-- jambes -->  <line x1="185" y1="145" x2="175" y2="190" stroke="#ccc" stroke-width="15" stroke-linecap="round" opacity="0.85"/>  <line x1="215" y1="145" x2="225" y2="190" stroke="#ccc" stroke-width="15" stroke-linecap="round" opacity="0.85"/>  <!-- buste penché en avant ~45° -->  <rect x="175" y="100" width="50" height="50" rx="9" fill="#e0e0e0" opacity="0.9" transform="rotate(-25,200,125)"/>  <circle cx="175" cy="95" r="14" fill="#e0e0e0" opacity="0.9" transform="rotate(-25,200,125) translate(25,0)"/>  <!-- haltères qui descendent -->  <g transform="rotate(-10,155,165)">   <rect x="130" y="161" width="50" height="8" rx="3" fill="#555"/>   <rect x="123" y="156" width="10" height="18" rx="4" fill="#444"/>   <rect x="177" y="156" width="10" height="18" rx="4" fill="#444"/>   </g>  <g transform="rotate(10,245,165)">   <rect x="220" y="161" width="50" height="8" rx="3" fill="#555"/>   <rect x="213" y="156" width="10" height="18" rx="4" fill="#444"/>   <rect x="267" y="156" width="10" height="18" rx="4" fill="#444"/>   </g>  <!-- muscles ischios + fessiers -->  <ellipse cx="193" cy="155" rx="16" ry="22" fill="#ef4444" opacity="0.6"/>  <ellipse cx="207" cy="155" rx="16" ry="22" fill="#ef4444" opacity="0.6"/>  <ellipse cx="195" cy="135" rx="14" ry="12" fill="#ef4444" opacity="0.45"/>  <ellipse cx="205" cy="135" rx="14" ry="12" fill="#ef4444" opacity="0.45"/>  <line x1="340" y1="105" x2="340" y2="165" stroke="#22c55e" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="340,170 333,155 347,155" fill="#22c55e"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#22c55e" text-anchor="middle" font-weight="600">Ischios · Fessiers · Dorsaux</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#22c55e" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#22c55e" letter-spacing="1">LEGS</text> </svg>`,
 
-"legs-6":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}<rect x="80" y="65" width="200" height="14" rx="5" fill="#1e4028"/><rect x="80" y="61" width="200" height="8" rx="4" fill="#2a5035"/><rect x="86" y="75" width="16" height="40" rx="4" fill="#162e20"/><rect x="258" y="75" width="16" height="40" rx="4" fill="#162e20"/><rect x="80" y="111" width="26" height="5" rx="2" fill="#162e20"/><rect x="254" y="111" width="26" height="5" rx="2" fill="#162e20"/><rect x="0" y="148" width="400" height="12" fill="#0c2010"/><rect x="126" y="56" width="120" height="18" rx="8" fill="#3a8050" transform="rotate(5 186 65)"/><ellipse cx="200" cy="108" rx="34" ry="26" fill="#cc3333" opacity=".82"/><ellipse cx="200" cy="100" rx="28" ry="16" fill="#2e6a42" opacity=".8"/><rect x="183" y="72" width="34" height="22" rx="6" fill="#336644" opacity=".7"/><ellipse cx="78" cy="62" rx="19" ry="19" fill="#c8845a"/><ellipse cx="78" cy="46" rx="16" ry="9" fill="#1a0e08"/><rect x="71" y="78" width="14" height="8" rx="4" fill="#c8845a"/><line x1="176" y1="118" x2="160" y2="152" stroke="#3a7048" stroke-width="16" stroke-linecap="round"/><line x1="224" y1="118" x2="240" y2="152" stroke="#3a7048" stroke-width="16" stroke-linecap="round"/><line x1="160" y1="152" x2="136" y2="152" stroke="#2e5a38" stroke-width="13" stroke-linecap="round"/><line x1="240" y1="152" x2="264" y2="152" stroke="#2e5a38" stroke-width="13" stroke-linecap="round"/><ellipse cx="125" cy="152" rx="15" ry="6" fill="#c8845a"/><ellipse cx="275" cy="152" rx="15" ry="6" fill="#c8845a"/><rect x="163" y="98" width="74" height="16" rx="8" fill="#5566aa"/><rect x="158" y="92" width="12" height="28" rx="3" fill="#7788cc"/><rect x="230" y="92" width="12" height="28" rx="3" fill="#7788cc"/><polygon points="200,74 194,84 206,84" fill="rgba(245,197,24,0.35)"/><line x1="200" y1="84" x2="200" y2="100" stroke="rgba(245,197,24,0.3)" stroke-width="2" stroke-dasharray="4,3"/>${mkLegend("Fessiers")}${mkOv('legs')}</svg>`,
+"legs-6":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#22c55e" opacity="0.7"/>   <!-- banc contre le dos -->  <rect x="30" y="100" width="90" height="60" rx="6" fill="#222"/>  <rect x="30" y="100" width="90" height="12" rx="4" fill="#2a2a2a"/>  <!-- figure dos appuyé sur banc -->  <!-- jambes pliées au sol, poussent le bassin vers le haut -->  <line x1="165" y1="135" x2="120" y2="185" stroke="#ccc" stroke-width="16" stroke-linecap="round" opacity="0.85"/>  <line x1="235" y1="135" x2="280" y2="185" stroke="#ccc" stroke-width="16" stroke-linecap="round" opacity="0.85"/>  <!-- bassin en haut -->  <rect x="162" y="118" width="76" height="30" rx="8" fill="#e0e0e0" opacity="0.9"/>  <!-- buste incliné appuyé sur banc -->  <rect x="55" y="95" width="115" height="32" rx="7" fill="#e0e0e0" opacity="0.9" transform="rotate(-25,120,111)"/>  <circle cx="52" cy="92" r="13" fill="#e0e0e0" opacity="0.9"/>  <!-- barre sur les hanches -->  <rect x="135" y="116" width="130" height="8" rx="3" fill="#555"/>   <rect x="117" y="106" width="20" height="28" rx="5" fill="#333"/>   <rect x="105" y="108" width="14" height="24" rx="4" fill="#444"/>   <rect x="263" y="106" width="20" height="28" rx="5" fill="#333"/>   <rect x="281" y="108" width="14" height="24" rx="4" fill="#444"/>  <!-- muscles fessiers en surbrillance -->  <ellipse cx="175" cy="130" rx="22" ry="16" fill="#ef4444" opacity="0.7"/>  <ellipse cx="225" cy="130" rx="22" ry="16" fill="#ef4444" opacity="0.7"/>  <line x1="200" y1="150" x2="200" y2="118" stroke="#22c55e" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="200,112 193,126 207,126" fill="#22c55e"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#22c55e" text-anchor="middle" font-weight="600">Fessiers (max. stretch → contraction)</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#22c55e" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#22c55e" letter-spacing="1">LEGS</text> </svg>`,
 
-"legs-7":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}<rect x="140" y="98" width="120" height="52" rx="9" fill="#1a3828"/><rect x="134" y="90" width="132" height="14" rx="6" fill="#2a4838"/><rect x="130" y="86" width="14" height="60" rx="5" fill="#122e20"/><rect x="256" y="86" width="14" height="60" rx="5" fill="#122e20"/><rect x="170" y="55" width="60" height="35" rx="8" fill="#3a7050"/><ellipse cx="200" cy="45" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="28" rx="17" ry="9" fill="#1a0e08"/><line x1="185" y1="90" x2="163" y2="138" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".75"/><line x1="185" y1="90" x2="163" y2="138" stroke="#3a7050" stroke-width="12" stroke-linecap="round"/><line x1="215" y1="90" x2="237" y2="138" stroke="#cc3333" stroke-width="18" stroke-linecap="round" opacity=".75"/><line x1="215" y1="90" x2="237" y2="138" stroke="#3a7050" stroke-width="12" stroke-linecap="round"/>${mkLegend("Quadriceps")}${mkOv('legs')}</svg>`,
+"legs-7":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#22c55e" opacity="0.7"/>   <!-- machine leg extension -->  <rect x="120" y="80" width="160" height="110" rx="8" fill="#181818"/>  <rect x="120" y="80" width="160" height="14" rx="5" fill="#222"/>  <rect x="155" y="160" width="90" height="25" rx="5" fill="#2a2a2a"/><!-- siège -->  <!-- rouleau -->  <ellipse cx="200" cy="182" rx="15" ry="10" fill="#333"/>  <!-- figure assise -->  <rect x="165" y="116" width="70" height="48" rx="8" fill="#e0e0e0" opacity="0.9"/><!-- buste+bassin -->  <circle cx="200" cy="103" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- jambes en extension -->  <line x1="185" y1="160" x2="175" y2="185" stroke="#e0e0e0" stroke-width="14" stroke-linecap="round" opacity="0.85"/>  <line x1="215" y1="160" x2="225" y2="185" stroke="#e0e0e0" stroke-width="14" stroke-linecap="round" opacity="0.85"/>  <!-- puis jambes étendues (mouvement) -->  <line x1="178" y1="183" x2="118" y2="175" stroke="#22c55e" stroke-width="2" stroke-dasharray="4,4" opacity="0.7"/>  <line x1="222" y1="183" x2="282" y2="175" stroke="#22c55e" stroke-width="2" stroke-dasharray="4,4" opacity="0.7"/>  <!-- muscles -->  <ellipse cx="182" cy="168" rx="16" ry="18" fill="#ef4444" opacity="0.65"/>  <ellipse cx="218" cy="168" rx="16" ry="18" fill="#ef4444" opacity="0.65"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#22c55e" text-anchor="middle" font-weight="600">Quadriceps (isolation totale)</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#22c55e" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#22c55e" letter-spacing="1">LEGS</text> </svg>`,
 
-"legs-8":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('legs')}${mkFloor('legs')}<rect x="150" y="100" width="100" height="52" rx="8" fill="#1a3828"/><rect x="144" y="94" width="112" height="12" rx="5" fill="#2a4838"/><rect x="160" y="148" width="80" height="8" rx="3" fill="#2a4838"/>${sil(200,5,"#3a7050")}<ellipse cx="184" cy="128" rx="12" ry="9" fill="#cc3333" opacity=".85"/><ellipse cx="216" cy="128" rx="12" ry="9" fill="#cc3333" opacity=".85"/><line x1="185" y1="128" x2="174" y2="152" stroke="#cc3333" stroke-width="16" stroke-linecap="round" opacity=".75"/><line x1="185" y1="128" x2="174" y2="152" stroke="#3a7050" stroke-width="11" stroke-linecap="round"/><line x1="215" y1="128" x2="226" y2="152" stroke="#cc3333" stroke-width="16" stroke-linecap="round" opacity=".75"/><line x1="215" y1="128" x2="226" y2="152" stroke="#3a7050" stroke-width="11" stroke-linecap="round"/>${mkLegend("Mollets")}${mkOv('legs')}</svg>`,
+"legs-8":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#22c55e" opacity="0.7"/>   <!-- plateforme surélevée -->  <rect x="130" y="170" width="140" height="18" rx="4" fill="#2a2a2a"/>  <rect x="145" y="188" width="16" height="12" rx="3" fill="#1a1a1a"/>  <rect x="239" y="188" width="16" height="12" rx="3" fill="#1a1a1a"/>  <!-- figure sur pointes -->  <!-- pieds sur pointe -->  <ellipse cx="185" cy="172" rx="16" ry="5" fill="#bbb" opacity="0.8"/>  <ellipse cx="215" cy="172" rx="16" ry="5" fill="#bbb" opacity="0.8"/>  <!-- mollets en contraction -->  <ellipse cx="183" cy="165" rx="15" ry="18" fill="#ef4444" opacity="0.65"/>  <ellipse cx="217" cy="165" rx="15" ry="18" fill="#ef4444" opacity="0.65"/>  <!-- jambes -->  <line x1="185" y1="165" x2="185" y2="130" stroke="#ccc" stroke-width="15" stroke-linecap="round" opacity="0.85"/>  <line x1="215" y1="165" x2="215" y2="130" stroke="#ccc" stroke-width="15" stroke-linecap="round" opacity="0.85"/>  <!-- bassin + torse -->  <rect x="177" y="85" width="46" height="50" rx="9" fill="#e0e0e0" opacity="0.9"/>  <circle cx="200" cy="73" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- machine Smith ou barre sur épaules -->  <rect x="150" y="84" width="100" height="8" rx="3" fill="#555"/>   <rect x="132" y="74" width="20" height="28" rx="5" fill="#333"/>   <rect x="120" y="76" width="14" height="24" rx="4" fill="#444"/>   <rect x="248" y="74" width="20" height="28" rx="5" fill="#333"/>   <rect x="266" y="76" width="14" height="24" rx="4" fill="#444"/>  <!-- flèche monte/descend sur pointe -->  <line x1="310" y1="165" x2="310" y2="135" stroke="#22c55e" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="310,130 303,143 317,143" fill="#22c55e"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#22c55e" text-anchor="middle" font-weight="600">Mollets · Soléaire</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#22c55e" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#22c55e" letter-spacing="1">LEGS</text> </svg>`,
 
-"upper-1":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('upper')}${mkFloor('upper')}<rect x="72" y="110" width="256" height="14" rx="5" fill="#2a2060" transform="rotate(-15 200 117)"/><rect x="78" y="107" width="244" height="8" rx="4" fill="#382878" transform="rotate(-15 200 111)"/><ellipse cx="316" cy="88" rx="20" ry="20" fill="#c8845a"/><ellipse cx="316" cy="71" rx="17" ry="9" fill="#1a0e08"/><rect x="308" y="105" width="14" height="8" rx="4" fill="#c8845a"/><rect x="148" y="98" width="162" height="13" rx="6" fill="#4a40a0" opacity=".9" transform="rotate(-10 229 104)"/><ellipse cx="162" cy="98" rx="27" ry="11" fill="#cc3333" opacity=".75" transform="rotate(-10 162 98)"/><ellipse cx="220" cy="93" rx="27" ry="11" fill="#cc3333" opacity=".75" transform="rotate(-10 220 93)"/><line x1="158" y1="94" x2="94" y2="48" stroke="#4a40a0" stroke-width="13" stroke-linecap="round"/><line x1="94" y1="48" x2="60" y2="48" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><line x1="244" y1="90" x2="300" y2="48" stroke="#4a40a0" stroke-width="13" stroke-linecap="round"/><line x1="300" y1="48" x2="334" y2="48" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/>${hal(18,292,41)}${mkLegend("Pectoraux")}${mkOv('upper')}</svg>`,
+"upper-1":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#a855f7" opacity="0.7"/>   <!-- banc couché -->  <rect x="80" y="120" width="240" height="16" rx="5" fill="#2a2a2a"/>  <rect x="88" y="136" width="14" height="40" rx="4" fill="#1a1a1a"/>  <rect x="298" y="136" width="14" height="40" rx="4" fill="#1a1a1a"/>  <!-- rack -->  <rect x="280" y="60" width="10" height="65" rx="4" fill="#222"/>  <rect x="272" y="58" width="26" height="8" rx="3" fill="#333"/>  <!-- figure allongée -->  <rect x="100" y="100" width="200" height="22" rx="6" fill="#e0e0e0" opacity="0.9"/><!-- corps -->  <circle cx="105" cy="98" r="14" fill="#e0e0e0" opacity="0.9"/><!-- tête à gauche -->  <!-- barre au-dessus des pecs -->  <rect x="140" y="74" width="140" height="8" rx="3" fill="#555"/>   <rect x="122" y="64" width="20" height="28" rx="5" fill="#333"/>   <rect x="110" y="66" width="14" height="24" rx="4" fill="#444"/>   <rect x="278" y="64" width="20" height="28" rx="5" fill="#333"/>   <rect x="296" y="66" width="14" height="24" rx="4" fill="#444"/>  <!-- bras tenant la barre -->  <line x1="175" y1="108" x2="170" y2="80" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <line x1="230" y1="108" x2="250" y2="80" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <!-- muscles pecs -->  <ellipse cx="175" cy="110" rx="30" ry="14" fill="#ef4444" opacity="0.6"/>  <ellipse cx="225" cy="110" rx="30" ry="14" fill="#ef4444" opacity="0.6"/>  <!-- flèche haut/bas -->  <line x1="340" y1="78" x2="340" y2="115" stroke="#a855f7" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="340,120 333,105 347,105" fill="#a855f7"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#a855f7" text-anchor="middle" font-weight="600">Pectoraux · Deltoïdes · Triceps</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#a855f7" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#a855f7" letter-spacing="1">UPPER</text> </svg>`,
 
-"upper-2":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('upper')}${mkFloor('upper')}<rect x="100" y="10" width="200" height="8" rx="4" fill="#2a2060"/><rect x="155" y="0" width="90" height="13" rx="5" fill="#2e2878"/><rect x="195" y="13" width="10" height="30" rx="3" fill="#1a1850"/><rect x="96" y="13" width="18" height="22" rx="5" fill="#2e2888"/><rect x="286" y="13" width="18" height="22" rx="5" fill="#2e2888"/><ellipse cx="200" cy="74" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="57" rx="17" ry="9" fill="#1a0e08"/><rect x="193" y="91" width="14" height="10" rx="4" fill="#c8845a"/><rect x="180" y="98" width="40" height="56" rx="10" fill="#4a40a0"/><path d="M180 102 Q162 118 168 148 L188 140 Z" fill="#cc3333" opacity=".8"/><path d="M220 102 Q238 118 232 148 L212 140 Z" fill="#cc3333" opacity=".8"/><line x1="182" y1="72" x2="104" y2="20" stroke="#cc3333" stroke-width="14" stroke-linecap="round" opacity=".7"/><line x1="182" y1="72" x2="104" y2="20" stroke="#4a40a0" stroke-width="9" stroke-linecap="round"/><line x1="218" y1="72" x2="296" y2="20" stroke="#cc3333" stroke-width="14" stroke-linecap="round" opacity=".7"/><line x1="218" y1="72" x2="296" y2="20" stroke="#4a40a0" stroke-width="9" stroke-linecap="round"/><rect x="180" y="152" width="14" height="28" rx="6" fill="#3a3080"/><rect x="206" y="152" width="14" height="28" rx="6" fill="#3a3080"/>${mkLegend("Grand dorsal")}${mkOv('upper')}</svg>`,
+"upper-2":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#a855f7" opacity="0.7"/>   <rect x="192" y="5" width="16" height="50" rx="6" fill="#2a2a2a"/>   <circle cx="200" cy="20" r="12" fill="#444"/>   <circle cx="200" cy="40" r="12" fill="#444"/>  <!-- barre courte prise neutre -->  <rect x="170" y="52" width="60" height="8" rx="3" fill="#555"/>  <rect x="165" y="44" width="14" height="20" rx="4" fill="#444"/>  <rect x="221" y="44" width="14" height="20" rx="4" fill="#444"/>  <line x1="200" y1="55" x2="200" y2="42" stroke="#666" stroke-width="3"/>  <!-- figure assise, tirant la barre vers le sternum -->  <ellipse cx="200" cy="158" rx="22" ry="8" fill="#1a1a1a"/>  <rect x="184" y="112" width="32" height="50" rx="7" fill="#ccc" opacity="0.8"/>  <rect x="180" y="96" width="40" height="20" rx="6" fill="#e0e0e0" opacity="0.9"/><!-- poitrine -->  <circle cx="200" cy="83" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- bras vers la barre -->  <line x1="188" y1="108" x2="172" y2="57" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <line x1="212" y1="108" x2="228" y2="57" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <ellipse cx="185" cy="115" rx="24" ry="16" fill="#ef4444" opacity="0.55"/>  <ellipse cx="215" cy="115" rx="24" ry="16" fill="#ef4444" opacity="0.55"/>  <line x1="200" y1="55" x2="200" y2="108" stroke="#a855f7" stroke-width="2.5" stroke-dasharray="6,4"/>  <polygon points="200,112 193,98 207,98" fill="#a855f7"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#a855f7" text-anchor="middle" font-weight="600">Grand dorsal · Biceps</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#a855f7" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#a855f7" letter-spacing="1">UPPER</text> </svg>`,
 
-"upper-3":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('upper')}${mkFloor('upper')}<rect x="155" y="90" width="90" height="55" rx="8" fill="#1e1e50"/><rect x="148" y="80" width="104" height="14" rx="5" fill="#2a2870"/><rect x="145" y="52" width="15" height="32" rx="5" fill="#1a1848"/><rect x="240" y="52" width="15" height="32" rx="5" fill="#1a1848"/>${sil(200,5,"#4a40a0")}<ellipse cx="182" cy="58" rx="14" ry="13" fill="#cc3333" opacity=".8"/><ellipse cx="218" cy="58" rx="14" ry="13" fill="#cc3333" opacity=".8"/><line x1="182" y1="58" x2="148" y2="38" stroke="#4a40a0" stroke-width="12" stroke-linecap="round"/><line x1="148" y1="38" x2="148" y2="60" stroke="#c8845a" stroke-width="10" stroke-linecap="round"/><line x1="218" y1="58" x2="252" y2="38" stroke="#4a40a0" stroke-width="12" stroke-linecap="round"/><line x1="252" y1="38" x2="252" y2="60" stroke="#c8845a" stroke-width="10" stroke-linecap="round"/><rect x="138" y="32" width="24" height="11" rx="5.5" fill="#5566aa"/><rect x="238" y="32" width="24" height="11" rx="5.5" fill="#5566aa"/><polygon points="200,22 193,34 207,34" fill="rgba(245,197,24,0.3)"/>${mkLegend("Deltoïdes")}${mkOv('upper')}</svg>`,
+"upper-3":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#a855f7" opacity="0.7"/>   <!-- banc dossier -->  <rect x="162" y="148" width="76" height="14" rx="4" fill="#2a2a2a"/>  <rect x="230" y="95" width="12" height="68" rx="5" fill="#222"/><!-- dossier -->  <!-- figure assise -->  <rect x="170" y="130" width="60" height="24" rx="6" fill="#ccc" opacity="0.8"/>  <rect x="174" y="95" width="52" height="40" rx="8" fill="#e0e0e0" opacity="0.9"/>  <circle cx="200" cy="82" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- bras levés avec haltères -->  <line x1="182" y1="105" x2="140" y2="68" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <line x1="218" y1="105" x2="260" y2="68" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <g transform="rotate(-15,130,63)">   <rect x="105" y="59" width="50" height="8" rx="3" fill="#555"/>   <rect x="98" y="54" width="10" height="18" rx="4" fill="#444"/>   <rect x="152" y="54" width="10" height="18" rx="4" fill="#444"/>   </g>  <g transform="rotate(15,270,63)">   <rect x="245" y="59" width="50" height="8" rx="3" fill="#555"/>   <rect x="238" y="54" width="10" height="18" rx="4" fill="#444"/>   <rect x="292" y="54" width="10" height="18" rx="4" fill="#444"/>   </g>  <!-- muscles deltoïdes -->  <ellipse cx="177" cy="103" rx="16" ry="14" fill="#ef4444" opacity="0.65"/>  <ellipse cx="223" cy="103" rx="16" ry="14" fill="#ef4444" opacity="0.65"/>  <!-- flèche pousser vers le haut -->  <line x1="200" y1="90" x2="200" y2="55" stroke="#a855f7" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="200,50 193,63 207,63" fill="#a855f7"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#a855f7" text-anchor="middle" font-weight="600">Deltoïdes · Triceps</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#a855f7" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#a855f7" letter-spacing="1">UPPER</text> </svg>`,
 
-"upper-4":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('upper')}${mkFloor('upper')}<rect x="80" y="90" width="160" height="14" rx="5" fill="#1e1e50"/><rect x="86" y="86" width="148" height="8" rx="4" fill="#2a2878"/><rect x="88" y="104" width="16" height="38" rx="4" fill="#161848"/><rect x="222" y="104" width="16" height="38" rx="4" fill="#161848"/><ellipse cx="188" cy="60" rx="20" ry="20" fill="#c8845a"/><ellipse cx="188" cy="43" rx="17" ry="9" fill="#1a0e08"/><rect x="181" y="77" width="14" height="9" rx="4" fill="#c8845a"/><rect x="167" y="82" width="38" height="16" rx="6" fill="#4a40a0" transform="rotate(-30 186 90)"/><rect x="157" y="92" width="38" height="44" rx="10" fill="#4a40a0" transform="rotate(-30 176 114)"/><path d="M164 90 Q147 104 152 130 L172 122 Z" fill="#cc3333" opacity=".8" transform="rotate(-30 162 110)"/><line x1="177" y1="86" x2="180" y2="128" stroke="#4a40a0" stroke-width="13" stroke-linecap="round" transform="rotate(-30 178 107)"/><rect x="160" y="118" width="28" height="11" rx="5.5" fill="#4a5580" transform="rotate(-30 174 123)"/>${mkLegend("Grand dorsal")}${mkOv('upper')}</svg>`,
+"upper-4":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#a855f7" opacity="0.7"/>   <!-- figure penchée debout, dos ~45° -->  <line x1="195" y1="148" x2="180" y2="190" stroke="#ccc" stroke-width="15" stroke-linecap="round" opacity="0.85"/>  <line x1="215" y1="148" x2="230" y2="190" stroke="#ccc" stroke-width="15" stroke-linecap="round" opacity="0.85"/>  <rect x="165" y="100" width="70" height="52" rx="9" fill="#e0e0e0" opacity="0.9" transform="rotate(-30,200,126)"/>  <circle cx="165" cy="88" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- haltères qui descendent, puis flèche vers le haut -->  <line x1="188" y1="125" x2="155" y2="155" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <line x1="208" y1="122" x2="240" y2="150" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <g transform="rotate(20,148,158)">   <rect x="123" y="154" width="50" height="8" rx="3" fill="#555"/>   <rect x="116" y="149" width="10" height="18" rx="4" fill="#444"/>   <rect x="170" y="149" width="10" height="18" rx="4" fill="#444"/>   </g>  <g transform="rotate(-20,248,153)">   <rect x="223" y="149" width="50" height="8" rx="3" fill="#555"/>   <rect x="216" y="144" width="10" height="18" rx="4" fill="#444"/>   <rect x="270" y="144" width="10" height="18" rx="4" fill="#444"/>   </g>  <!-- muscles dos -->  <ellipse cx="188" cy="115" rx="22" ry="16" fill="#ef4444" opacity="0.6"/>  <ellipse cx="210" cy="112" rx="22" ry="16" fill="#ef4444" opacity="0.6"/>  <line x1="155" y1="155" x2="175" y2="125" stroke="#a855f7" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="178,120 168,130 182,133" fill="#a855f7"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#a855f7" text-anchor="middle" font-weight="600">Grand dorsal · Trapèzes</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#a855f7" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#a855f7" letter-spacing="1">UPPER</text> </svg>`,
 
-"upper-5":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('upper')}${mkFloor('upper')}<rect x="130" y="40" width="12" height="120" rx="6" fill="#2a2060"/><rect x="258" y="40" width="12" height="120" rx="6" fill="#2a2060"/><rect x="130" y="40" width="130" height="10" rx="5" fill="#382878"/>${sil(200,18,"#4a40a0")}<ellipse cx="184" cy="70" rx="14" ry="11" fill="#cc3333" opacity=".85"/><ellipse cx="216" cy="70" rx="14" ry="11" fill="#cc3333" opacity=".85"/><line x1="184" y1="72" x2="138" y2="80" stroke="#4a40a0" stroke-width="11" stroke-linecap="round"/><line x1="216" y1="72" x2="262" y2="80" stroke="#4a40a0" stroke-width="11" stroke-linecap="round"/><rect x="180" y="140" width="14" height="28" rx="6" fill="#3a3080"/><rect x="206" y="140" width="14" height="28" rx="6" fill="#3a3080"/><circle cx="208" cy="162" r="12" fill="#2a2060" opacity=".9" stroke="#aabbee" stroke-width="2"/>${mkLegend("Triceps")}${mkOv('upper')}</svg>`,
+"upper-5":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#a855f7" opacity="0.7"/>   <!-- barres parallèles -->  <rect x="130" y="80" width="12" height="110" rx="5" fill="#333"/>  <rect x="258" y="80" width="12" height="110" rx="5" fill="#333"/>  <rect x="100" y="78" width="200" height="10" rx="5" fill="#444"/><!-- barre gauche -->  <!-- figure suspendue, bras tendus -->  <!-- bras tendus sur les barres -->  <line x1="181" y1="100" x2="136" y2="88" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <line x1="219" y1="100" x2="264" y2="88" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <!-- corps buste penché -->  <rect x="183" y="97" width="34" height="45" rx="8" fill="#e0e0e0" opacity="0.9"/>  <circle cx="200" cy="85" r="13" fill="#e0e0e0" opacity="0.9"/>  <!-- jambes pendantes + leste -->  <line x1="190" y1="140" x2="182" y2="180" stroke="#ccc" stroke-width="14" stroke-linecap="round" opacity="0.8"/>  <line x1="210" y1="140" x2="218" y2="180" stroke="#ccc" stroke-width="14" stroke-linecap="round" opacity="0.8"/>  <!-- ceinture de lest -->  <rect x="178" y="136" width="44" height="12" rx="5" fill="#444"/>  <rect x="194" y="148" width="12" height="20" rx="3" fill="#333"/><!-- disque lest -->  <!-- muscles triceps -->  <ellipse cx="182" cy="108" rx="14" ry="18" fill="#ef4444" opacity="0.65"/>  <ellipse cx="218" cy="108" rx="14" ry="18" fill="#ef4444" opacity="0.65"/>  <ellipse cx="190" cy="120" rx="26" ry="12" fill="#ef4444" opacity="0.45"/><!-- pecs bas -->  <line x1="200" y1="145" x2="200" y2="175" stroke="#a855f7" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="200,180 193,165 207,165" fill="#a855f7"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#a855f7" text-anchor="middle" font-weight="600">Triceps · Pectoraux bas (lestés)</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#a855f7" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#a855f7" letter-spacing="1">UPPER</text> </svg>`,
 
-"upper-6":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('upper')}${mkFloor('upper')}${sil(200,5,"#4a40a0")}<ellipse cx="182" cy="60" rx="14" ry="11" fill="#cc3333" opacity=".75"/><ellipse cx="218" cy="60" rx="14" ry="11" fill="#cc3333" opacity=".75"/><ellipse cx="200" cy="58" rx="22" ry="10" fill="#cc3333" opacity=".7"/><line x1="182" y1="64" x2="162" y2="92" stroke="#4a40a0" stroke-width="12" stroke-linecap="round"/><line x1="218" y1="64" x2="238" y2="92" stroke="#4a40a0" stroke-width="12" stroke-linecap="round"/><rect x="140" y="96" width="28" height="11" rx="5.5" fill="#4a5580"/><rect x="136" y="90" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="162" y="90" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="232" y="96" width="28" height="11" rx="5.5" fill="#4a5580"/><rect x="228" y="90" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="254" y="90" width="10" height="22" rx="2.5" fill="#6677aa"/>${mkLegend("Trapèzes")}${mkOv('upper')}</svg>`,
+"upper-6":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#a855f7" opacity="0.7"/>   <!-- figure debout, bras levés sur les côtés -->  <rect x="183" y="148" width="34" height="42" rx="7" fill="#ccc" opacity="0.8"/>  <rect x="179" y="105" width="42" height="47" rx="9" fill="#e0e0e0" opacity="0.9"/>  <circle cx="200" cy="93" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- bras tendus à l'horizontale -->  <line x1="183" y1="118" x2="100" y2="118" stroke="#e0e0e0" stroke-width="12" stroke-linecap="round"/>  <line x1="217" y1="118" x2="300" y2="118" stroke="#e0e0e0" stroke-width="12" stroke-linecap="round"/>  <g transform="rotate(0,95,118)">   <rect x="70" y="114" width="50" height="8" rx="3" fill="#555"/>   <rect x="63" y="109" width="10" height="18" rx="4" fill="#444"/>   <rect x="117" y="109" width="10" height="18" rx="4" fill="#444"/>   </g>  <g transform="rotate(0,305,118)">   <rect x="280" y="114" width="50" height="8" rx="3" fill="#555"/>   <rect x="273" y="109" width="10" height="18" rx="4" fill="#444"/>   <rect x="327" y="109" width="10" height="18" rx="4" fill="#444"/>   </g>  <!-- muscles deltoïdes latéraux -->  <ellipse cx="182" cy="115" rx="16" ry="14" fill="#ef4444" opacity="0.7"/>  <ellipse cx="218" cy="115" rx="16" ry="14" fill="#ef4444" opacity="0.7"/>  <ellipse cx="183" cy="108" rx="14" ry="10" fill="#ef4444" opacity="0.5"/><!-- trapèzes -->  <ellipse cx="217" cy="108" rx="14" ry="10" fill="#ef4444" opacity="0.5"/>  <!-- flèches vers le haut -->  <line x1="100" y1="118" x2="100" y2="80" stroke="#a855f7" stroke-width="2" stroke-dasharray="4,5" opacity="0.7"/>  <polygon points="100,75 93,88 107,88" fill="#a855f7" opacity="0.7"/>  <line x1="300" y1="118" x2="300" y2="80" stroke="#a855f7" stroke-width="2" stroke-dasharray="4,5" opacity="0.7"/>  <polygon points="300,75 293,88 307,88" fill="#a855f7" opacity="0.7"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#a855f7" text-anchor="middle" font-weight="600">Deltoïdes · Trapèzes</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#a855f7" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#a855f7" letter-spacing="1">UPPER</text> </svg>`,
 
-"arms-1":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}${sil(200,8,"#4048a0")}<ellipse cx="182" cy="60" rx="16" ry="14" fill="#cc3333" opacity=".82"/><ellipse cx="218" cy="60" rx="16" ry="14" fill="#cc3333" opacity=".82"/><line x1="182" y1="62" x2="78" y2="52" stroke="#cc3333" stroke-width="15" stroke-linecap="round" opacity=".75"/><line x1="182" y1="62" x2="78" y2="52" stroke="#4048a0" stroke-width="10" stroke-linecap="round"/><line x1="78" y1="52" x2="50" y2="66" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><ellipse cx="43" cy="69" rx="9" ry="7" fill="#b87048"/><line x1="218" y1="62" x2="322" y2="52" stroke="#cc3333" stroke-width="15" stroke-linecap="round" opacity=".75"/><line x1="218" y1="62" x2="322" y2="52" stroke="#4048a0" stroke-width="10" stroke-linecap="round"/><line x1="322" y1="52" x2="350" y2="66" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><ellipse cx="357" cy="69" rx="9" ry="7" fill="#b87048"/><rect x="16" y="59" width="32" height="11" rx="5.5" fill="#4a5580"/><rect x="12" y="53" width="9" height="21" rx="2.5" fill="#6677aa"/><rect x="41" y="53" width="9" height="21" rx="2.5" fill="#6677aa"/><rect x="352" y="59" width="32" height="11" rx="5.5" fill="#4a5580"/><rect x="348" y="53" width="9" height="21" rx="2.5" fill="#6677aa"/><rect x="377" y="53" width="9" height="21" rx="2.5" fill="#6677aa"/><text x="290" y="38" font-size="9" fill="#f5c518" font-family="system-ui" font-weight="700">DROP SET</text>${mkLegend("Deltoïdes")}${mkOv('arms')}</svg>`,
+"arms-1":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#f59e0b" opacity="0.7"/>   <!-- idem upper-6 mais orange -->  <rect x="183" y="148" width="34" height="42" rx="7" fill="#ccc" opacity="0.8"/>  <rect x="179" y="105" width="42" height="47" rx="9" fill="#e0e0e0" opacity="0.9"/>  <circle cx="200" cy="93" r="14" fill="#e0e0e0" opacity="0.9"/>  <line x1="183" y1="118" x2="100" y2="118" stroke="#e0e0e0" stroke-width="12" stroke-linecap="round"/>  <line x1="217" y1="118" x2="300" y2="118" stroke="#e0e0e0" stroke-width="12" stroke-linecap="round"/>  <g transform="rotate(0,95,118)">   <rect x="70" y="114" width="50" height="8" rx="3" fill="#555"/>   <rect x="63" y="109" width="10" height="18" rx="4" fill="#444"/>   <rect x="117" y="109" width="10" height="18" rx="4" fill="#444"/>   </g>  <g transform="rotate(0,305,118)">   <rect x="280" y="114" width="50" height="8" rx="3" fill="#555"/>   <rect x="273" y="109" width="10" height="18" rx="4" fill="#444"/>   <rect x="327" y="109" width="10" height="18" rx="4" fill="#444"/>   </g>  <ellipse cx="182" cy="115" rx="16" ry="14" fill="#ef4444" opacity="0.7"/>  <ellipse cx="218" cy="115" rx="16" ry="14" fill="#ef4444" opacity="0.7"/>  <!-- Badge DROP SET -->  <rect x="148" y="12" width="104" height="24" rx="6" fill="rgba(245,197,24,0.15)" stroke="rgba(245,197,24,0.3)" stroke-width="1"/>  <text x="200" y="28" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" font-weight="800" fill="#f5c518">⚡ DROP SET</text>  <line x1="100" y1="118" x2="100" y2="80" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,5" opacity="0.7"/>  <polygon points="100,75 93,88 107,88" fill="#f59e0b" opacity="0.7"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#f59e0b" text-anchor="middle" font-weight="600">Deltoïdes lat. (drop set)</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#f59e0b" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#f59e0b" letter-spacing="1">ARMS</text> </svg>`,
 
-"arms-2":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}${sil(200,8,"#4048a0")}<ellipse cx="182" cy="58" rx="14" ry="12" fill="#cc3333" opacity=".8"/><ellipse cx="218" cy="58" rx="14" ry="12" fill="#cc3333" opacity=".8"/><line x1="182" y1="62" x2="152" y2="40" stroke="#4048a0" stroke-width="13" stroke-linecap="round"/><line x1="152" y1="40" x2="124" y2="36" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><ellipse cx="118" cy="34" rx="9" ry="7" fill="#b87048"/><line x1="218" y1="62" x2="248" y2="40" stroke="#4048a0" stroke-width="13" stroke-linecap="round"/><line x1="248" y1="40" x2="276" y2="36" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><ellipse cx="282" cy="34" rx="9" ry="7" fill="#b87048"/><rect x="90" y="30" width="32" height="10" rx="5" fill="#4a5580"/><rect x="86" y="24" width="9" height="20" rx="2.5" fill="#6677aa"/><rect x="115" y="24" width="9" height="20" rx="2.5" fill="#6677aa"/><rect x="278" y="30" width="32" height="10" rx="5" fill="#4a5580"/><rect x="274" y="24" width="9" height="20" rx="2.5" fill="#6677aa"/><rect x="303" y="24" width="9" height="20" rx="2.5" fill="#6677aa"/>${mkLegend("Deltoïdes ant.")}${mkOv('arms')}</svg>`,
+"arms-2":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#f59e0b" opacity="0.7"/>   <!-- figure debout, un bras levé en avant -->  <rect x="183" y="148" width="34" height="42" rx="7" fill="#ccc" opacity="0.8"/>  <rect x="179" y="105" width="42" height="47" rx="9" fill="#e0e0e0" opacity="0.9"/>  <circle cx="200" cy="93" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- bras droit levé devant (horizontal) -->  <line x1="217" y1="118" x2="290" y2="90" stroke="#e0e0e0" stroke-width="12" stroke-linecap="round"/>  <g transform="rotate(-20,298,87)">   <rect x="273" y="83" width="50" height="8" rx="3" fill="#555"/>   <rect x="266" y="78" width="10" height="18" rx="4" fill="#444"/>   <rect x="320" y="78" width="10" height="18" rx="4" fill="#444"/>   </g>  <!-- bras gauche le long du corps -->  <line x1="183" y1="118" x2="170" y2="152" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <g transform="rotate(0,164,155)">   <rect x="139" y="151" width="50" height="8" rx="3" fill="#555"/>   <rect x="132" y="146" width="10" height="18" rx="4" fill="#444"/>   <rect x="186" y="146" width="10" height="18" rx="4" fill="#444"/>   </g>  <!-- deltoïde antérieur -->  <ellipse cx="218" cy="113" rx="15" ry="13" fill="#ef4444" opacity="0.7"/>  <line x1="240" y1="112" x2="280" y2="90" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="284,87 273,88 276,101" fill="#f59e0b"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#f59e0b" text-anchor="middle" font-weight="600">Deltoïdes antérieurs</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#f59e0b" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#f59e0b" letter-spacing="1">ARMS</text> </svg>`,
 
-"arms-3":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}<ellipse cx="200" cy="50" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="33" rx="17" ry="9" fill="#1a0e08"/><rect x="193" y="68" width="14" height="9" rx="4" fill="#c8845a"/><rect x="180" y="74" width="40" height="50" rx="10" fill="#4048a0" transform="rotate(-45 200 99)"/><ellipse cx="182" cy="72" rx="14" ry="11" fill="#cc3333" opacity=".82" transform="rotate(-45 182 72)"/><ellipse cx="218" cy="72" rx="14" ry="11" fill="#cc3333" opacity=".82" transform="rotate(-45 218 72)"/><line x1="178" y1="80" x2="100" y2="110" stroke="#4048a0" stroke-width="13" stroke-linecap="round" transform="rotate(-45 139 95)"/><line x1="222" y1="80" x2="300" y2="110" stroke="#4048a0" stroke-width="13" stroke-linecap="round" transform="rotate(-45 261 95)"/><rect x="66" y="102" width="32" height="10" rx="5" fill="#4a5580"/><rect x="302" y="102" width="32" height="10" rx="5" fill="#4a5580"/>${mkLegend("Deltoïde post.")}${mkOv('arms')}</svg>`,
+"arms-3":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#f59e0b" opacity="0.7"/>   <!-- figure penchée, bras s'ouvrent sur les côtés -->  <line x1="195" y1="148" x2="185" y2="190" stroke="#ccc" stroke-width="14" stroke-linecap="round" opacity="0.85"/>  <line x1="205" y1="148" x2="215" y2="190" stroke="#ccc" stroke-width="14" stroke-linecap="round" opacity="0.85"/>  <rect x="172" y="105" width="56" height="46" rx="8" fill="#e0e0e0" opacity="0.9" transform="rotate(-35,200,128)"/>  <circle cx="168" cy="90" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- bras s'ouvrent à l'horizontale -->  <line x1="188" y1="120" x2="110" y2="92" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <line x1="212" y1="120" x2="290" y2="92" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/>  <g transform="rotate(-15,102,89)">   <rect x="77" y="85" width="50" height="8" rx="3" fill="#555"/>   <rect x="70" y="80" width="10" height="18" rx="4" fill="#444"/>   <rect x="124" y="80" width="10" height="18" rx="4" fill="#444"/>   </g>  <g transform="rotate(15,298,89)">   <rect x="273" y="85" width="50" height="8" rx="3" fill="#555"/>   <rect x="266" y="80" width="10" height="18" rx="4" fill="#444"/>   <rect x="320" y="80" width="10" height="18" rx="4" fill="#444"/>   </g>  <!-- deltoïdes postérieurs -->  <ellipse cx="186" cy="118" rx="14" ry="14" fill="#ef4444" opacity="0.7"/>  <ellipse cx="214" cy="118" rx="14" ry="14" fill="#ef4444" opacity="0.7"/>  <line x1="135" y1="108" x2="165" y2="122" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,5" opacity="0.8"/>  <polygon points="168,124 157,116 162,128" fill="#f59e0b"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#f59e0b" text-anchor="middle" font-weight="600">Deltoïdes postérieurs</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#f59e0b" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#f59e0b" letter-spacing="1">ARMS</text> </svg>`,
 
-"arms-4":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}${sil(200,5,"#4048a0")}<ellipse cx="172" cy="92" rx="12" ry="9" fill="#cc3333" opacity=".9"/><ellipse cx="228" cy="92" rx="12" ry="9" fill="#cc3333" opacity=".9"/><line x1="184" y1="82" x2="162" y2="110" stroke="#4048a0" stroke-width="14" stroke-linecap="round"/><line x1="162" y1="110" x2="148" y2="130" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><line x1="216" y1="82" x2="238" y2="110" stroke="#4048a0" stroke-width="14" stroke-linecap="round"/><line x1="238" y1="110" x2="252" y2="130" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><path d="M136 132 Q158 122 180 132 Q202 142 224 132 Q246 122 266 132" fill="none" stroke="#5566aa" stroke-width="10" stroke-linecap="round"/><rect x="112" y="124" width="16" height="24" rx="3" fill="#7788cc"/><rect x="119" y="121" width="10" height="30" rx="2" fill="#9aaaee"/><rect x="272" y="124" width="16" height="24" rx="3" fill="#7788cc"/><rect x="272" y="121" width="10" height="30" rx="2" fill="#9aaaee"/><path d="M148 130 Q132 100 152 75" fill="none" stroke="rgba(245,197,24,0.2)" stroke-width="1.5" stroke-dasharray="5,4"/><path d="M254 130 Q270 100 250 75" fill="none" stroke="rgba(245,197,24,0.2)" stroke-width="1.5" stroke-dasharray="5,4"/>${mkLegend("Biceps")}${mkOv('arms')}</svg>`,
+"arms-4":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#f59e0b" opacity="0.7"/>   <!-- banc incliné -->  <rect x="130" y="155" width="140" height="14" rx="4" fill="#2a2a2a" transform="rotate(-15,200,162)"/>  <rect x="270" y="95" width="12" height="75" rx="5" fill="#222"/>  <!-- figure inclinée -->  <rect x="148" y="110" width="100" height="52" rx="9" fill="#e0e0e0" opacity="0.9" transform="rotate(-15,200,136)"/>  <circle cx="162" cy="98" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- bras le long du corps (tendu en bas) -->  <line x1="175" y1="140" x2="165" y2="175" stroke="#e0e0e0" stroke-width="12" stroke-linecap="round"/>  <line x1="200" y1="142" x2="198" y2="177" stroke="#e0e0e0" stroke-width="12" stroke-linecap="round"/>  <!-- barre EZ -->  <path d="M 148 178 Q 163 172 178 178 Q 193 184 208 178 Q 223 172 238 178" stroke="#555" stroke-width="7" fill="none" stroke-linecap="round"/>  <rect x="128" y="170" width="22" height="16" rx="4" fill="#333"/>  <rect x="238" y="170" width="22" height="16" rx="4" fill="#333"/>  <!-- biceps bien visibles -->  <ellipse cx="172" cy="152" rx="14" ry="22" fill="#ef4444" opacity="0.7"/>  <ellipse cx="198" cy="152" rx="13" ry="22" fill="#ef4444" opacity="0.7"/>  <line x1="183" y1="175" x2="180" y2="140" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="180,135 173,148 187,148" fill="#f59e0b"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#f59e0b" text-anchor="middle" font-weight="600">Biceps (étirement maximal)</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#f59e0b" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#f59e0b" letter-spacing="1">ARMS</text> </svg>`,
 
-"arms-5":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}${sil(200,5,"#4048a0")}<ellipse cx="172" cy="90" rx="12" ry="9" fill="#cc3333" opacity=".9"/><ellipse cx="228" cy="90" rx="12" ry="9" fill="#cc3333" opacity=".9"/><line x1="184" y1="80" x2="162" y2="108" stroke="#4048a0" stroke-width="14" stroke-linecap="round"/><line x1="162" y1="108" x2="148" y2="128" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><line x1="216" y1="80" x2="238" y2="108" stroke="#4048a0" stroke-width="14" stroke-linecap="round"/><line x1="238" y1="108" x2="252" y2="128" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><rect x="134" y="122" width="28" height="11" rx="5.5" fill="#4a5580"/><rect x="130" y="116" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="156" y="116" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="238" y="122" width="28" height="11" rx="5.5" fill="#4a5580"/><rect x="234" y="116" width="10" height="22" rx="2.5" fill="#6677aa"/><rect x="260" y="116" width="10" height="22" rx="2.5" fill="#6677aa"/>${mkLegend("Biceps")}${mkOv('arms')}</svg>`,
+"arms-5":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#f59e0b" opacity="0.7"/>   <rect x="42" y="160" width="16" height="25" rx="6" fill="#2a2a2a"/>   <circle cx="50" cy="175" r="12" fill="#444"/>   <circle cx="50" cy="170" r="12" fill="#444"/>  <!-- câble vers le haut -->  <line x1="58" y1="177" x2="165" y2="148" stroke="#666" stroke-width="3"/>  <!-- figure debout de profil -->  <rect x="186" y="148" width="28" height="42" rx="6" fill="#ccc" opacity="0.8"/>  <rect x="182" y="106" width="36" height="46" rx="8" fill="#e0e0e0" opacity="0.9"/>  <circle cx="200" cy="94" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- bras fléchi tenant câble -->  <line x1="184" y1="120" x2="162" y2="152" stroke="#e0e0e0" stroke-width="12" stroke-linecap="round"/>  <!-- poignée -->  <rect x="155" y="148" width="14" height="10" rx="3" fill="#555"/>  <!-- biceps -->  <ellipse cx="181" cy="125" rx="14" ry="20" fill="#ef4444" opacity="0.7"/>  <line x1="80" y1="175" x2="140" y2="155" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="145,152 133,152 137,165" fill="#f59e0b"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#f59e0b" text-anchor="middle" font-weight="600">Biceps (tension continue)</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#f59e0b" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#f59e0b" letter-spacing="1">ARMS</text> </svg>`,
 
-"arms-6":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}<rect x="170" y="100" width="60" height="55" rx="8" fill="#1e1040"/><rect x="164" y="94" width="72" height="12" rx="5" fill="#2a1858"/>${sil(200,12,"#4048a0")}<ellipse cx="200" cy="66" rx="13" ry="11" fill="#cc3333" opacity=".85"/><line x1="196" y1="60" x2="196" y2="30" stroke="#4048a0" stroke-width="12" stroke-linecap="round"/><line x1="204" y1="60" x2="204" y2="30" stroke="#4048a0" stroke-width="12" stroke-linecap="round"/><rect x="184" y="16" width="32" height="17" rx="6" fill="#5566aa"/><rect x="180" y="10" width="10" height="28" rx="3" fill="#7788cc"/><rect x="210" y="10" width="10" height="28" rx="3" fill="#7788cc"/><path d="M200 30 Q230 50 230 80" fill="none" stroke="rgba(245,197,24,0.22)" stroke-width="1.5" stroke-dasharray="5,4"/>${mkLegend("Triceps")}${mkOv('arms')}</svg>`,
+"arms-6":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#f59e0b" opacity="0.7"/>   <rect x="192" y="5" width="16" height="55" rx="6" fill="#2a2a2a"/>   <circle cx="200" cy="20" r="12" fill="#444"/>   <circle cx="200" cy="45" r="12" fill="#444"/>  <line x1="200" y1="55" x2="200" y2="40" stroke="#666" stroke-width="3"/>  <!-- corde -->  <line x1="186" y1="55" x2="200" y2="42" stroke="#666" stroke-width="3"/>  <line x1="214" y1="55" x2="200" y2="42" stroke="#666" stroke-width="3"/>  <!-- figure debout, coudes hauts -->  <rect x="183" y="148" width="34" height="42" rx="7" fill="#ccc" opacity="0.8"/>  <rect x="179" y="105" width="42" height="47" rx="9" fill="#e0e0e0" opacity="0.9"/>  <circle cx="200" cy="93" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- bras coudes fixes, avant-bras vers le bas -->  <line x1="186" y1="112" x2="178" y2="80" stroke="#e0e0e0" stroke-width="10" stroke-linecap="round"/><!-- bras g côté -->  <line x1="186" y1="112" x2="162" y2="148" stroke="#e0e0e0" stroke-width="10" stroke-linecap="round"/><!-- avant-bras g -->  <line x1="214" y1="112" x2="222" y2="80" stroke="#e0e0e0" stroke-width="10" stroke-linecap="round"/><!-- bras d -->  <line x1="214" y1="112" x2="238" y2="148" stroke="#e0e0e0" stroke-width="10" stroke-linecap="round"/><!-- avant-bras d -->  <!-- corde aux mains -->  <rect x="154" y="146" width="12" height="8" rx="3" fill="#555"/>  <rect x="234" y="146" width="12" height="8" rx="3" fill="#555"/>  <!-- triceps -->  <ellipse cx="183" cy="115" rx="13" ry="20" fill="#ef4444" opacity="0.7"/>  <ellipse cx="217" cy="115" rx="13" ry="20" fill="#ef4444" opacity="0.7"/>  <line x1="162" y1="100" x2="162" y2="145" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="162,150 155,135 169,135" fill="#f59e0b"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#f59e0b" text-anchor="middle" font-weight="600">Triceps (extension corde)</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#f59e0b" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#f59e0b" letter-spacing="1">ARMS</text> </svg>`,
 
-"arms-7":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}<line x1="330" y1="0" x2="330" y2="180" stroke="#1e1840" stroke-width="5"/><circle cx="330" cy="40" r="10" fill="#2a1868"/><line x1="330" y1="50" x2="268" y2="75" stroke="#4466aa" stroke-width="2.5"/><rect x="258" y="70" width="18" height="10" rx="4" fill="#4455aa"/>${sil(185,8,"#4048a0")}<ellipse cx="206" cy="70" rx="13" ry="11" fill="#cc3333" opacity=".85"/><line x1="202" y1="68" x2="258" y2="74" stroke="#4048a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="262" cy="76" rx="9" ry="7" fill="#c8845a"/><line x1="168" y1="68" x2="134" y2="60" stroke="#4048a0" stroke-width="12" stroke-linecap="round"/><ellipse cx="128" cy="58" rx="9" ry="7" fill="#c8845a"/>${mkLegend("Triceps")}${mkOv('arms')}</svg>`,
+"arms-7":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#f59e0b" opacity="0.7"/>   <rect x="42" y="155" width="16" height="30" rx="6" fill="#2a2a2a"/>   <circle cx="50" cy="170" r="12" fill="#444"/>   <circle cx="50" cy="170" r="12" fill="#444"/>  <line x1="58" y1="178" x2="185" y2="128" stroke="#666" stroke-width="3"/>  <!-- figure penchée, bras étendu en arrière -->  <line x1="195" y1="148" x2="182" y2="190" stroke="#ccc" stroke-width="14" stroke-linecap="round" opacity="0.85"/>  <line x1="215" y1="148" x2="228" y2="190" stroke="#ccc" stroke-width="14" stroke-linecap="round" opacity="0.85"/>  <rect x="175" y="100" width="58" height="52" rx="9" fill="#e0e0e0" opacity="0.9" transform="rotate(-30,200,126)"/>  <circle cx="172" cy="88" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- bras fléchi puis extension en arrière -->  <line x1="192" y1="118" x2="175" y2="130" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/><!-- bras haut -->  <line x1="175" y1="130" x2="245" y2="118" stroke="#e0e0e0" stroke-width="11" stroke-linecap="round"/><!-- avant-bras étendu -->  <!-- poignée -->  <rect x="245" y="112" width="12" height="10" rx="3" fill="#555"/>  <ellipse cx="188" cy="118" rx="12" ry="18" fill="#ef4444" opacity="0.7"/>  <line x1="195" y1="138" x2="232" y2="125" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="237,123 226,122 228,135" fill="#f59e0b"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#f59e0b" text-anchor="middle" font-weight="600">Triceps (kickback unilatéral)</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#f59e0b" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#f59e0b" letter-spacing="1">ARMS</text> </svg>`,
 
-"arms-8":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('arms')}${mkFloor('arms')}<rect x="120" y="70" width="160" height="90" rx="10" fill="#1a1040"/><rect x="114" y="62" width="172" height="14" rx="6" fill="#241858"/><rect x="110" y="58" width="14" height="90" rx="5" fill="#161040"/><rect x="276" y="58" width="14" height="90" rx="5" fill="#161040"/><ellipse cx="200" cy="50" rx="20" ry="20" fill="#c8845a"/><ellipse cx="200" cy="33" rx="17" ry="9" fill="#1a0e08"/><rect x="193" y="67" width="14" height="8" rx="4" fill="#c8845a"/><line x1="184" y1="72" x2="162" y2="100" stroke="#4048a0" stroke-width="14" stroke-linecap="round"/><ellipse cx="160" cy="88" rx="12" ry="9" fill="#cc3333" opacity=".9"/><line x1="162" y1="100" x2="148" y2="120" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><line x1="216" y1="72" x2="238" y2="100" stroke="#4048a0" stroke-width="14" stroke-linecap="round"/><ellipse cx="240" cy="88" rx="12" ry="9" fill="#cc3333" opacity=".9"/><line x1="238" y1="100" x2="252" y2="120" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><rect x="132" y="122" width="30" height="10" rx="5" fill="#4a5580"/><rect x="238" y="122" width="30" height="10" rx="5" fill="#4a5580"/>${mkLegend("Biceps")}${mkOv('arms')}</svg>`,
+"arms-8":`<svg viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">  <!-- Fond sombre -->  <rect width="400" height="220" fill="#0d0d0d"/>  <!-- Grille sol subtile -->  <line x1="0" y1="190" x2="400" y2="190" stroke="#1a1a1a" stroke-width="2"/>  <line x1="50" y1="190" x2="50" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="100" y1="190" x2="100" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="150" y1="190" x2="150" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="200" y1="190" x2="200" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="250" y1="190" x2="250" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="300" y1="190" x2="300" y2="195" stroke="#222" stroke-width="1.5"/>  <line x1="350" y1="190" x2="350" y2="195" stroke="#222" stroke-width="1.5"/>  <!-- Accent barre en haut -->  <rect width="400" height="3" fill="#f59e0b" opacity="0.7"/>   <!-- banc -->  <rect x="140" y="150" width="120" height="14" rx="4" fill="#2a2a2a"/>  <rect x="148" y="164" width="14" height="22" rx="3" fill="#1a1a1a"/>  <rect x="238" y="164" width="14" height="22" rx="3" fill="#1a1a1a"/>  <!-- figure assis, coude appuyé sur la cuisse -->  <rect x="165" y="138" width="70" height="20" rx="5" fill="#ccc" opacity="0.8"/><!-- cuisse -->  <rect x="175" y="98" width="50" height="45" rx="8" fill="#e0e0e0" opacity="0.9"/><!-- buste penché -->  <circle cx="195" cy="86" r="14" fill="#e0e0e0" opacity="0.9"/>  <!-- bras coude sur cuisse, tenant haltère -->  <line x1="185" y1="120" x2="188" y2="142" stroke="#e0e0e0" stroke-width="12" stroke-linecap="round"/><!-- bras -->  <line x1="188" y1="142" x2="188" y2="175" stroke="#e0e0e0" stroke-width="12" stroke-linecap="round"/><!-- avant-bras vers bas -->  <g transform="rotate(0,188,178)">   <rect x="163" y="174" width="50" height="8" rx="3" fill="#555"/>   <rect x="156" y="169" width="10" height="18" rx="4" fill="#444"/>   <rect x="210" y="169" width="10" height="18" rx="4" fill="#444"/>   </g>  <!-- gros biceps en contraction -->  <ellipse cx="186" cy="132" rx="16" ry="26" fill="#ef4444" opacity="0.75"/>  <line x1="188" y1="175" x2="188" y2="135" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="5,4"/>  <polygon points="188,130 181,143 195,143" fill="#f59e0b"/>  <text x="200" y="210" font-family="system-ui,sans-serif" font-size="11" fill="#f59e0b" text-anchor="middle" font-weight="600">Biceps (contraction isolée max)</text>  <!-- Badge catégorie -->  <rect x="8" y="198" width="50" height="16" rx="4" fill="#f59e0b" opacity="0.15"/>  <text x="33" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" fill="#f59e0b" letter-spacing="1">ARMS</text> </svg>`,
 
 };
 
@@ -2106,6 +2313,232 @@ const DB = {
   clear: () => Object.keys(localStorage).filter(k=>k.startsWith('apfp.')).forEach(k=>localStorage.removeItem(k)),
 };
 const sKey = id => `sess-${S.week}-${id}`;
+
+
+// ================================================================
+// CHRONOMÈTRE GLOBAL DE SÉANCE
+// ================================================================
+
+// Démarre le chrono quand la séance commence
+function startSessionChrono() {
+  S.sessionStartTime = Date.now();     // enregistre l'heure de début
+  S.sessionChronoIv = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - S.sessionStartTime) / 1000);
+    const m = Math.floor(elapsed / 60);
+    const s = elapsed % 60;
+    const display = document.getElementById('sess-chrono-display');
+    if (display) {
+      display.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+      // Passe au rouge si on dépasse la durée prévue (ex: 75 min = 4500 sec)
+      const el = document.getElementById('sess-chrono');
+      if (el) el.style.borderColor = elapsed > 4500 ? 'rgba(255,69,58,0.5)' : '';
+    }
+  }, 1000);
+}
+
+// Arrête le chrono
+function stopSessionChrono() {
+  if (S.sessionChronoIv) { clearInterval(S.sessionChronoIv); S.sessionChronoIv = null; }
+}
+
+// Affiche/cache le chrono au clic
+function toggleChronoDisplay() {
+  if (!S.sessionStartTime) return;
+  const elapsed = Math.floor((Date.now() - S.sessionStartTime) / 1000);
+  const m = Math.floor(elapsed / 60);
+  showToast(`⏱ Séance en cours : ${m} min ${elapsed%60} sec`);
+}
+
+// ================================================================
+// CALCUL DU 1RM — Formule d'Epley : 1RM = poids × (1 + reps/30)
+// ================================================================
+
+// Calcule le 1RM estimé d'après un poids et un nombre de reps
+function calc1RM(weight, reps) {
+  if (!weight || !reps || reps <= 1) return weight;  // si 1 rep, c'est déjà le 1RM
+  return Math.round(weight * (1 + reps / 30));
+}
+
+// Retrouve le meilleur 1RM estimé pour un exercice dans tout l'historique
+function getBest1RM(exoId) {
+  const allHistory = DB.get('history', []);
+  let best = 0;
+  allHistory.forEach(entry => {
+    const data = DB.get(entry.key);
+    if (!data?.sets?.[exoId]) return;
+    data.sets[exoId].forEach(s => {
+      if (s.done && s.weight && s.reps) {
+        const rm = calc1RM(parseFloat(s.weight), parseInt(s.reps));
+        if (rm > best) best = rm;
+      }
+    });
+  });
+  return best;
+}
+
+// ================================================================
+// JOURNAL DE RÉCUPÉRATION
+// ================================================================
+
+// État temporaire du check-in
+const REC = { sleep: 0, energy: 0, pain: '' };
+
+// Met à jour la valeur et actualise les émoticônes visuellement
+function setRecovery(type, val) {
+  REC[type] = val;
+  const container = document.getElementById('recovery-' + type);
+  if (!container) return;
+  container.querySelectorAll('.recovery-star').forEach(star => {
+    const starVal = parseInt(star.dataset.val);
+    star.classList.toggle('active', starVal <= val);
+  });
+}
+
+// Ouvre la modal de récupération avant de charger la séance
+function showRecoveryModal(sessId) {
+  // Remet à zéro
+  REC.sleep = 0; REC.energy = 0; REC.pain = '';
+  ['recovery-sleep','recovery-energy'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.querySelectorAll('.recovery-star').forEach(s => s.classList.remove('active'));
+  });
+  const painEl = document.getElementById('recovery-pain');
+  if (painEl) painEl.value = '';
+  S._pendingSession = sessId;   // mémorise la séance à lancer
+  document.getElementById('recovery-modal').classList.remove('hidden');
+}
+
+// Valide le check-in et lance la séance
+function confirmRecovery() {
+  REC.pain = document.getElementById('recovery-pain')?.value || '';
+  // Sauvegarde dans la clé de la séance
+  const key = `recovery-${new Date().toISOString().split('T')[0]}`;
+  DB.set(key, { sleep: REC.sleep, energy: REC.energy, pain: REC.pain, date: new Date().toISOString() });
+  document.getElementById('recovery-modal').classList.add('hidden');
+  if (S._pendingSession) launchSession(S._pendingSession);
+}
+
+// Lance la séance sans noter (bouton "Passer")
+function skipRecovery() {
+  document.getElementById('recovery-modal').classList.add('hidden');
+  if (S._pendingSession) launchSession(S._pendingSession);
+}
+
+// ================================================================
+// EXPORT CSV DE L'HISTORIQUE
+// ================================================================
+
+function exportCSV() {
+  const allHistory = DB.get('history', []);
+  if (!allHistory.length) { showToast("Aucune donnée à exporter", 'error'); return; }
+
+  // En-têtes du CSV
+  const rows = [['Date','Semaine','Séance','Exercice','Série','Poids (kg)','Reps','1RM estimé (kg)','Validé']];
+
+  allHistory.forEach(entry => {
+    const data = DB.get(entry.key);
+    if (!data?.sets) return;
+
+    Object.entries(data.sets).forEach(([exoId, sets]) => {
+      // Retrouve le nom de l'exercice
+      let exoName = exoId;
+      for (const sess of Object.values(PROGRAM.sessions)) {
+        const ex = sess.exercises.find(x => x.id === exoId);
+        if (ex) { exoName = ex.name; break; }
+      }
+
+      sets.forEach((s, idx) => {
+        const rm = s.done && s.weight && s.reps ? calc1RM(parseFloat(s.weight), parseInt(s.reps)) : '';
+        rows.push([
+          entry.date || '',
+          entry.week || '',
+          entry.sessionName || '',
+          exoName,
+          idx + 1,
+          s.weight || '',
+          s.reps || '',
+          rm,
+          s.done ? 'Oui' : 'Non',
+        ]);
+      });
+    });
+  });
+
+  // Génère le CSV (séparateur point-virgule pour Excel FR)
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });   // \uFEFF = BOM pour Excel
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'apex-export-' + new Date().toISOString().split('T')[0] + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('📥 Export téléchargé !', 'success');
+}
+
+// ================================================================
+// PHOTOS DE PROGRESSION PHYSIQUE
+// ================================================================
+
+// Ouvre le sélecteur de caméra/galerie
+function openProgressPhotoInput() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.capture = 'user';    // ouvre la caméra frontale sur mobile
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const b64 = ev.target.result;
+      const photos = DB.get('progress-photos', []);
+      photos.push({ date: new Date().toISOString(), img: b64 });
+      // Limite à 20 photos pour ne pas saturer le localStorage
+      if (photos.length > 20) photos.shift();
+      DB.set('progress-photos', photos);
+      renderProgressPhotos();
+      showToast('📷 Photo sauvegardée !', 'success');
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+// Affiche la grille de photos de progression
+function renderProgressPhotos() {
+  const container = document.getElementById('progress-photos-grid');
+  if (!container) return;
+  const photos = DB.get('progress-photos', []);
+
+  // Bouton d'ajout toujours présent
+  let html = '<div class="progress-photo-add" onclick="openProgressPhotoInput()">' +
+    '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M16 8v-2a2 2 0 00-2-2H10a2 2 0 00-2 2v2M2 12h2M20 12h2M12 2v2M12 20v2"/><circle cx="12" cy="12" r="10"/></svg>' +
+    'Ajouter</div>';
+
+  // Photos existantes (plus récentes en premier)
+  [...photos].reverse().forEach(p => {
+    const d = new Date(p.date);
+    const label = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+    html += `<div class="progress-photo-card">
+      <img src="${p.img}" alt="Progression ${label}" loading="lazy">
+      <div class="progress-photo-date">${label}</div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// Supprime une photo de progression
+function deleteProgressPhoto(idx) {
+  const photos = DB.get('progress-photos', []);
+  photos.splice(idx, 1);
+  DB.set('progress-photos', photos);
+  renderProgressPhotos();
+}
+
 
 // ================================================================
 // INIT
@@ -2323,7 +2756,21 @@ function daysSince(dateStr) {
 // SESSION
 // ================================================================
 function startSession(id) {
+  // === CHECK RÉCUPÉRATION : une seule fois par jour ===
+  const todayKey = 'recovery-' + new Date().toISOString().split('T')[0];
+  if (!DB.get(todayKey)) {
+    // Pas encore checké aujourd'hui → ouvrir la modal
+    S._pendingSession = id;
+    document.getElementById('recovery-modal').classList.remove('hidden');
+    return; // confirmRecovery() / skipRecovery() rappellera launchSession(id)
+  }
+  launchSession(id);
+}
+
+// launchSession = ancienne startSession (appelée après le check-in)
+function launchSession(id) {
   S.session = id;
+  startSessionChrono();   // démarre le chrono global
   S.prevScreen = 'home';
   renderExercises();
   updateSessionProgress();
@@ -2434,7 +2881,7 @@ function renderExercises() {
         <div class="exo-photo-num">${allDone?'✓':idx+1}</div>
         <div class="exo-photo-content">
           <div class="exo-photo-name">${exo.name}</div>
-          <div class="exo-photo-level">Intermédiaire</div>
+          <div class="exo-photo-level">${exo.difficulty||'Intermédiaire'}</div>
         </div>
       </div>
       <div class="exo-prog"><div class="exo-prog-fill" style="width:${exoPct}%"></div></div>
@@ -2456,17 +2903,9 @@ function renderExercises() {
         <div class="muscle-bar">
           <div class="muscle-label">Muscles</div>
           <div class="muscle-tags">
-            ${exo.name.toLowerCase().includes('pec') || exo.name.toLowerCase().includes('couché') || exo.name.toLowerCase().includes('décliné') ? '<div class="muscle-tag">Pectoraux</div>' : ''}
-            ${exo.name.toLowerCase().includes('épaul') || exo.name.toLowerCase().includes('shoulder') || exo.name.toLowerCase().includes('laté') || exo.name.toLowerCase().includes('militaire') ? '<div class="muscle-tag">Deltoïdes</div>' : ''}
-            ${exo.name.toLowerCase().includes('tricep') || exo.name.toLowerCase().includes('extension') || exo.name.toLowerCase().includes('dips') ? '<div class="muscle-tag">Triceps</div>' : ''}
-            ${exo.name.toLowerCase().includes('dos') || exo.name.toLowerCase().includes('rowing') || exo.name.toLowerCase().includes('tirage') || exo.name.toLowerCase().includes('pull') ? '<div class="muscle-tag">Grand dorsal</div>' : ''}
-            ${exo.name.toLowerCase().includes('bicep') || exo.name.toLowerCase().includes('curl') ? '<div class="muscle-tag">Biceps</div>' : ''}
-            ${exo.name.toLowerCase().includes('quadri') || exo.name.toLowerCase().includes('presse') || exo.name.toLowerCase().includes('squat') || exo.name.toLowerCase().includes('extension') && exo.name.toLowerCase().includes('leg') ? '<div class="muscle-tag">Quadriceps</div>' : ''}
-            ${exo.name.toLowerCase().includes('ischios') || exo.name.toLowerCase().includes('curl') && exo.name.toLowerCase().includes('leg') || exo.name.toLowerCase().includes('roumain') ? '<div class="muscle-tag">Ischios</div>' : ''}
-            ${exo.name.toLowerCase().includes('fessier') || exo.name.toLowerCase().includes('hip') || exo.name.toLowerCase().includes('bulgarian') ? '<div class="muscle-tag">Fessiers</div>' : ''}
-            ${exo.name.toLowerCase().includes('trapèze') || exo.name.toLowerCase().includes('shrug') ? '<div class="muscle-tag">Trapèzes</div>' : ''}
-            ${exo.name.toLowerCase().includes('mollet') || exo.name.toLowerCase().includes('calf') ? '<div class="muscle-tag">Mollets</div>' : ''}
+            ${(exo.muscles||[]).map(m => `<div class="muscle-tag">${m}</div>`).join('')}
           </div>
+          <span class="difficulty-badge diff-${exo.difficulty||'Intermédiaire'}">${exo.difficulty||'Intermédiaire'}</span>
         </div>
         ${prevHtml}
         <div class="sets-wrap">
@@ -2477,6 +2916,7 @@ function renderExercises() {
           <button class="exo-btn-sm" onclick="addExtraSet('${exo.id}')">+ Série bonus</button>
           <button class="exo-btn-sm" onclick="skipExo('${exo.id}')">Passer</button>
         </div>
+        ${(() => { const rm = getBest1RM(exo.id); return rm > 0 ? `<div style="text-align:center;padding:4px 0 8px"><span class="oneRM-chip">🏋️ Meilleur 1RM : ${rm} kg</span></div>` : ''; })()}
         <div class="exo-note-row">
           <textarea class="exo-note-input" placeholder="📝 Note (genou droit, sensation...)" oninput="saveNote('${exo.id}',this.value)">${note}</textarea>
         </div>
@@ -2614,6 +3054,7 @@ function copyLastSession() {
 }
 
 function finishSession() {
+  stopSessionChrono()   // arrête le chrono;   // arrête le chrono
   const id   = S.session;
   const sess = PROGRAM.sessions[id];
   const saved = DB.get(sKey(id), {sets:{}, finished:false});
@@ -2993,6 +3434,26 @@ function renderStats() {
       <button onclick="saveMensurations()" style="width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:10px;border-radius:var(--r-sm);font-family:var(--font);font-size:13px;cursor:pointer">Enregistrer les mensurations</button>
     </div>
 
+    
+    <!-- ===== 1RM estimés ===== -->
+    <div class="chart-card" id="onerm-section">
+      <div class="chart-title">1RM estimés (Epley : poids × (1 + reps/30))</div>
+      <div id="onerm-list"></div>
+    </div>
+
+    <!-- ===== Volume par type de séance ===== -->
+    <div class="chart-card">
+      <div class="chart-title">Volume par type de séance (semaine en cours)</div>
+      <div class="vol-chart-wrap" id="vol-session-chart"></div>
+    </div>
+
+    <!-- ===== Photos de progression ===== -->
+    <div class="chart-card">
+      <div class="chart-title">📷 Ma progression physique</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Prends une photo régulièrement pour visualiser ta transformation.</div>
+      <div class="progress-photos-grid" id="progress-photos-grid"></div>
+    </div>
+
     <!-- Progression exo -->
     <div class="chart-card">
       <div class="chart-title">Progression par exercice</div>
@@ -3141,6 +3602,14 @@ function renderSettings() {
     </div>
 
     <div class="settings-group">
+      <div class="settings-group-title">Mes données</div>
+      <div class="settings-row" onclick="exportCSV()" style="cursor:pointer">
+        <div class="settings-row-label">📥 Exporter l'historique (CSV)</div>
+        <div class="settings-row-val" style="color:var(--text3)">Excel compatible</div>
+      </div>
+    </div>
+
+    <div class="settings-group">
       <div class="settings-group-title">Danger</div>
       <div class="settings-row" onclick="confirmReset()"><div class="settings-row-label settings-row-danger">🗑️ Tout réinitialiser</div></div>
     </div>
@@ -3179,5 +3648,64 @@ function confirmReset(){if(!confirm('Supprimer TOUTES les données APEX ? Irrév
 window.addEventListener('load', init);
 
 </script>
+
+<script>
+// ================================================================
+// SERVICE WORKER — Pour que l'app fonctionne HORS-LIGNE
+// (Cache l'app à la première visite, la sert ensuite sans internet)
+// ================================================================
+if ('serviceWorker' in navigator) {
+  // On crée le Service Worker inline avec un Blob URL
+  // (technique avancée pour PWA single-file sans serveur Node)
+  const swCode = `
+const CACHE_NAME = 'apex-v1';
+const ASSETS = [self.location.href.replace(/sw\.js.*/, '')];
+
+// Installation : on met l'app en cache
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+  );
+  self.skipWaiting();
+});
+
+// Activation : on supprime les vieux caches
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+    ))
+  );
+  self.clients.claim();
+});
+
+// Fetch : sert depuis le cache si dispo, sinon réseau
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      if (cached) return cached;
+      return fetch(e.request).then(response => {
+        // Met en cache les nouvelles ressources
+        if (response && response.status === 200 && response.type === 'basic') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+        }
+        return response;
+      }).catch(() => cached); // Fallback si hors-ligne
+    })
+  );
+});
+`;
+
+  // Crée un fichier SW depuis le code inline
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+
+  navigator.serviceWorker.register(swUrl, { scope: '/' })
+    .then(reg => console.log('[APEX] Service Worker enregistré', reg))
+    .catch(err => console.warn('[APEX] Service Worker erreur:', err));
+}
+</script>
+
 </body>
 </html>
