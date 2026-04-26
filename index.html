@@ -2944,8 +2944,12 @@ document.addEventListener('visibilitychange', () => {
 // ================================================================
 // NAVIGATION
 // ================================================================
-function showScreen(id) {
+function showScreen(id, fromPopState) {
   S.screen = id; // mémoriser l'écran actuel (utilisé par goBack)
+  // Pousser dans l'historique du navigateur (gère le bouton retour du téléphone)
+  if (!fromPopState) {
+    history.pushState({ screen: id }, '', '');
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(`screen-${id}`);
   if (!el) return;
@@ -2983,6 +2987,22 @@ function goBack() {
   }
   showScreen(S.prevScreen || 'home');
 }
+
+// Intercepter le bouton retour du navigateur / swipe retour sur mobile
+window.addEventListener('popstate', (e) => {
+  const target = e.state?.screen || S.prevScreen || 'home';
+  // Si on est en séance avec progression, bloquer la navigation arrière
+  if (S.screen === 'session') {
+    const saved = DB.get(sKey(S.session), {sets:{}, finished:false});
+    const hasProgress = Object.values(saved.sets || {}).some(arr => arr.some(s => s.done));
+    if (hasProgress && !saved.finished) {
+      // Repousser l'état pour annuler le retour
+      history.pushState({ screen: S.screen }, '', '');
+      if (!confirm('Quitter la séance ? Ta progression est sauvegardée automatiquement.')) return;
+    }
+  }
+  showScreen(target, true); // true = vient de popstate, ne pas repousser dans history
+});
 
 // ================================================================
 // HOME
@@ -4866,55 +4886,10 @@ window.addEventListener('load', init);
 // (Cache l'app à la première visite, la sert ensuite sans internet)
 // ================================================================
 if ('serviceWorker' in navigator) {
-  // On crée le Service Worker inline avec un Blob URL
-  // (technique avancée pour PWA single-file sans serveur Node)
-  const swCode = `
-const CACHE_NAME = 'apex-v1';
-const ASSETS = [self.location.href.replace(/sw\.js.*/, '')];
-
-// Installation : on met l'app en cache
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
-  );
-  self.skipWaiting();
-});
-
-// Activation : on supprime les vieux caches
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-    ))
-  );
-  self.clients.claim();
-});
-
-// Fetch : sert depuis le cache si dispo, sinon réseau
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(response => {
-        // Met en cache les nouvelles ressources
-        if (response && response.status === 200 && response.type === 'basic') {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
-        }
-        return response;
-      }).catch(() => cached); // Fallback si hors-ligne
-    })
-  );
-});
-`;
-
-  // Crée un fichier SW depuis le code inline
-  const blob = new Blob([swCode], { type: 'application/javascript' });
-  const swUrl = URL.createObjectURL(blob);
-
-  navigator.serviceWorker.register(swUrl, { scope: '/' })
-    .then(reg => console.log('[APEX] Service Worker enregistré', reg))
-    .catch(err => console.warn('[APEX] Service Worker erreur:', err));
+  // Enregistrement du Service Worker depuis /sw.js (compatible mobile)
+  navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    .then(reg => console.log('[APEX] SW enregistré', reg.scope))
+    .catch(err => console.warn('[APEX] SW non disponible:', err));
 }
 
 // ================================================================
