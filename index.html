@@ -3890,7 +3890,6 @@ function validatePlan() {
 // COACH SCREEN
 // ================================================================
 function renderCoach() {
-  const summary = buildCoachSummary();
   const el = document.getElementById('coach-content');
   // Questions intelligentes basées sur l'état actuel
   const briefingQ = DB.get('coach-briefing');
@@ -3915,7 +3914,7 @@ function renderCoach() {
       ${summary.declining.length   ? `<div class="coach-summary-row">📉 <span style="color:var(--red)">En baisse :</span> ${summary.declining.map(p=>`${p.name} (${p.loss})`).join(', ')}</div>` : ''}
       ${!summary.progressing.length && !summary.stagnating.length && !summary.declining.length ? '<div style="color:var(--text3);font-size:12px">Complète quelques séances pour débloquer l\'analyse.</div>' : ''}
     </div>` : '<div class="coach-summary"><div class="coach-summary-title">Résumé de progression</div><div style="color:var(--text3);font-size:12px">Complète tes premières séances pour débloquer les analyses 💪</div></div>'}
-    <div class="coach-quick-btns">${QQfinal.map(q=>`<button class="coach-q" onclick="sendQ('${q.replace(/'/g,\"\\'\")}'">${q}</button>`).join('')}</div>
+    <div class="coach-quick-btns">${QQfinal.map(q=>`<button class="coach-q" onclick="sendQ(this.dataset.q)" data-q="${q}">${q}</button>`).join('')}</div>
     <div class="coach-chat" id="coach-chat">
       <div class="cmsg ai">Bonjour ! Je suis ton coach personnel APEX. Je connais toutes tes performances depuis le début. Pose-moi n'importe quelle question sur ta progression, ton programme, ou ta récupération. 💪</div>
     </div>
