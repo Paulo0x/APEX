@@ -2948,7 +2948,7 @@ function showScreen(id, fromPopState) {
   S.screen = id; // mémoriser l'écran actuel (utilisé par goBack)
   // Pousser dans l'historique du navigateur (gère le bouton retour du téléphone)
   if (!fromPopState) {
-    history.pushState({ screen: id }, '', '#' + id);
+    history.pushState({ screen: id }, '');
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(`screen-${id}`);
@@ -2997,7 +2997,7 @@ window.addEventListener('popstate', (e) => {
     const hasProgress = Object.values(saved.sets || {}).some(arr => arr.some(s => s.done));
     if (hasProgress && !saved.finished) {
       // Repousser l'état pour annuler le retour
-      history.pushState({ screen: S.screen }, '', '');
+      history.pushState({ screen: S.screen }, '');
       if (!confirm('Quitter la séance ? Ta progression est sauvegardée automatiquement.')) return;
     }
   }
