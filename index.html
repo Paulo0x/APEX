@@ -2598,12 +2598,135 @@ function deleteProgressPhoto(idx) {
 // ================================================================
 // INIT
 // ================================================================
+
+// ================================================================
+// AUTO-AVANCEMENT DE SEMAINE
+// ================================================================
+
+
+// ================================================================
+// PARTAGE DES STATS
+// ================================================================
+async function shareStats() {
+  // Construit un résumé texte des stats
+  const hist = DB.get('history', []);
+  const wLog = DB.get('weight-log', []);
+  const streak = computeStreak();
+
+  // Calcul volume total
+  let vol = 0;
+  hist.forEach(e => {
+    const d = DB.get(e.key);
+    if (!d?.sets) return;
+    Object.values(d.sets).forEach(arr => arr.forEach(s => {
+      if (s.done && s.weight) vol += (parseFloat(s.weight)||0) * (parseInt(s.reps)||0);
+    }));
+  });
+
+  // Trouver le meilleur PR (poids le plus lourd soulevé)
+  let bestPR = { name: '', weight: 0 };
+  const prs = {};
+  hist.forEach(e => {
+    const d = DB.get(e.key); if (!d?.sets) return;
+    Object.entries(d.sets).forEach(([exoId, arr]) => {
+      arr.forEach(s => {
+        if (s.done && s.weight && (parseFloat(s.weight) > (prs[exoId]?.w||0))) {
+          prs[exoId] = { w: parseFloat(s.weight), id: exoId };
+        }
+      });
+    });
+  });
+  // Trouver le nom du meilleur PR
+  for (const [exoId, pr] of Object.entries(prs)) {
+    if (pr.w > bestPR.weight) {
+      bestPR.weight = pr.w;
+      for (const sess of Object.values(PROGRAM.sessions)) {
+        const ex = sess.exercises.find(x => x.id === exoId);
+        if (ex) { bestPR.name = ex.name; break; }
+      }
+    }
+  }
+
+  const volStr = vol >= 1000 ? `${(vol/1000).toFixed(1)}t` : `${Math.round(vol)}kg`;
+  const lines = [
+    '💪 APEX — Mon bilan fitness',
+    '',
+    `🔥 Streak actuel : ${streak} jour${streak>1?'s':''}`,
+    `📊 Séances totales : ${hist.length}`,
+    `⚡ Volume soulevé : ${volStr}`,
+    `📅 Progression : Semaine ${S.week}/7`,
+    bestPR.weight > 0 ? `🏆 Meilleur PR : ${bestPR.name} — ${bestPR.weight}kg` : '',
+    wLog.length ? `⚖️ Poids actuel : ${wLog[wLog.length-1].w}kg` : '',
+    '',
+    '🏋️ Application APEX — Progressive Overload',
+  ].filter(Boolean).join('\n');
+
+  try {
+    if (navigator.share) {
+      // API native de partage (iOS/Android)
+      await navigator.share({ title: 'APEX — Mes stats', text: lines });
+    } else {
+      // Fallback : copie dans le presse-papier
+      await navigator.clipboard.writeText(lines);
+      showToast('📋 Stats copiées dans le presse-papier !', 'success');
+    }
+  } catch(e) {
+    // L'utilisateur a annulé le partage — c'est normal
+  }
+}
+
+// ================================================================
+// NOUVEAU CYCLE (après S7)
+// ================================================================
+function startNewCycle() {
+  if (!confirm('Recommencer un nouveau cycle en Semaine 1 ?\nTes données et historique sont conservés.')) return;
+  S.week = 1;
+  DB.set('week', 1);
+  DB.set('weekStartDate', new Date().toISOString()); // nouvelle semaine = aujourd'hui
+  updateWeekChip();
+  showToast('💪 Nouveau cycle S1 — Let\'s go !', 'success');
+  showScreen('home');
+}
+
+function checkAutoWeekAdvance() {
+  const weekStart = DB.get('weekStartDate');
+
+  // Première ouverture : initialiser la date de début
+  if (!weekStart) {
+    DB.set('weekStartDate', new Date().toISOString());
+    return;
+  }
+
+  // Combien de jours depuis le début de la semaine actuelle ?
+  const daysSince = Math.floor((Date.now() - new Date(weekStart).getTime()) / (86400000));
+
+  // Si 7+ jours se sont écoulés ET qu'on n'est pas déjà à S7
+  if (daysSince >= 7 && S.week < 7) {
+    const newWeek = Math.min(S.week + Math.floor(daysSince / 7), 7);
+    if (newWeek > S.week) {
+      S.week = newWeek;
+      DB.set('week', newWeek);
+      DB.set('weekStartDate', new Date().toISOString());
+      updateWeekChip();
+      // Toast informatif après l'écran de démarrage
+      setTimeout(() => {
+        if (newWeek === 7) {
+          showToast('❄️ Semaine de Deload ! Charges réduites de 20%.', 'error');
+        } else {
+          showToast(`🗓 Nouvelle semaine détectée — passage en S${newWeek} !`, 'success');
+        }
+      }, 2500);
+    }
+  }
+}
+
 function init() {
   S.week    = DB.get('week', 1);
   S.theme   = DB.get('theme', 'rouge');
   S.increment = DB.get('increment', 2);
   applyTheme(S.theme);
   updateWeekChip();
+  checkAutoWeekAdvance(); // vérifie si une nouvelle semaine a commencé
 
   setTimeout(() => {
     const splash = document.getElementById('splash');
@@ -2667,7 +2790,10 @@ function showScreen(id) {
   else if (id === 'warmup')  { title.textContent = '🔥 Échauffement'; S.prevScreen = 'session'; renderWarmup(); }
   else if (id === 'cooldown'){ title.textContent = '🧘 Cool-down';    S.prevScreen = 'session'; renderCooldown(); }
   else if (id === 'coach')   { title.textContent = 'Coach IA'; renderCoach(); }
-  else if (id === 'stats')   { title.textContent = 'Statistiques'; renderStats(); }
+  else if (id === 'stats')   {
+    title.innerHTML = 'Statistiques <button onclick="shareStats()" title="Partager mes stats" style="background:none;border:none;font-size:18px;cursor:pointer;padding:0 0 0 8px;vertical-align:middle;opacity:0.7" aria-label="Partager">↑</button>';
+    renderStats();
+  }
   else if (id === 'history') { title.textContent = 'Historique'; renderHistory(); }
   else if (id === 'settings'){ title.textContent = 'Réglages'; renderSettings(); }
 
@@ -2869,6 +2995,22 @@ function renderExercises() {
   const sess = PROGRAM.sessions[id];
   const saved = DB.get(sKey(id), {sets:{}, finished:false});
   const deload = S.week === 7;
+
+  // Afficher/cacher le banner deload selon la semaine
+  const existingBanner = document.getElementById('deload-banner');
+  if (deload && !existingBanner) {
+    // Insérer le banner deload sous le hero de session
+    const hero = document.getElementById('session-hero');
+    if (hero) {
+      const banner = document.createElement('div');
+      banner.id = 'deload-banner';
+      banner.style.cssText = 'background:rgba(100,100,255,0.12);border:1px solid rgba(100,100,255,0.25);border-radius:10px;margin:0 16px 8px;padding:10px 14px;font-size:12px;color:#a0a0ff;display:flex;align-items:center;gap:8px';
+      banner.innerHTML = '<span style="font-size:18px">❄️</span><div><strong>Semaine Deload</strong> — Charges réduites de 20%. Récupère, prépare le prochain cycle.</div>';
+      hero.after(banner);
+    }
+  } else if (!deload && existingBanner) {
+    existingBanner.remove();
+  }
 
   // Savoir quelle série est "active" (la prochaine à faire)
   let activeExoId = null, activeSetIdx = -1;
@@ -3172,7 +3314,23 @@ function finishSession() {
   launchConfetti();
   showToast('🔥 Séance terminée ! Beau boulot.', 'success');
 
-  if (S.nextWeekPlan && S.week < 7) {
+  if (S.week === 7) {
+    // En S7 (deload), compter combien de séances ont été faites cette semaine
+    const ORDER = ['push','pull','legs','upper','arms'];
+    const sessionsFinishedThisWeek = ORDER.filter(sid => DB.get(sKey(sid))?.finished).length;
+    if (sessionsFinishedThisWeek >= 5) {
+      // Toutes les séances du cycle sont terminées → proposer un nouveau cycle
+      setTimeout(() => {
+        if (confirm('🏆 Cycle complet terminé !\n\nTu as fini les 7 semaines du programme. Recommencer un nouveau cycle ?')) {
+          startNewCycle();
+        } else {
+          showScreen('home');
+        }
+      }, 1000);
+    } else {
+      setTimeout(() => showScreen('home'), 800);
+    }
+  } else if (S.nextWeekPlan && S.week < 7) {
     setTimeout(() => showNextWeekModal(), 1000);
   } else {
     setTimeout(() => showScreen('home'), 800);
@@ -3343,6 +3501,8 @@ function showFloatingTimer(sec) {
       T.running = false;
       clearInterval(T.iv);
       playBeep();               // bip de fin
+      // Vibration longue pour signaler que le repos est terminé (mobile)
+      if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 500]);
       // Ferme automatiquement après 2 secondes
       setTimeout(() => closeTimer(), 2000);
     }
@@ -3720,6 +3880,16 @@ function renderSettings() {
     </div>
 
     <div class="settings-group">
+      ${S.week === 7 ? `
+      <!-- Bouton visible seulement en semaine 7 (deload terminé) -->
+      <div class="settings-group" style="margin-bottom:0">
+        <div style="padding:12px 15px">
+          <button onclick="startNewCycle()" style="width:100%;background:linear-gradient(135deg,var(--red),var(--gold));border:none;color:#fff;padding:14px;border-radius:var(--r-sm);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;letter-spacing:0.5px">
+            🔄 Démarrer un nouveau cycle (S1)
+          </button>
+          <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">Ton historique et tes PR sont conservés</div>
+        </div>
+      </div>` : ''}
       <div class="settings-group-title">Danger</div>
       <div class="settings-row" onclick="confirmReset()"><div class="settings-row-label settings-row-danger">🗑️ Tout réinitialiser</div></div>
     </div>
@@ -3731,7 +3901,15 @@ function renderSettings() {
     </div>`;
 }
 
-function setWeek(n){S.week=n;DB.set('week',n);updateWeekChip();renderSettings();showToast(`Semaine ${n}${n===7?' ❄️ Deload':''}`,n===7?'':'success');}
+function setWeek(n){
+  S.week=n;
+  DB.set('week',n);
+  // Enregistrer la date de début de cette semaine (pour l'auto-avancement)
+  DB.set('weekStartDate', new Date().toISOString());
+  updateWeekChip();
+  renderSettings();
+  showToast(`Semaine ${n}${n===7?' ❄️ Deload':''}`,n===7?'error':'success');
+}
 function setIncrement(v){S.increment=v;DB.set('increment',v);renderSettings();showToast(`Incrément : ${v} kg`);}
 function setTheme(name){S.theme=name;DB.set('theme',name);applyTheme(name);renderSettings();}
 
