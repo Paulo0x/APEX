@@ -2935,7 +2935,6 @@ function renderExercises() {
       </div>
       <div class="exo-prog"><div class="exo-prog-fill" style="width:${exoPct}%"></div></div>
       <div class="exo-header-simple" onclick="toggleExo('${exo.id}')">
-        <div class="exo-num-sm">${allDone?'✓':idx+1}</div>
         <div class="exo-info">
           <div class="exo-name">${exo.name}</div>
           <div class="exo-specs">
@@ -3834,6 +3833,8 @@ self.addEventListener('fetch', e => {
 
     // === TOUCH ===
     handle.addEventListener('touchstart', (e) => {
+      // Ne pas démarrer le drag si on touche le bouton ✕
+      if (e.target.closest('.timer-close-btn')) return;
       dragging = true;
       const touch = e.touches[0];
       // Si pas encore positionné en absolu, initialiser depuis le rendu actuel
@@ -3860,6 +3861,8 @@ self.addEventListener('fetch', e => {
 
     // === SOURIS ===
     handle.addEventListener('mousedown', (e) => {
+      // Ne pas démarrer le drag si on clique sur le bouton ✕
+      if (e.target.closest('.timer-close-btn')) return;
       dragging = true;
       if (!timer.style.left) {
         const rect = timer.getBoundingClientRect();
