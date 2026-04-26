@@ -4715,6 +4715,10 @@ function renderSettings() {
     <div class="settings-group">
       <div class="settings-group-title">Coach IA</div>
       <div class="settings-row" onclick="if(S.nextWeekPlan){showNextWeekModal();}else{showToast('Pas encore de données','error');}"><div class="settings-row-label">📋 Voir plan semaine suivante</div><div class="settings-row-val">›</div></div>
+      <div class="settings-row" onclick="sendToCowork()" style="background:linear-gradient(135deg,var(--red)15%,transparent);border-left:3px solid var(--red)">
+        <div class="settings-row-label">🤝 Envoyer au Coach Cowork</div>
+        <div class="settings-row-val" style="font-size:10px;color:var(--text3)">Sauvegarde dans le dossier APEX</div>
+      </div>
     </div>
 
     <div class="settings-group">
@@ -4783,6 +4787,72 @@ function showToast(msg,type=''){const t=document.getElementById('toast');t.class
 function launchConfetti(){const colors=['#ff3b3b','#30d158','#ff9f0a','#0a84ff','#bf5af2'];for(let i=0;i<22;i++){const el=document.createElement('div');el.className='confetti-p';el.style.cssText=`left:${Math.random()*100}vw;top:-10px;background:${colors[i%colors.length]};animation-delay:${Math.random()*0.5}s;animation-duration:${1+Math.random()*1}s`;document.body.appendChild(el);setTimeout(()=>el.remove(),2500);}}
 
 function exportData(){const data={};Object.keys(localStorage).filter(k=>k.startsWith('apfp.')).forEach(k=>data[k]=localStorage.getItem(k));const blob=new Blob([JSON.stringify({version:'5.0',date:new Date().toISOString(),data},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`apex-backup-${fmtDate(new Date())}.json`;a.click();URL.revokeObjectURL(url);showToast('Backup exporté ✓','success');}
+
+async function sendToCowork() {
+  // Collecte toutes les données utiles pour le coaching
+  const hist = DB.get('history', []);
+  if (!hist.length) { showToast('Aucune séance enregistrée', 'error'); return; }
+
+  // Construire le payload coaching (compact mais complet)
+  const payload = {
+    exportDate: new Date().toISOString(),
+    week: S.week,
+    history: hist,
+    sessions: {},
+    weightLog: DB.get('weight-log', []),
+    mensurations: DB.get('mensuration-log', []),
+    recovery: DB.get('recovery-log', []),
+  };
+
+  // Ajouter les données de séries pour chaque session de l'historique
+  hist.forEach(entry => {
+    const data = DB.get(entry.key);
+    if (data) payload.sessions[entry.key] = data;
+  });
+
+  // Ajouter les progressions par exercice
+  const allExos = [];
+  Object.values(PROGRAM.sessions).forEach(sess => sess.exercises.forEach(e => allExos.push(e)));
+  payload.progress = {};
+  allExos.forEach(exo => {
+    const prog = DB.get(`prog-${exo.id}`, []);
+    if (prog.length) payload.progress[exo.id] = { name: exo.name, data: prog };
+  });
+
+  const json = JSON.stringify(payload, null, 2);
+  const fileName = 'apex-coaching.json';
+
+  try {
+    // Essayer File System Access API (écrit directement dans le dossier APEX)
+    if ('showSaveFilePicker' in window) {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [{ description: 'Données coaching', accept: { 'application/json': ['.json'] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(json);
+      await writable.close();
+      showToast('✅ Fichier sauvegardé ! Dis à Claude de le lire.', 'success');
+    } else {
+      // Fallback : téléchargement classique
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = fileName; a.click();
+      URL.revokeObjectURL(url);
+      showToast('Fichier téléchargé — glisse-le dans Cowork', 'success');
+    }
+  } catch(e) {
+    if (e.name !== 'AbortError') {
+      // Fallback si annulé ou non supporté
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = fileName; a.click();
+      URL.revokeObjectURL(url);
+      showToast('Fichier téléchargé — glisse-le dans Cowork', 'success');
+    }
+  }
+}
 function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const obj=JSON.parse(ev.target.result);if(!obj.data)throw new Error();if(!confirm('Importer ? Les données actuelles seront remplacées.'))return;Object.entries(obj.data).forEach(([k,v])=>localStorage.setItem(k,v));S.week=DB.get('week',1);updateWeekChip();showToast('Import réussi ✓','success');showScreen('home');}catch{showToast('Fichier invalide','error');}};reader.readAsText(file);}
 function confirmReset(){if(!confirm('Supprimer TOUTES les données APEX ? Irréversible.'))return;if(!confirm('Vraiment ?'))return;DB.clear();S.week=1;S.nextWeekPlan=null;S.coachHistory=[];updateWeekChip();showToast('Données réinitialisées');showScreen('home');}
 
