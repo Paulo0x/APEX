@@ -3110,6 +3110,12 @@ function renderExercises() {
   }
 
   const list = document.getElementById('exercises-list');
+  // Sauvegarder quels exercices sont ouverts avant le re-render
+  // Sans ca, la carte se referme quand on valide une serie (bug timer)
+  const openBodies = new Set();
+  list.querySelectorAll('.exo-body:not(.collapsed)').forEach(el => {
+    openBodies.add(el.id.replace('body-', ''));
+  });
   list.innerHTML = sess.exercises.map((exo, idx) => {
     const setsData = saved.sets[exo.id] || [];
     const doneCnt  = setsData.filter(s => s.done).length;
@@ -3192,7 +3198,7 @@ function renderExercises() {
         </div>
         <div class="exo-status ${allDone?'done-all':''}">${allDone?'✓':`${doneCnt}/${exo.sets}`}</div>
       </div>
-      <div class="exo-body ${idx===0?'':'collapsed'}" id="body-${exo.id}">
+      <div class="exo-body ${(openBodies.has(exo.id)||(idx===0&&openBodies.size===0))?'':'collapsed'}" id="body-${exo.id}">
         <div class="exo-technique"><strong>Technique :</strong> ${exo.technique}</div>
         <div class="muscle-bar">
           <div class="muscle-label">Muscles</div>
