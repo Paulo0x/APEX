@@ -852,44 +852,7 @@ canvas { width: 100% !important; }
 }
 .sess-chrono svg { opacity: 0.7; }
 
-/* Modal de récupération */
-.recovery-backdrop {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-  z-index: 500; display: flex; align-items: flex-end; justify-content: center;
-}
-.recovery-backdrop.hidden { display: none; }
-.recovery-sheet {
-  background: var(--bg2); border-radius: 20px 20px 0 0;
-  padding: 24px 20px 36px; width: 100%; max-width: 480px;
-  border-top: 1px solid var(--border);
-}
-.recovery-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 0 auto 20px; }
-.recovery-title { font-size: 18px; font-weight: 900; color: var(--text); margin-bottom: 6px; }
-.recovery-sub { font-size: 13px; color: var(--text2); margin-bottom: 22px; }
-.recovery-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
-.recovery-stars { display: flex; gap: 8px; margin-bottom: 18px; }
-.recovery-star {
-  font-size: 28px; cursor: pointer; transition: transform 0.1s;
-  filter: grayscale(1) opacity(0.4);
-}
-.recovery-star.active { filter: none; transform: scale(1.15); }
-.recovery-pain {
-  background: var(--bg3); border: 1px solid var(--border2);
-  border-radius: var(--r); padding: 10px 12px;
-  color: var(--text); font-family: var(--font); font-size: 13px;
-  width: 100%; resize: none; height: 60px; margin-bottom: 18px;
-}
-.recovery-pain:focus { outline: none; border-color: var(--gold); }
-.recovery-btn-start {
-  width: 100%; padding: 15px; background: var(--red); border: none;
-  border-radius: var(--r); color: #fff; font-family: var(--font);
-  font-size: 16px; font-weight: 800; cursor: pointer; transition: opacity 0.15s;
-}
-.recovery-btn-start:active { opacity: 0.8; }
-.recovery-btn-skip { 
-  width: 100%; padding: 10px; background: transparent; border: none;
-  color: var(--text3); font-family: var(--font); font-size: 13px; cursor: pointer; margin-top: 8px;
-}
+
 
 /* Badge difficulty */
 .difficulty-badge {
@@ -1115,40 +1078,6 @@ canvas { width: 100% !important; }
 
 <!-- TIMER -->
 
-<!-- ============================================================ -->
-<!-- MODAL RÉCUPÉRATION PRÉ-SÉANCE -->
-<!-- ============================================================ -->
-<div id="recovery-modal" class="recovery-backdrop hidden">
-  <div class="recovery-sheet">
-    <div class="recovery-handle"></div>
-    <div class="recovery-title">Comment tu te sens ? 💪</div>
-    <div class="recovery-sub">Un check rapide avant ta séance — aide le coach à t'analyser</div>
-    
-    <div class="recovery-label">Qualité du sommeil</div>
-    <div class="recovery-stars" id="recovery-sleep">
-      <span class="recovery-star" data-val="1" onclick="setRecovery('sleep',1)">😴</span>
-      <span class="recovery-star" data-val="2" onclick="setRecovery('sleep',2)">😐</span>
-      <span class="recovery-star" data-val="3" onclick="setRecovery('sleep',3)">🙂</span>
-      <span class="recovery-star" data-val="4" onclick="setRecovery('sleep',4)">😊</span>
-      <span class="recovery-star" data-val="5" onclick="setRecovery('sleep',5)">🤩</span>
-    </div>
-
-    <div class="recovery-label">Niveau de fatigue (1=épuisé · 5=au top)</div>
-    <div class="recovery-stars" id="recovery-energy">
-      <span class="recovery-star" data-val="1" onclick="setRecovery('energy',1)">🪫</span>
-      <span class="recovery-star" data-val="2" onclick="setRecovery('energy',2)">😓</span>
-      <span class="recovery-star" data-val="3" onclick="setRecovery('energy',3)">😌</span>
-      <span class="recovery-star" data-val="4" onclick="setRecovery('energy',4)">⚡</span>
-      <span class="recovery-star" data-val="5" onclick="setRecovery('energy',5)">🔥</span>
-    </div>
-
-    <div class="recovery-label">Douleurs / blessures (optionnel)</div>
-    <textarea class="recovery-pain" id="recovery-pain" placeholder="Ex: légère douleur épaule droite..."></textarea>
-
-    <button class="recovery-btn-start" onclick="confirmRecovery()">🚀 Lancer la séance</button>
-    <button class="recovery-btn-skip" onclick="skipRecovery()">Passer sans noter</button>
-  </div>
-</div>
 
 <!-- MODAL CHOIX DURÉE TIMER (accessible depuis accueil) -->
 <div class="timer-pick-modal hidden" id="timer-pick-modal" onclick="if(event.target===this)closeTimerPick()">
@@ -2458,53 +2387,6 @@ function getBest1RM(exoId) {
 }
 
 // ================================================================
-// JOURNAL DE RÉCUPÉRATION
-// ================================================================
-
-// État temporaire du check-in
-const REC = { sleep: 0, energy: 0, pain: '' };
-
-// Met à jour la valeur et actualise les émoticônes visuellement
-function setRecovery(type, val) {
-  REC[type] = val;
-  const container = document.getElementById('recovery-' + type);
-  if (!container) return;
-  container.querySelectorAll('.recovery-star').forEach(star => {
-    const starVal = parseInt(star.dataset.val);
-    star.classList.toggle('active', starVal <= val);
-  });
-}
-
-// Ouvre la modal de récupération avant de charger la séance
-function showRecoveryModal(sessId) {
-  // Remet à zéro
-  REC.sleep = 0; REC.energy = 0; REC.pain = '';
-  ['recovery-sleep','recovery-energy'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.querySelectorAll('.recovery-star').forEach(s => s.classList.remove('active'));
-  });
-  const painEl = document.getElementById('recovery-pain');
-  if (painEl) painEl.value = '';
-  S._pendingSession = sessId;   // mémorise la séance à lancer
-  document.getElementById('recovery-modal').classList.remove('hidden');
-}
-
-// Valide le check-in et lance la séance
-function confirmRecovery() {
-  REC.pain = document.getElementById('recovery-pain')?.value || '';
-  // Sauvegarde dans la clé de la séance
-  const key = `recovery-${new Date().toISOString().split('T')[0]}`;
-  DB.set(key, { sleep: REC.sleep, energy: REC.energy, pain: REC.pain, date: new Date().toISOString() });
-  document.getElementById('recovery-modal').classList.add('hidden');
-  if (S._pendingSession) launchSession(S._pendingSession);
-}
-
-// Lance la séance sans noter (bouton "Passer")
-function skipRecovery() {
-  document.getElementById('recovery-modal').classList.add('hidden');
-  if (S._pendingSession) launchSession(S._pendingSession);
-}
-
 // ================================================================
 // EXPORT CSV DE L'HISTORIQUE
 // ================================================================
@@ -3002,18 +2884,10 @@ function daysSince(dateStr) {
 // SESSION
 // ================================================================
 function startSession(id) {
-  // === CHECK RÉCUPÉRATION : une seule fois par jour ===
-  const todayKey = 'recovery-' + new Date().toISOString().split('T')[0];
-  if (!DB.get(todayKey)) {
-    // Pas encore checké aujourd'hui → ouvrir la modal
-    S._pendingSession = id;
-    document.getElementById('recovery-modal').classList.remove('hidden');
-    return; // confirmRecovery() / skipRecovery() rappellera launchSession(id)
-  }
   launchSession(id);
 }
 
-// launchSession = ancienne startSession (appelée après le check-in)
+// Lance la séance directement
 function launchSession(id) {
   S.session = id;
   startSessionChrono();   // démarre le chrono global
