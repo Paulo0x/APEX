@@ -445,7 +445,11 @@ body::before {
 .muscle-tags { display: flex; gap: 4px; flex-wrap: wrap; }
 .muscle-tag { font-size: 10px; font-weight: 600; color: var(--gold); background: var(--gold-dim); border: 1px solid rgba(245,197,24,0.15); padding: 2px 8px; border-radius: 5px; }
 
-.coach-banner { margin: 0 16px 6px; padding: 8px 12px; border-radius: var(--r-sm); font-size: 12px; display: flex; align-items: flex-start; gap: 6px; line-height: 1.4; }
+.coach-banner { background: rgba(245,197,24,0.08); border: 1px solid rgba(245,197,24,0.2); border-radius: 8px; padding: 8px 12px; margin: 0 16px 8px; font-size: 12px; color: var(--text2); line-height: 1.4; }
+.coach-banner.progress { background: rgba(34,221,102,0.08); border-color: rgba(34,221,102,0.25); color: #22dd66; }
+.coach-banner.maintain { background: rgba(245,197,24,0.06); border-color: rgba(245,197,24,0.18); color: var(--gold); }
+.coach-banner.down { background: rgba(255,100,100,0.08); border-color: rgba(255,100,100,0.2); color: #ff8888; }
+.coach-banner.deload { background: rgba(100,100,255,0.1); border-color: rgba(100,100,255,0.2); color: #a0a0ff; }
 .coach-banner.progress { background: var(--green-dim); color: var(--green); }
 .coach-banner.maintain { background: var(--blue-dim); color: var(--blue); }
 .coach-banner.reduce   { background: var(--red-dim);   color: var(--red); }
@@ -1852,6 +1856,104 @@ const COACH_CONFIG = {
   deloadFactor: 0.8,
   plateauWeeks: 2,            // semaines sans progression = plateau
 };
+// ============================================================
+// COACH — Surcharge progressive basée sur les séances précédentes
+// Lit directement sess-{week}-{id} → fiable même sans history
+// ============================================================
+function computeProgressiveSuggestions(sessId) {
+  const sess = PROGRAM.sessions[sessId];
+  if (!sess) return {};
+
+  // Cherche la dernière séance précédente avec des données réelles
+  let lastData = null;
+  // Cherche en remontant semaine par semaine (pas la semaine en cours)
+  for (let w = S.week - 1; w >= 1; w--) {
+    const d = DB.get('sess-' + w + '-' + sessId);
+    if (d && d.sets && Object.keys(d.sets).length > 0) {
+      lastData = d;
+      break;
+    }
+  }
+  // Fallback : cherche dans l'historique global
+  if (!lastData) {
+    const hist = DB.get('history', []);
+    for (const entry of hist) {
+      if (entry.sessionId === sessId) {
+        const d = DB.get(entry.key);
+        if (d && d.sets) { lastData = d; break; }
+      }
+    }
+  }
+  if (!lastData) return {};
+
+  const plan = {};
+
+  sess.exercises.forEach(exo => {
+    const sets = lastData.sets[exo.id] || [];
+    const done = sets.filter(s => s.done);
+    if (!done.length) return;
+
+    // Extraire poids et reps des séries validées
+    const weights = done.map(s => parseFloat(s.weight) || 0).filter(w => w > 0);
+    const repsArr = done.map(s => parseInt(s.reps) || 0).filter(r => r > 0);
+    if (!weights.length) return;
+
+    const maxW = Math.max(...weights);
+    const avgR = repsArr.length
+      ? Math.round(repsArr.reduce((a, b) => a + b, 0) / repsArr.length)
+      : 0;
+
+    // Bornes de la fourchette cible (ex: "8-12" → min=8, max=12)
+    const parts = String(exo.reps).split('-').map(Number);
+    const repMin = parts[0] || 8;
+    const repMax = parts[1] || parts[0] || 12;
+
+    // Incrément selon le type d'exercice
+    const isBig = COACH_CONFIG.bigLifts.includes(exo.id);
+    const increment = isBig ? COACH_CONFIG.weightIncrementBig : COACH_CONFIG.weightIncrement;
+
+    // Ratio séries dans la fourchette haute (≥ repMax)
+    const highReps = done.filter(s => (parseInt(s.reps) || 0) >= repMax).length;
+    const ratio = done.length > 0 ? highReps / done.length : 0;
+    const allCompleted = done.length >= exo.sets - 1; // tolérance 1 série manquante
+
+    let sugW = maxW;
+    let sugR = avgR > 0 ? Math.min(avgR + 1, repMax) : repMax; // vise +1 rep ou max
+    let reason = '';
+    let type = 'maintain';
+
+    if (ratio >= 0.75 && allCompleted) {
+      // 75%+ des séries en fourchette haute → on monte le poids
+      sugW = Math.round((maxW + increment) * 2) / 2;
+      sugR = repMin; // avec plus de poids, on repart du bas de la fourchette
+      reason = '💪 +' + increment + ' kg · ' + maxW + ' kg maîtrisé → vise ' + repMin + ' reps';
+      type = 'progress';
+    } else if (avgR > 0 && avgR < repMin && allCompleted) {
+      // Reps systématiquement sous le minimum → réduire légèrement
+      const reduced = Math.round(Math.max(maxW - increment, increment) * 2) / 2;
+      sugW = reduced;
+      sugR = repMax;
+      reason = '📉 Reps trop courtes (' + avgR + ') → -' + increment + ' kg · vise ' + repMax + ' reps';
+      type = 'down';
+    } else {
+      // Dans la fourchette → maintenir et viser plus de reps
+      reason = '📊 ' + maxW + ' kg · vise ' + sugR + ' reps cette fois';
+      type = 'maintain';
+    }
+
+    plan[exo.id] = {
+      suggestedWeight: sugW,
+      suggestedReps: sugR,
+      prevWeight: maxW,
+      prevReps: avgR,
+      reason,
+      type
+    };
+  });
+
+  return plan;
+}
+
 
 // =================================================================
 // ANALYSE D'UNE SÉANCE
@@ -3071,6 +3173,8 @@ function startSession(id) {
 function launchSession(id) {
   S.session = id;
   S._endModalShown = false; // reset détection fin de séance
+  // Calculer les suggestions de surcharge progressive pour cette séance
+  S.nextWeekPlan = computeProgressiveSuggestions(id);
   startSessionChrono();   // démarre le chrono global
   S.prevScreen = 'home';
   renderExercises();
@@ -3154,6 +3258,9 @@ function renderExercises() {
       prefill = coachSug.suggestedWeight;
     }
 
+    // Reps suggérées (depuis la suggestion coach)
+    const prefillReps = coachSug?.suggestedReps || null;
+
     // Bandeau coach / historique
     let prevHtml = '';
     if (deload && exoPR) {
@@ -3179,7 +3286,7 @@ function renderExercises() {
       return `<div class="set-row ${set.done?'set-done':''} ${isActive?'active-set':''}" id="setrow-${exo.id}-${i}">
         <div class="set-num ${isActive?'current':''}">${i+1}</div>
         <input type="number" class="set-input ${isFill?'coach-fill':''}" placeholder="kg" inputmode="decimal" step="0.5" value="${wVal}" ${set.done?'readonly':''} id="w-${exo.id}-${i}" onchange="updSet('${exo.id}',${i},'weight',this.value)">
-        <input type="number" class="set-input" placeholder="reps" inputmode="numeric" value="${set.reps||''}" ${set.done?'readonly':''} id="r-${exo.id}-${i}" onchange="updSet('${exo.id}',${i},'reps',this.value)">
+        <input type="number" class="set-input" placeholder="reps" inputmode="numeric" value="${set.reps || (!set.done && prefillReps ? prefillReps : '')}" ${set.done?'readonly':''} id="r-${exo.id}-${i}" onchange="updSet('${exo.id}',${i},'reps',this.value)">
         ${timerHtml}
         <button class="set-ok ${set.done?'validated':''}" id="v-${exo.id}-${i}" onclick="toggleDone('${exo.id}',${i})">${set.done?'✓':'○'}</button>
       </div>`;
