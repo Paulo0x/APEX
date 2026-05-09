@@ -3379,14 +3379,10 @@ function copyLastSession() {
 function promptBodyWeight() {
   // Récupère le poids actuel si déjà saisi
   const current = DB.get('body-weight-current');
-  const val = prompt(
-    current
-      ? \`Ton poids actuel : \${current.weight} kg (saisi le \${new Date(current.date).toLocaleDateString('fr-FR')})
-
-Entre ton nouveau poids (kg) :\`
-      : 'Entre ton poids corporel actuel (kg) :',
-    current ? current.weight : ''
-  );
+  let msg = current
+    ? 'Ton poids actuel : ' + current.weight + ' kg (saisi le ' + new Date(current.date).toLocaleDateString('fr-FR') + ')\n\nEntre ton nouveau poids (kg) :'
+    : 'Entre ton poids corporel actuel (kg) :';
+  const val = prompt(msg, current ? current.weight : '');
   if (val === null) return; // annulé
   const w = parseFloat(val.replace(',', '.'));
   if (!w || w < 30 || w > 250) { showToast('Poids invalide (30-250 kg)', 'error'); return; }
@@ -3399,7 +3395,7 @@ Entre ton nouveau poids (kg) :\`
   // Mettre à jour l'affichage
   const el = document.getElementById('kpi-weight');
   if (el) el.textContent = w;
-  showToast(\`✅ Poids enregistré : \${w} kg\`);
+  showToast('Poids enregistré : ' + w + ' kg');
 }
 
 // Charger le poids corporel au démarrage
