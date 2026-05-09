@@ -3,7 +3,7 @@
 // ================================================================
 // IMPORTANT : changer CACHE_NAME force le navigateur à réinstaller
 // le SW et vider l'ancien cache. Incrémenter à chaque déploiement.
-const CACHE_NAME = 'apex-v5';
+const CACHE_NAME = 'apex-v6';
 
 // Fichiers à mettre en cache lors de l'installation
 const ASSETS_TO_CACHE = [
