@@ -298,7 +298,6 @@ body::before {
 .card-normal.pull::before  { background: var(--blue); }
 .card-normal.legs::before  { background: var(--green); }
 .card-normal.upper::before { background: var(--purple); }
-.card-normal.arms::before  { background: var(--gold); }
 
 .card-icon { width: 44px; height: 44px; border-radius: 12px; background-size: cover; background-position: center; background-color: var(--bg3); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; overflow: hidden; }
 .card-info { flex: 1; min-width: 0; }
@@ -773,7 +772,6 @@ canvas { width: 100% !important; }
 .hm-day.pull  { background: var(--blue); }
 .hm-day.legs  { background: var(--green); }
 .hm-day.upper { background: var(--purple); }
-.hm-day.arms  { background: var(--gold); }
 .hm-labels { display: flex; justify-content: space-around; font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--text3); margin-bottom: 3px; text-transform: uppercase; }
 .weight-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
 .weight-inp { flex: 1; background: var(--bg3); border: 1px solid var(--border2); color: var(--text); padding: 11px 12px; border-radius: var(--r-sm); font-family: var(--font); font-size: 17px; font-weight: 700; -moz-appearance: textfield; text-align: center; }
@@ -1216,7 +1214,7 @@ canvas { width: 100% !important; }
 <script>
 /**
  * paulo-tracker / data.js
- * Données du programme 5 jours Push/Pull/Legs/Upper/Arms
+ * Données du programme 4 séances Push/Pull/Legs/Upper Hypertrophie
  */
 
 const PROGRAM = {
@@ -1639,122 +1637,6 @@ const PROGRAM = {
         }
       ]
     },
-
-    arms: {
-      id: "arms",
-      day: "Vendredi",
-      dayIdx: 5,
-      name: "Arms & Shoulders",
-      focus: "Bras & Épaules — Séance 'look'",
-      duration: "60 min",
-      color: "#f59e0b",
-      exercises: [
-        {
-          id: "arms-1",
-          name: "Élévations latérales DROP SET",
-          sets: 4,
-          reps: "10 + drop",
-          rest: "1:30",
-          restSec: 90,
-          rir: "0",
-          tempo: "2-0-1-1",
-          difficulty: "Débutant",
-          muscles: ["Deltoïdes lat."],
-          technique: "10 reps strictes, puis SANS repos prendre des haltères ~40% plus légers et continuer jusqu'à l'échec (4-6 reps). 1 drop set = 1 série."
-        },
-        {
-          id: "arms-2",
-          name: "Élévations frontales haltères ou disque",
-          sets: 3,
-          reps: "10-12",
-          rest: "1:00",
-          restSec: 60,
-          rir: "1",
-          tempo: "2-0-1-1",
-          difficulty: "Débutant",
-          muscles: ["Deltoïdes ant."],
-          technique: "Debout, haltère ou disque devant les cuisses. Monter bras tendus devant jusqu'à hauteur des yeux. Descendre contrôlé."
-        },
-        {
-          id: "arms-3",
-          name: "Oiseau haltères buste penché",
-          sets: 3,
-          reps: "12-15",
-          rest: "1:00",
-          restSec: 60,
-          rir: "0-1",
-          tempo: "2-1-1-1",
-          difficulty: "Débutant",
-          muscles: ["Deltoïdes post."],
-          technique: "Assis en bout de banc, buste sur les cuisses. Haltères légers bras tendus. Lever sur les côtés en serrant les omoplates. Pause 1 sec en haut."
-        },
-        {
-          id: "arms-4",
-          name: "Curl barre EZ",
-          sets: 3,
-          reps: "8-10",
-          rest: "1:30",
-          restSec: 90,
-          rir: "1",
-          tempo: "2-0-1-0",
-          difficulty: "Débutant",
-          muscles: ["Biceps"],
-          technique: "Barre EZ en prise large. Coudes collés au corps. Curler jusqu'à hauteur des pecs. Pause 1 sec en contraction. Descente contrôlée."
-        },
-        {
-          id: "arms-5",
-          name: "Curl marteau haltères",
-          sets: 3,
-          reps: "10-12",
-          rest: "1:00",
-          restSec: 60,
-          rir: "1",
-          tempo: "2-0-1-0",
-          difficulty: "Débutant",
-          muscles: ["Biceps"],
-          technique: "Prise neutre (paumes face à face). Curler sans tourner le poignet. Alterner ou ensemble. Cible le BRACHIAL = épaisseur du bras."
-        },
-        {
-          id: "arms-6",
-          name: "Extensions triceps overhead haltère",
-          sets: 3,
-          reps: "10-12",
-          rest: "1:00",
-          restSec: 60,
-          rir: "1",
-          tempo: "3-0-1-0",
-          difficulty: "Débutant",
-          muscles: ["Triceps"],
-          technique: "Un haltère tenu à 2 mains au-dessus de la tête (prise diamant). Descendre derrière la nuque, remonter en contractant les triceps."
-        },
-        {
-          id: "arms-7",
-          name: "Kickback triceps poulie",
-          sets: 3,
-          reps: "12-15",
-          rest: "1:00",
-          restSec: 60,
-          rir: "0-1",
-          tempo: "2-0-1-1",
-          difficulty: "Débutant",
-          muscles: ["Triceps"],
-          technique: "Buste penché 45°, bras collé au corps coude à 90°. Tendre le bras en arrière jusqu'à extension. Pause 1 sec en contraction max."
-        },
-        {
-          id: "arms-8",
-          name: "Curl au pupitre (Scott)",
-          sets: 2,
-          reps: "12-15",
-          rest: "1:00",
-          restSec: 60,
-          rir: "0",
-          tempo: "3-0-1-0",
-          difficulty: "Intermédiaire",
-          muscles: ["Biceps"],
-          technique: "Pupitre Scott ou dossier de banc incliné. Coudes bloqués, curler avec amplitude complète. Descente très lente (3 sec). Finisher à l'échec."
-        }
-      ]
-    }
   }
 };
 
@@ -1921,31 +1803,6 @@ const WARMUPS = {
     ],
     warning: "Si tu sens une gêne d'épaule au warm-up, fais 2 séries supplémentaires d'approche plutôt que de forcer."
   },
-
-  arms: {
-    focus: "Coudes, poignets, épaules",
-    specificDuration: "2 min",
-    phases: [
-      {
-        title: "Mobilité bras & coudes",
-        time: "60 sec",
-        items: [
-          "Cercles poignets : 10 de chaque côté, dans chaque sens",
-          "Flexion/extension coudes dynamiques : 15 reps sans charge",
-          "Rotations épaules : 10 avant + 10 arrière"
-        ]
-      },
-      {
-        title: "Activation spécifique épaules",
-        time: "60 sec",
-        items: [
-          "Élévations latérales très légères (2-3 kg) : 15 reps — activation deltoïdes moyens",
-          "Face pulls élastique : 15 reps — activation deltoïdes postérieurs + coiffe"
-        ]
-      }
-    ],
-    tip: "Pas besoin d'approche lourde : séance d'isolations. 1 série d'approche à 60% sur le 1er exo (élévations drop set) suffit."
-  }
 };
 
 const COOLDOWN = {
@@ -1968,7 +1825,6 @@ const COOLDOWN = {
         "Pull : lats (suspension barre, corps qui s'éloigne), biceps (sur un mur)",
         "Legs : quadri (talon aux fesses), ischios (jambe sur un banc), fessiers (figure 4)",
         "Upper : mix Push + Pull",
-        "Arms : triceps, biceps, épaules"
       ]
     }
   ],
@@ -2242,7 +2098,7 @@ async function askCoachAI(userQuestion, onChunk) {
   // System prompt complet — le coach connaît tout de Paulo
   const systemPrompt = `Tu es le coach personnel d'élite de Paulo ROSA (42 ans, 75 kg, 1m72, objectif hypertrophie maximale du haut du corps).
 
-Programme : 5 séances/semaine — Push (Poitrine/Épaules/Triceps), Pull (Dos/Biceps), Legs (Jambes/Fessiers), Upper Hypertrophie (Haut du corps), Arms & Shoulders.
+Programme : 4 séances/semaine — Push (Poitrine/Épaules/Triceps), Pull (Dos/Biceps), Legs (Jambes/Fessiers), Upper Hypertrophie (Haut du corps mix Push+Pull).
 Méthode : Progressive Overload — augmenter les charges de 2,5 à 5 kg dès que les reps cibles sont atteintes sur toutes les séries.
 Cycle : 7 semaines (S1-S6 progression, S7 deload à -20%).
 
@@ -2373,7 +2229,7 @@ const CAT_BG = {
   pull:  ["#080e20","#10244a"],
   legs:  ["#08140a","#102810"],
   upper: ["#100820","#1e1050"],
-  arms:  ["#0e0818","#1c1040"],
+
 };
 
 function mkBg(cat) {
@@ -2482,7 +2338,7 @@ const DEFAULT_SVG = {
   pull:  () => EXERCISE_SVG["pull-1"],
   legs:  () => EXERCISE_SVG["legs-1"],
   upper: () => EXERCISE_SVG["upper-1"],
-  arms:  () => EXERCISE_SVG["arms-4"],
+
 };
 
 const SESSION_SVG = {
@@ -2490,7 +2346,7 @@ const SESSION_SVG = {
   pull: EXERCISE_SVG["pull-1"],
   legs: EXERCISE_SVG["legs-1"],
   upper: EXERCISE_SVG["upper-1"],
-  arms: EXERCISE_SVG["arms-4"],
+
 };
 
 function getExoSVG(exoId) {
@@ -3096,8 +2952,8 @@ function renderHome() {
   }
 
   // Cartes séances
-  const ORDER = ['push','pull','legs','upper','arms'];
-  const ICONS = {push:'🔥',pull:'🎯',legs:'🦵',upper:'💪',arms:'💥'};
+  const ORDER = ['push','pull','legs','upper'];
+  const ICONS = {push:'🔥',pull:'🎯',legs:'🦵',upper:'💪'};
   const today = DAYS_FR[new Date().getDay()].toUpperCase();
 
   const list = document.getElementById('sessions-list');
@@ -3551,7 +3407,7 @@ function finishSession() {
 
   if (S.week === 7) {
     // En S7 (deload), compter combien de séances ont été faites cette semaine
-    const ORDER = ['push','pull','legs','upper','arms'];
+    const ORDER = ['push','pull','legs','upper'];
     const sessionsFinishedThisWeek = ORDER.filter(sid => DB.get(sKey(sid))?.finished).length;
     if (sessionsFinishedThisWeek >= 5) {
       // Toutes les séances du cycle sont terminées → proposer un nouveau cycle
@@ -3944,7 +3800,7 @@ function playBeep(){try{const ctx=new(window.AudioContext||window.webkitAudioCon
 // ================================================================
 function showNextWeekModal() {
   const plan = S.nextWeekPlan; if (!plan) return;
-  const ORDER = ['push','pull','legs','upper','arms'];
+  const ORDER = ['push','pull','legs','upper'];
   let html = `<div class="modal-title">📋 Plan Semaine ${S.week + 1}</div>
     <div class="modal-sub">Le coach a analysé tes perfs. Modifie les charges si besoin.</div>`;
   ORDER.forEach(sid => {
@@ -4007,7 +3863,7 @@ function analyzeAllProgress() {
 
   // Construire la liste de tous les exercices avec leur groupe
   const allExos = [];
-  const GROUP_ORDER = ['push','pull','legs','upper','arms'];
+  const GROUP_ORDER = ['push','pull','legs','upper'];
   GROUP_ORDER.forEach(gid => {
     PROGRAM.sessions[gid].exercises.forEach(exo => {
       allExos.push({ ...exo, group: gid });
@@ -4015,7 +3871,7 @@ function analyzeAllProgress() {
   });
 
   const byExo = {};
-  const byGroup = { push:[], pull:[], legs:[], upper:[], arms:[] };
+  const byGroup = { push:[], pull:[], legs:[], upper:[] };
 
   allExos.forEach(exo => {
     // Récupérer l'historique de cet exercice (toutes sessions confondues)
@@ -4172,13 +4028,12 @@ function generateLocalCoachResponse(question) {
   const isBalance      = /déséquil|equilibr|ratio|push.*pull|pull.*push/.test(q);
   const isVolume       = /volume|optimal|suffis|trop|assez/.test(q);
   const isRecovery     = /récup|douleur|fatigue|sommeil/.test(q);
-  const isArms         = /bras|bicep|tricep|arm/.test(q);
   const isChest        = /poitrine|pecto|chest/.test(q);
   const isBack         = /dos|dorsal|pull|tirage/.test(q);
   const isLegs         = /jamb|quad|ischio|fessier|leg/.test(q);
   const isShoulders    = /épaul|delt|shoulder/.test(q);
   const isPR           = /pr|record|personnel|max/.test(q);
-  const isGeneral      = !isProgression && !isPlateau && !isNextSession && !isBalance && !isVolume && !isRecovery && !isArms && !isChest && !isBack && !isLegs && !isShoulders && !isPR;
+  const isGeneral      = !isProgression && !isPlateau && !isNextSession && !isBalance && !isVolume && !isRecovery && !isChest && !isBack && !isLegs && !isShoulders && !isPR;
 
   if (!allHistory.length) {
     return "Tu n'as pas encore de séances enregistrées. Complète quelques entraînements et je pourrai analyser ta progression en détail ! 💪";
@@ -4214,7 +4069,7 @@ Pour débloquer un plateau, essaie dans l'ordre : 1) Ajoute 0,5 à 1 rep par sé
   // ── Prochaine séance ──
   if (isNextSession) {
     const nextSessions = [];
-    ['push','pull','legs','upper','arms'].forEach(gid => {
+    ['push','pull','legs','upper'].forEach(gid => {
       const saved = DB.get(sKey(gid));
       if (!saved?.finished) {
         const topExos = byGroup[gid].filter(e => e.nextAction !== 'maintenir' && e.dataPoints?.length);
@@ -4241,7 +4096,7 @@ Pour débloquer un plateau, essaie dans l'ordre : 1) Ajoute 0,5 à 1 rep par sé
     const totalVol = Object.values(analysis.groupVolume).reduce((a,b)=>a+b,0);
     response += `Ton volume total cette semaine est de ${Math.round(totalVol/1000*10)/10}t. `;
     response += `Pour l'hypertrophie maximale, vise 10-20 séries par groupe musculaire par semaine. `;
-    const lowVol = ['legs','pull','arms'].filter(g => (analysis.groupVolume[g]||0) === 0);
+    const lowVol = ['legs','pull'].filter(g => (analysis.groupVolume[g]||0) === 0);
     if (lowVol.length) response += `Tu n'as pas encore de volume enregistré pour : ${lowVol.map(g=>PROGRAM.sessions[g].name).join(', ')} cette semaine. `;
     response += '';
   }
@@ -4263,21 +4118,6 @@ Pour débloquer un plateau, essaie dans l'ordre : 1) Ajoute 0,5 à 1 rep par sé
   }
 
   // ── Bras ──
-  if (isArms) {
-    const armsExos = byGroup.arms.filter(e => e.dataPoints?.length);
-    if (!armsExos.length) {
-      response += "Pas encore de données sur tes exercices de bras. Complète quelques séances Arms pour que j'analyse ta progression.";
-    } else {
-      const biceps = armsExos.filter(e => (e.muscles||[]).some(m => m.includes('Biceps')));
-      const triceps = armsExos.filter(e => (e.muscles||[]).some(m => m.includes('Triceps')));
-      response += `Analyse Bras :
-`;
-      if (biceps.length) response += `Biceps — meilleure performance : ${biceps.sort((a,b)=>b.best1RM-a.best1RM)[0].name} à ${biceps[0].last?.maxW}kg. `;
-      if (triceps.length) response += `Triceps — meilleure performance : ${triceps.sort((a,b)=>b.best1RM-a.best1RM)[0].name} à ${triceps[0].last?.maxW}kg. `;
-      response += "Pour maximiser la croissance des bras, assure-toi d'avoir au moins 6 séries de biceps et 6 séries de triceps par semaine.";
-    }
-    response += '';
-  }
 
   // ── Poitrine ──
   if (isChest) {
@@ -4373,12 +4213,12 @@ function renderCoach() {
   // Analyse locale des données
   let A;
   try { A = analyzeAllProgress(); }
-  catch(e) { A = { globalScore:0, alerts:[], focus:[], byGroup:{push:[],pull:[],legs:[],upper:[],arms:[]}, groupVolume:{}, GROUP_ORDER:['push','pull','legs','upper','arms'] }; }
+  catch(e) { A = { globalScore:0, alerts:[], focus:[], byGroup:{push:[],pull:[],legs:[],upper:[]}, groupVolume:{}, GROUP_ORDER:['push','pull','legs','upper'] }; }
 
   const score = A.globalScore || 0;
   const scoreColor = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--amber)' : 'var(--red)';
-  const TABS = A.GROUP_ORDER || ['push','pull','legs','upper','arms'];
-  const ICONS = {push:'🔥',pull:'🎯',legs:'🦵',upper:'💪',arms:'💥'};
+  const TABS = A.GROUP_ORDER || ['push','pull','legs','upper'];
+  const ICONS = {push:'🔥',pull:'🎯',legs:'🦵',upper:'💪'};
 
   // Questions dynamiques
   const QQ = ['Mon volume est-il optimal pour hypertrophie ?', 'Dois-je changer quelque chose à mon programme ?', 'Analyse ma récupération et mes résultats.'];
