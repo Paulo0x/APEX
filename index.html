@@ -1868,17 +1868,27 @@ function computeProgressiveSuggestions(sessId) {
   const sess = PROGRAM.sessions[sessId];
   if (!sess) return {};
 
-  // Cherche la dernière séance précédente avec des données réelles
+  // ── Recherche la dernière séance de référence ──────────────────
+  // Priorité : semaines passées (S.week-1 → 1), puis semaine en cours si terminée
   let lastData = null;
-  // Cherche en remontant semaine par semaine (pas la semaine en cours)
+
+  // 1. Semaines précédentes (la plus récente en premier)
   for (let w = S.week - 1; w >= 1; w--) {
     const d = DB.get('sess-' + w + '-' + sessId);
     if (d && d.sets && Object.keys(d.sets).length > 0) {
-      lastData = d;
-      break;
+      lastData = d; break;
     }
   }
-  // Fallback : cherche dans l'historique global
+
+  // 2. Semaine en cours si déjà terminée (ex : 2ème passage)
+  if (!lastData) {
+    const d = DB.get('sess-' + S.week + '-' + sessId);
+    if (d && d.finished && d.sets && Object.keys(d.sets).length > 0) {
+      lastData = d;
+    }
+  }
+
+  // 3. Fallback : historique global
   if (!lastData) {
     const hist = DB.get('history', []);
     for (const entry of hist) {
@@ -1887,6 +1897,27 @@ function computeProgressiveSuggestions(sessId) {
         if (d && d.sets) { lastData = d; break; }
       }
     }
+  }
+
+  // 4. Fallback ultime : PRs existants → au moins un poids de départ
+  if (!lastData) {
+    const prPlan = {};
+    sess.exercises.forEach(exo => {
+      const pr = DB.get('pr-' + exo.id);
+      if (pr && pr.weight) {
+        const parts = String(exo.reps).split('-').map(Number);
+        prPlan[exo.id] = {
+          suggestedWeight: pr.weight,
+          suggestedReps: parts[0] || 8,
+          prevWeight: pr.weight,
+          prevReps: pr.reps || 0,
+          reason: '🏆 PR : ' + pr.weight + ' kg × ' + (pr.reps || '?') + ' reps',
+          type: 'maintain'
+        };
+      }
+    });
+    if (Object.keys(prPlan).length > 0) return prPlan;
+    return {};
   }
   if (!lastData) return {};
 
@@ -3271,7 +3302,10 @@ function renderExercises() {
       const red = Math.round(exoPR.weight * 0.8 * 2) / 2;
       prevHtml = `<div class="coach-banner deload">❄️ Deload −20% : <strong style="color:#a0a0ff">${red} kg</strong> (PR : ${exoPR.weight} kg)</div>`;
     } else if (coachSug) {
-      prevHtml = `<div class="coach-banner ${coachSug.type}">🤖 ${coachSug.reason}</div>`;
+      const prevInfo = (coachSug.prevWeight && coachSug.prevReps)
+        ? ` <span style="opacity:0.6;font-size:11px">· Dernier : ${coachSug.prevWeight}kg × ${coachSug.prevReps}</span>`
+        : '';
+      prevHtml = `<div class="coach-banner ${coachSug.type}">${coachSug.reason}${prevInfo}</div>`;
     } else if (last) {
       const best = last.sets.filter(s=>s.done&&s.weight).sort((a,b)=>b.weight*b.reps-a.weight*a.reps)[0];
       if (best) prevHtml = `<div class="last-perf">📅 Dernière fois : <strong>${best.weight} kg × ${best.reps} reps</strong></div>`;
@@ -3280,7 +3314,7 @@ function renderExercises() {
     // Rows de sets
     const rows = Array.from({length: totalSets}, (_, i) => {
       const set = setsData[i] || {weight:'', reps:'', done:false};
-      const wVal = set.weight || (i === 0 && prefill ? prefill : (i > 0 && prefill ? prefill : ''));
+      const wVal = set.weight || (prefill || '');
       const isActive = exo.id === activeExoId && i === activeSetIdx;
       const isFill = !set.weight && prefill;
       const itKey  = `${exo.id}-${i}`;

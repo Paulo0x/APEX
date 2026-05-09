@@ -1,73 +1,60 @@
 // ================================================================
-// APEX — Service Worker v4 (compatible iOS Safari + Android Chrome)
+// APEX — Service Worker v7
+// Network-first strict + suppression agressive des vieux caches
 // ================================================================
-// IMPORTANT : changer CACHE_NAME force le navigateur à réinstaller
-// le SW et vider l'ancien cache. Incrémenter à chaque déploiement.
-const CACHE_NAME = 'apex-v6';
+const CACHE_NAME = 'apex-v7';
 
-// Fichiers à mettre en cache lors de l'installation
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-180.png',
-  '/icons/icon-167.png',
-  '/icons/icon-152.png',
-  '/icons/icon-120.png',
-  '/icons/icon-any.png',
 ];
 
-// Installation : met en cache tous les assets de l'app
+// Installation : skipWaiting immédiat
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      // addAll fetch chaque URL et la met en cache
-      return cache.addAll(ASSETS_TO_CACHE);
-    }).catch(err => console.warn('[SW] Cache partiel:', err))
-  );
-  // Active immédiatement sans attendre la fermeture des onglets
   self.skipWaiting();
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(cache =>
+      cache.addAll(ASSETS_TO_CACHE).catch(err => console.warn('[SW] Cache partiel:', err))
+    )
+  );
 });
 
-// Activation : supprime TOUS les vieux caches (apex-v1, v2, v3, v4...)
+// Activation : vide TOUS les anciens caches + prend le contrôle immédiatement
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(k => k !== CACHE_NAME).map(k => {
-        console.log('[SW] Suppression ancien cache:', k);
-        return caches.delete(k);
-      })
-    ))
+    caches.keys().then(keys =>
+      Promise.all(keys.map(k => {
+        console.log('[SW] Suppression cache:', k);
+        return caches.delete(k); // supprime TOUS les caches, y compris apex-v7 pour repartir propre
+      }))
+    ).then(() => self.clients.claim())
   );
-  // Prend le contrôle de tous les onglets ouverts immédiatement
-  self.clients.claim();
 });
 
-// Fetch : network-first (réseau en priorité pour les mises à jour),
-// cache en fallback si hors ligne
+// Fetch : réseau EN PRIORITÉ, cache seulement si hors ligne
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   if (!e.request.url.startsWith(self.location.origin)) return;
 
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: 'no-store' }) // force le bypass du cache HTTP
       .then(response => {
-        // Réponse réseau OK → met à jour le cache et retourne la réponse
         if (response && response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
         }
         return response;
       })
-      .catch(() => {
-        // Réseau indisponible → fallback sur le cache (mode hors-ligne)
-        return caches.match(e.request).then(cached => {
-          return cached || new Response('Hors ligne — Ouvre APEX avec une connexion au moins une fois.', {
+      .catch(() =>
+        caches.match(e.request).then(cached =>
+          cached || new Response('Hors ligne — reconnecte-toi pour charger APEX.', {
             status: 503,
             headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-          });
-        });
-      })
+          })
+        )
+      )
   );
 });
