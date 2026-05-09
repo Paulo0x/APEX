@@ -127,6 +127,13 @@ body::before {
 }
 .hdr-back:active { background: var(--bg4); transform: scale(0.9); }
 .hdr-back.hidden { display: none; }
+.hdr-icon-btn {
+  width: 34px; height: 34px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,0.06); color: var(--text2);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.hdr-icon-btn:active { background: var(--bg4); color: var(--text); }
 .hdr-brand { font-size: 20px; font-weight: 900; letter-spacing: 2px; color: var(--text); }
 .hdr-title-text { flex: 1; font-size: 17px; font-weight: 700; }
 .hdr-right { display: flex; align-items: center; gap: 8px; }
@@ -283,6 +290,20 @@ body::before {
 }
 
 /* Carte normale */
+.card-normal-photo {
+  position: absolute; inset: 0; background-size: cover; background-position: center;
+  border-radius: var(--r);
+}
+.card-normal-overlay {
+  position: absolute; inset: 0; border-radius: var(--r);
+  background: linear-gradient(135deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.5) 100%);
+}
+.card-normal-color { position: absolute; inset: 0; border-radius: var(--r); }
+.card-normal-content {
+  position: relative; z-index: 1;
+  display: flex; justify-content: space-between; align-items: center;
+  width: 100%; padding: 16px;
+}
 .card-normal {
   border-radius: var(--r);
   background: rgba(255,255,255,0.035);
@@ -451,7 +472,9 @@ body::before {
   transition: opacity 0.2s;
 }
 .set-row:last-child { border-bottom: none; }
-.set-row.set-done { opacity: 0.5; }
+.set-row.set-done { background: rgba(34,221,102,0.04); border-radius: var(--r-sm); }
+.set-row.set-done .set-num { background: rgba(34,221,102,0.15); color: var(--green); border-color: rgba(34,221,102,0.3); }
+.set-row.set-done .set-input[readonly] { opacity: 0.85; color: var(--green); pointer-events: none; }
 .set-row.active-set { background: rgba(245,197,24,0.03); border-radius: var(--r-sm); }
 .set-num { text-align: center; font-size: 12px; color: var(--text3); font-weight: 600; }
 .set-num.cur { color: var(--gold); font-weight: 800; }
@@ -461,7 +484,7 @@ body::before {
 .set-input { background: var(--bg3); border: 1px solid var(--border2); color: var(--text); padding: 9px 4px; border-radius: var(--r-sm); font-family: var(--font); font-size: 15px; font-weight: 700; width: 100%; text-align: center; -moz-appearance: textfield; transition: border-color 0.15s; min-width: 0; }
 .set-input::-webkit-outer-spin-button,.set-input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .set-input:focus { outline: none; border-color: var(--gold); background: rgba(245,197,24,0.04); }
-.set-input[readonly] { opacity: 0.4; pointer-events: none; }
+.set-input[readonly] { opacity: 0.85; pointer-events: none; }
 .set-input::placeholder { color: var(--text3); font-size: 11px; font-weight: 400; }
 .set-input.coach-fill { border-color: rgba(245,197,24,0.3); background: rgba(245,197,24,0.03); }
 .set-rest-inline { font-size: 11px; font-weight: 700; font-family: monospace; color: var(--text3); text-align: center; width: 44px; }
@@ -904,9 +927,18 @@ canvas { width: 100% !important; }
 <!-- SPLASH -->
 <div id="splash" class="splash">
   <div class="splash-inner">
-    <div class="splash-logo">Peak Performance</div>
+    <div style="margin-bottom:20px">
+      <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <rect width="80" height="80" rx="18" fill="#0d1526"/>
+        <rect width="80" height="80" rx="18" fill="none" stroke="#f5c518" stroke-width="1.5" opacity="0.3"/>
+        <polygon points="40,14 62,58 18,58" fill="none" stroke="#f5c518" stroke-width="2.5" stroke-linejoin="round"/>
+        <line x1="40" y1="14" x2="40" y2="58" stroke="#f5c518" stroke-width="1" opacity="0.35"/>
+        <polygon points="40,14 53,40 27,40" fill="#f5c518" opacity="0.15"/>
+        <text x="40" y="72" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="800" letter-spacing="3" fill="#f5c518" opacity="0.7">APEX</text>
+      </svg>
+    </div>
     <div class="splash-name">APEX</div>
-    <div class="splash-tag">Dépasse tes limites</div>
+    <div class="splash-tag">Peak Performance</div>
     <div class="splash-bar"><div class="splash-fill"></div></div>
   </div>
 </div>
@@ -921,7 +953,13 @@ canvas { width: 100% !important; }
     </button>
     <div id="hdr-title" style="flex:1"><span class="hdr-brand">APEX</span></div>
     <div class="hdr-right">
-      <div class="week-chip" id="week-chip" onclick="showScreen('settings')">S1</div>
+      <button class="hdr-icon-btn" onclick="openTimerPick()" title="Chrono de repos">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </button>
+      <button class="hdr-icon-btn" onclick="showScreen('settings')" title="Réglages">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+      <div class="week-chip" id="week-chip">S1</div>
     </div>
   </header>
 
@@ -950,7 +988,7 @@ canvas { width: 100% !important; }
           <div class="kpi-sep"></div>
           <div class="kpi"><div class="kpi-val gold" id="kpi-pr">0</div><div class="kpi-lbl">PR</div></div>
           <div class="kpi-sep"></div>
-          <div class="kpi"><div class="kpi-val" id="kpi-weight">—</div><div class="kpi-lbl">Poids</div></div>
+          <div class="kpi" onclick="promptBodyWeight()" style="cursor:pointer" title="Saisir mon poids"><div class="kpi-val" id="kpi-weight">—</div><div class="kpi-lbl">Poids kg</div></div>
         </div>
         <div class="cycle-wrap">
           <div class="cycle-track"><div class="cycle-fill" id="cycle-fill" style="width:0%"><div class="cycle-dot"></div></div></div>
@@ -967,21 +1005,7 @@ canvas { width: 100% !important; }
         <div class="quote-author" id="quote-author"></div>
       </div>
 
-      <!-- Outils rapides (timer + coach) -->
-      <div class="home-tools-row">
-        <button class="home-tool-btn" onclick="openTimerPick()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Chrono de repos
-        </button>
-        <button class="home-tool-btn" onclick="showScreen('coach')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          Demander au coach
-        </button>
-        <button class="home-tool-btn" onclick="showScreen('stats')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          Mes stats
-        </button>
-      </div>
+
 
       <!-- Carte coach IA (bilan + conseil personnalisé) -->
       <div id="home-coach-card"></div>
@@ -997,8 +1021,8 @@ canvas { width: 100% !important; }
         <button class="nav-item active" data-screen="home" onclick="showScreen('home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Accueil<div class="nav-dot"></div></button>
         <button class="nav-item" data-screen="stats" onclick="showScreen('stats')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Stats<div class="nav-dot"></div></button>
         <button class="nav-item" data-screen="coach" onclick="showScreen('coach')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Coach<div class="nav-dot"></div></button>
-        <button class="nav-item" data-screen="history" onclick="showScreen('history')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Histo<div class="nav-dot"></div></button>
-        <button class="nav-item" data-screen="settings" onclick="showScreen('settings')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Réglages<div class="nav-dot"></div></button>
+        <button class="nav-item" data-screen="history" onclick="showScreen('history')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Journal<div class="nav-dot"></div></button>
+
       </div>
     </section>
 
@@ -1052,28 +1076,61 @@ canvas { width: 100% !important; }
     <!-- COACH -->
     <section id="screen-coach" class="screen">
       <div class="coach-wrap" id="coach-content"></div>
-      <div class="bottom-nav"><button class="nav-item" data-screen="home" onclick="showScreen('home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Accueil<div class="nav-dot"></div></button><button class="nav-item" data-screen="stats" onclick="showScreen('stats')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Stats<div class="nav-dot"></div></button><button class="nav-item active" data-screen="coach" onclick="showScreen('coach')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Coach<div class="nav-dot"></div></button><button class="nav-item" data-screen="history" onclick="showScreen('history')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Histo<div class="nav-dot"></div></button><button class="nav-item" data-screen="settings" onclick="showScreen('settings')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>Réglages<div class="nav-dot"></div></button></div>
+      <div class="bottom-nav"><button class="nav-item" data-screen="home" onclick="showScreen('home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Accueil<div class="nav-dot"></div></button><button class="nav-item" data-screen="stats" onclick="showScreen('stats')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Stats<div class="nav-dot"></div></button><button class="nav-item active" data-screen="coach" onclick="showScreen('coach')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Coach<div class="nav-dot"></div></button><button class="nav-item" data-screen="history" onclick="showScreen('history')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Journal<div class="nav-dot"></div></button><button class="nav-item" data-screen="settings" onclick="showScreen('settings')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>Réglages<div class="nav-dot"></div></button></div>
     </section>
 
     <!-- STATS -->
     <section id="screen-stats" class="screen">
       <div class="content-pad" id="stats-content"></div>
-      <div class="bottom-nav"><button class="nav-item" data-screen="home" onclick="showScreen('home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Accueil<div class="nav-dot"></div></button><button class="nav-item active" data-screen="stats" onclick="showScreen('stats')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Stats<div class="nav-dot"></div></button><button class="nav-item" data-screen="coach" onclick="showScreen('coach')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Coach<div class="nav-dot"></div></button><button class="nav-item" data-screen="history" onclick="showScreen('history')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Histo<div class="nav-dot"></div></button><button class="nav-item" data-screen="settings" onclick="showScreen('settings')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>Réglages<div class="nav-dot"></div></button></div>
+      <div class="bottom-nav"><button class="nav-item" data-screen="home" onclick="showScreen('home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Accueil<div class="nav-dot"></div></button><button class="nav-item active" data-screen="stats" onclick="showScreen('stats')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Stats<div class="nav-dot"></div></button><button class="nav-item" data-screen="coach" onclick="showScreen('coach')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Coach<div class="nav-dot"></div></button><button class="nav-item" data-screen="history" onclick="showScreen('history')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Journal<div class="nav-dot"></div></button><button class="nav-item" data-screen="settings" onclick="showScreen('settings')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>Réglages<div class="nav-dot"></div></button></div>
     </section>
 
     <!-- HISTORY -->
     <section id="screen-history" class="screen">
       <div class="content-pad" id="history-content"></div>
-      <div class="bottom-nav"><button class="nav-item" data-screen="home" onclick="showScreen('home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Accueil<div class="nav-dot"></div></button><button class="nav-item" data-screen="stats" onclick="showScreen('stats')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Stats<div class="nav-dot"></div></button><button class="nav-item" data-screen="coach" onclick="showScreen('coach')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Coach<div class="nav-dot"></div></button><button class="nav-item active" data-screen="history" onclick="showScreen('history')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Histo<div class="nav-dot"></div></button><button class="nav-item" data-screen="settings" onclick="showScreen('settings')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>Réglages<div class="nav-dot"></div></button></div>
+      <div class="bottom-nav"><button class="nav-item" data-screen="home" onclick="showScreen('home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Accueil<div class="nav-dot"></div></button><button class="nav-item" data-screen="stats" onclick="showScreen('stats')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Stats<div class="nav-dot"></div></button><button class="nav-item" data-screen="coach" onclick="showScreen('coach')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Coach<div class="nav-dot"></div></button><button class="nav-item active" data-screen="history" onclick="showScreen('history')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Journal<div class="nav-dot"></div></button><button class="nav-item" data-screen="settings" onclick="showScreen('settings')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>Réglages<div class="nav-dot"></div></button></div>
     </section>
 
     <!-- SETTINGS -->
     <section id="screen-settings" class="screen">
       <div class="content-pad" id="settings-content"></div>
-      <div class="bottom-nav"><button class="nav-item" data-screen="home" onclick="showScreen('home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Accueil<div class="nav-dot"></div></button><button class="nav-item" data-screen="stats" onclick="showScreen('stats')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Stats<div class="nav-dot"></div></button><button class="nav-item" data-screen="coach" onclick="showScreen('coach')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Coach<div class="nav-dot"></div></button><button class="nav-item" data-screen="history" onclick="showScreen('history')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Histo<div class="nav-dot"></div></button><button class="nav-item active" data-screen="settings" onclick="showScreen('settings')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>Réglages<div class="nav-dot"></div></button></div>
+      <div class="bottom-nav"><button class="nav-item" data-screen="home" onclick="showScreen('home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Accueil<div class="nav-dot"></div></button><button class="nav-item" data-screen="stats" onclick="showScreen('stats')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Stats<div class="nav-dot"></div></button><button class="nav-item" data-screen="coach" onclick="showScreen('coach')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="12" r="10"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Coach<div class="nav-dot"></div></button><button class="nav-item" data-screen="history" onclick="showScreen('history')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Journal<div class="nav-dot"></div></button><button class="nav-item active" data-screen="settings" onclick="showScreen('settings')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>Réglages<div class="nav-dot"></div></button></div>
     </section>
 
   </main>
+</div>
+
+
+<!-- MODAL FIN DE SÉANCE -->
+<div id="session-end-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;align-items:flex-end;justify-content:center">
+  <div style="background:var(--bg2);border-radius:24px 24px 0 0;padding:28px 24px 40px;width:100%;max-width:480px;border-top:1px solid var(--border2)">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:48px;margin-bottom:8px">🏆</div>
+      <div style="font-size:24px;font-weight:900;color:var(--text);letter-spacing:-0.5px">Séance terminée !</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px" id="end-session-name"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
+      <div style="background:var(--bg3);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-size:22px;font-weight:900;color:var(--text)" id="end-volume">0</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-top:3px;text-transform:uppercase">Volume kg</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-size:22px;font-weight:900;color:var(--text)" id="end-sets">0</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-top:3px;text-transform:uppercase">Séries</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-size:22px;font-weight:900;color:var(--gold)" id="end-prs">0</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--text3);margin-top:3px;text-transform:uppercase">PR 🏅</div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:20px;text-align:center" id="end-duration"></div>
+    <button onclick="confirmFinishSession()" style="width:100%;padding:16px;background:var(--gold);color:#000;font-size:16px;font-weight:900;border:none;border-radius:14px;cursor:pointer;letter-spacing:0.5px">
+      ENREGISTRER LA SÉANCE
+    </button>
+    <button onclick="closeSessionEndModal()" style="width:100%;padding:12px;background:none;color:var(--text2);font-size:13px;border:none;cursor:pointer;margin-top:8px">
+      Continuer à modifier
+    </button>
+  </div>
 </div>
 
 <!-- TIMER -->
@@ -2174,6 +2231,98 @@ function sil(cx,ty,col){const c=col||"#4050a0";return `<ellipse cx="${cx}" cy="$
 const MTIRAGE=`<rect x="148" y="0" width="104" height="10" rx="4" fill="#1a3060"/><rect x="192" y="10" width="16" height="30" rx="4" fill="#1a2850"/><line x1="200" y1="40" x2="200" y2="55" stroke="#2a44aa" stroke-width="2.5"/><rect x="118" y="53" width="164" height="9" rx="4.5" fill="#2a44aa"/><rect x="114" y="47" width="16" height="20" rx="5" fill="#1e3888"/><rect x="270" y="47" width="16" height="20" rx="5" fill="#1e3888"/>`;
 const SIEGE=`<rect x="166" y="136" width="68" height="12" rx="5" fill="#1a3060"/><rect x="170" y="122" width="60" height="16" rx="6" fill="#1e3878"/><rect x="154" y="132" width="24" height="44" rx="9" fill="#2a3e80"/><rect x="222" y="132" width="24" height="44" rx="9" fill="#2a3e80"/>`;
 
+
+// ═══════════════════════════════════════════════════════════════════
+// MUSCLE MAP SVG — Diagramme corporel avec muscles ciblés en couleur
+// ═══════════════════════════════════════════════════════════════════
+const MUSCLE_MAP = (() => {
+  // Couleurs par séance
+  const SCOL = { push:'#ff4444', pull:'#2288ff', legs:'#22dd66', upper:'#aa44ff' };
+
+  // Parse les noms de muscles → flags booléens
+  function parse(muscles) {
+    const s = (muscles||[]).join(' ').toLowerCase();
+    return {
+      pecs:     s.includes('pectoral'),
+      frontDelt:s.includes('deltoïd') && !s.includes('post'),
+      latDelt:  s.includes('lat.'),
+      rearDelt: s.includes('post.'),
+      biceps:   s.includes('bicep') || s.includes('brachial') || s.includes('brachio'),
+      triceps:  s.includes('tricep'),
+      lats:     s.includes('dorsal'),
+      traps:    s.includes('trap'),
+      quads:    s.includes('quadri'),
+      hamstrings:s.includes('ischio'),
+      glutes:   s.includes('fessier') || s.includes('glute'),
+      calves:   s.includes('molet') || s.includes('soléaire'),
+      abs:      s.includes('abdomi'),
+    };
+  }
+
+  // SVG vue de face
+  function front(m, col) {
+    const dim = 'rgba(255,255,255,0.07)';
+    const sk  = 'rgba(255,255,255,0.13)';
+    const C   = a => a ? col : dim;
+    const S   = a => a ? col : sk;
+    const delt = m.frontDelt || m.latDelt;
+    return `<svg viewBox="0 0 120 205" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <circle cx="60" cy="15" r="11" fill="${C(false)}" stroke="${sk}" stroke-width="1"/>
+      <rect x="54" y="25" width="12" height="8" rx="3" fill="${C(false)}" stroke="${sk}" stroke-width="0.8"/>
+      <ellipse cx="28" cy="43" rx="11" ry="9" fill="${C(delt)}" stroke="${S(delt)}" stroke-width="0.8"/>
+      <ellipse cx="92" cy="43" rx="11" ry="9" fill="${C(delt)}" stroke="${S(delt)}" stroke-width="0.8"/>
+      <ellipse cx="45" cy="55" rx="13" ry="11" fill="${C(m.pecs)}" stroke="${S(m.pecs)}" stroke-width="0.8"/>
+      <ellipse cx="75" cy="55" rx="13" ry="11" fill="${C(m.pecs)}" stroke="${S(m.pecs)}" stroke-width="0.8"/>
+      <rect x="48" y="66" width="24" height="24" rx="6" fill="${C(m.abs)}" stroke="${S(m.abs)}" stroke-width="0.8"/>
+      <ellipse cx="19" cy="71" rx="7" ry="13" fill="${C(m.biceps)}" stroke="${S(m.biceps)}" stroke-width="0.8"/>
+      <ellipse cx="101" cy="71" rx="7" ry="13" fill="${C(m.biceps)}" stroke="${S(m.biceps)}" stroke-width="0.8"/>
+      <ellipse cx="17" cy="92" rx="5" ry="10" fill="${C(false)}" stroke="${sk}" stroke-width="0.7"/>
+      <ellipse cx="103" cy="92" rx="5" ry="10" fill="${C(false)}" stroke="${sk}" stroke-width="0.7"/>
+      ${m.triceps?`<ellipse cx="19" cy="72" rx="5" ry="12" fill="${col}" stroke="${col}" stroke-width="0.5" opacity="0.45"/><ellipse cx="101" cy="72" rx="5" ry="12" fill="${col}" stroke="${col}" stroke-width="0.5" opacity="0.45"/>`:''}
+      <ellipse cx="44" cy="132" rx="13" ry="20" fill="${C(m.quads)}" stroke="${S(m.quads)}" stroke-width="0.8"/>
+      <ellipse cx="76" cy="132" rx="13" ry="20" fill="${C(m.quads)}" stroke="${S(m.quads)}" stroke-width="0.8"/>
+      <ellipse cx="44" cy="170" rx="9" ry="14" fill="${C(m.calves)}" stroke="${S(m.calves)}" stroke-width="0.8"/>
+      <ellipse cx="76" cy="170" rx="9" ry="14" fill="${C(m.calves)}" stroke="${S(m.calves)}" stroke-width="0.8"/>
+    </svg>`;
+  }
+
+  // SVG vue de dos
+  function back(m, col) {
+    const dim = 'rgba(255,255,255,0.07)';
+    const sk  = 'rgba(255,255,255,0.13)';
+    const C   = a => a ? col : dim;
+    const S   = a => a ? col : sk;
+    const rd  = m.rearDelt || m.latDelt;
+    return `<svg viewBox="0 0 120 205" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+      <circle cx="60" cy="15" r="11" fill="${C(false)}" stroke="${sk}" stroke-width="1"/>
+      <rect x="54" y="25" width="12" height="8" rx="3" fill="${C(false)}" stroke="${sk}" stroke-width="0.8"/>
+      <ellipse cx="28" cy="43" rx="11" ry="9" fill="${C(rd)}" stroke="${S(rd)}" stroke-width="0.8"/>
+      <ellipse cx="92" cy="43" rx="11" ry="9" fill="${C(rd)}" stroke="${S(rd)}" stroke-width="0.8"/>
+      <path d="M44,29 Q60,21 76,29 Q82,39 76,50 Q60,46 44,50 Q38,39 44,29 Z" fill="${C(m.traps)}" stroke="${S(m.traps)}" stroke-width="0.8"/>
+      <path d="M36,51 Q21,63 18,90 Q27,96 37,89 Q44,73 50,59 Z" fill="${C(m.lats)}" stroke="${S(m.lats)}" stroke-width="0.8"/>
+      <path d="M84,51 Q99,63 102,90 Q93,96 83,89 Q76,73 70,59 Z" fill="${C(m.lats)}" stroke="${S(m.lats)}" stroke-width="0.8"/>
+      <ellipse cx="18" cy="71" rx="7" ry="13" fill="${C(m.triceps)}" stroke="${S(m.triceps)}" stroke-width="0.8"/>
+      <ellipse cx="102" cy="71" rx="7" ry="13" fill="${C(m.triceps)}" stroke="${S(m.triceps)}" stroke-width="0.8"/>
+      <ellipse cx="44" cy="113" rx="14" ry="12" fill="${C(m.glutes)}" stroke="${S(m.glutes)}" stroke-width="0.8"/>
+      <ellipse cx="76" cy="113" rx="14" ry="12" fill="${C(m.glutes)}" stroke="${S(m.glutes)}" stroke-width="0.8"/>
+      <ellipse cx="44" cy="145" rx="12" ry="19" fill="${C(m.hamstrings)}" stroke="${S(m.hamstrings)}" stroke-width="0.8"/>
+      <ellipse cx="76" cy="145" rx="12" ry="19" fill="${C(m.hamstrings)}" stroke="${S(m.hamstrings)}" stroke-width="0.8"/>
+      <ellipse cx="44" cy="177" rx="9" ry="13" fill="${C(m.calves)}" stroke="${S(m.calves)}" stroke-width="0.8"/>
+      <ellipse cx="76" cy="177" rx="9" ry="13" fill="${C(m.calves)}" stroke="${S(m.calves)}" stroke-width="0.8"/>
+    </svg>`;
+  }
+
+  return {
+    html(muscles, sessId) {
+      const col = SCOL[sessId] || '#f5c518';
+      const m   = parse(muscles);
+      // Vue dos si exercice postérieur sans muscles antérieurs
+      const useBack = (m.lats||m.traps||m.rearDelt||m.hamstrings||m.glutes) && !m.pecs && !m.quads;
+      return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.25)">${useBack?back(m,col):front(m,col)}</div>`;
+    }
+  };
+})();
+
 const EXERCISE_SVG = {
 
 "push-1":`<svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">${mkBg('push')}${mkFloor('push')}${BANC}<ellipse cx="310" cy="90" rx="20" ry="20" fill="#c8845a"/><ellipse cx="310" cy="73" rx="17" ry="9" fill="#1a0e08"/><rect x="302" y="107" width="14" height="8" rx="4" fill="#c8845a"/><rect x="148" y="98" width="158" height="13" rx="6" fill="#334488" opacity=".9"/><ellipse cx="178" cy="98" rx="28" ry="13" fill="#cc3333" opacity=".75"/><ellipse cx="222" cy="98" rx="28" ry="13" fill="#cc3333" opacity=".75"/><ellipse cx="152" cy="95" rx="16" ry="12" fill="#334488" opacity=".8"/><ellipse cx="248" cy="95" rx="16" ry="12" fill="#334488" opacity=".8"/><line x1="155" y1="92" x2="96" y2="44" stroke="#4060a0" stroke-width="13" stroke-linecap="round"/><line x1="155" y1="92" x2="115" y2="58" stroke="#cc3333" stroke-width="6" stroke-linecap="round" opacity=".55"/><line x1="96" y1="44" x2="62" y2="44" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><ellipse cx="55" cy="44" rx="9" ry="7" fill="#b87048"/><line x1="245" y1="92" x2="304" y2="44" stroke="#4060a0" stroke-width="13" stroke-linecap="round"/><line x1="245" y1="92" x2="285" y2="58" stroke="#cc3333" stroke-width="6" stroke-linecap="round" opacity=".55"/><line x1="304" y1="44" x2="338" y2="44" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/><ellipse cx="345" cy="44" rx="9" ry="7" fill="#b87048"/>${hal(18,292,37)}<rect x="78" y="114" width="26" height="12" rx="6" fill="#2a3e70" opacity=".8"/><rect x="296" y="114" width="26" height="12" rx="6" fill="#2a3e70" opacity=".8"/>${mkLegend("Pectoraux")}${mkOv('push')}</svg>`,
@@ -2272,13 +2421,10 @@ function getExoSVG(exoId) {
   return (DEFAULT_SVG[cat] || DEFAULT_SVG.push)();
 }
 
-function getExoImageHTML(exoId) {
-  const photoUrl = (typeof EXERCISE_PHOTOS !== 'undefined' && EXERCISE_PHOTOS[exoId]) ? EXERCISE_PHOTOS[exoId] : null;
-  const svg = getExoSVG(exoId);
-  if (photoUrl) {
-    return `<div class="exo-photo exo-photo-has-img"><img src="${photoUrl}" class="exo-photo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" style="width:100%;height:100%;object-fit:cover;display:block"><div class="exo-photo-svg" style="display:none;width:100%;height:100%">${svg}</div></div>`;
-  }
-  return `<div class="exo-photo exo-photo-svg-only">${svg}</div>`;
+function getExoImageHTML(exoId, muscles, sessId) {
+  // Utilise le diagramme musculaire SVG (plus informatif que les photos)
+  const muscleHTML = MUSCLE_MAP.html(muscles || [], sessId || S.session || 'push');
+  return `<div class="exo-photo exo-photo-svg-only">${muscleHTML}</div>`;
 }
 
 function getSessionImageHTML(sessId) {
@@ -2869,14 +3015,21 @@ function renderHome() {
       </div>`;
     }
 
+    const normPhoto = (typeof SESSION_PHOTOS !== 'undefined' && SESSION_PHOTOS[id]) ? SESSION_PHOTOS[id] : '';
+    const sessColor = PROGRAM.sessions[id].color || '#ffffff';
     return `<div class="card-normal ${id}" onclick="startSession('${id}')">
-      <div class="card-icon">${ICONS[id]}</div>
-      <div class="card-info">
-        <div class="card-day">${sess.day.toUpperCase()}</div>
-        <div class="card-name done-name">${sess.name}${deload?' ❄️':''}</div>
-        <div class="card-meta">${sess.duration} · ${sess.focus}</div>
+      ${normPhoto ? `<div class="card-normal-photo" style="background-image:url('${normPhoto}')"></div><div class="card-normal-overlay"></div>` : `<div class="card-normal-color" style="background:${sessColor}22"></div>`}
+      <div class="card-normal-content">
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div class="card-day">${sess.day.toUpperCase()}</div>
+          <div class="card-name" style="font-size:18px;font-weight:900;color:#fff">${sess.name}${deload?' ❄️':''}</div>
+          <div class="card-meta" style="color:rgba(255,255,255,0.5)">${sess.duration} · ${sess.exercises.length} exos</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <div style="font-size:22px">${ICONS[id]}</div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
       </div>
-      <svg class="card-arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </div>`;
   }).join('');
 }
@@ -2917,11 +3070,13 @@ function startSession(id) {
 // Lance la séance directement
 function launchSession(id) {
   S.session = id;
+  S._endModalShown = false; // reset détection fin de séance
   startSessionChrono();   // démarre le chrono global
   S.prevScreen = 'home';
   renderExercises();
   updateSessionProgress();
   updatePillChecks();
+  loadBodyWeight();
 
   // Photo et infos hero de la séance
   const sess = PROGRAM.sessions[id];
@@ -3023,11 +3178,7 @@ function renderExercises() {
       const timerHtml = '';
       return `<div class="set-row ${set.done?'set-done':''} ${isActive?'active-set':''}" id="setrow-${exo.id}-${i}">
         <div class="set-num ${isActive?'current':''}">${i+1}</div>
-        <div class="set-w-group">
-          <button class="set-adj" onclick="adjW('${exo.id}',${i},-1)">−</button>
-          <input type="number" class="set-input ${isFill?'coach-fill':''}" placeholder="kg" inputmode="decimal" step="0.5" value="${wVal}" ${set.done?'readonly':''} id="w-${exo.id}-${i}" onchange="updSet('${exo.id}',${i},'weight',this.value)">
-          <button class="set-adj" onclick="adjW('${exo.id}',${i},1)">+</button>
-        </div>
+        <input type="number" class="set-input ${isFill?'coach-fill':''}" placeholder="kg" inputmode="decimal" step="0.5" value="${wVal}" ${set.done?'readonly':''} id="w-${exo.id}-${i}" onchange="updSet('${exo.id}',${i},'weight',this.value)">
         <input type="number" class="set-input" placeholder="reps" inputmode="numeric" value="${set.reps||''}" ${set.done?'readonly':''} id="r-${exo.id}-${i}" onchange="updSet('${exo.id}',${i},'reps',this.value)">
         ${timerHtml}
         <button class="set-ok ${set.done?'validated':''}" id="v-${exo.id}-${i}" onclick="toggleDone('${exo.id}',${i})">${set.done?'✓':'○'}</button>
@@ -3039,7 +3190,7 @@ function renderExercises() {
 
     return `<div class="exo-card ${allDone?'complete':''}" id="exocard-${exo.id}">
       <div class="exo-photo-wrap" onclick="toggleExo('${exo.id}')">
-        ${getExoImageHTML(exo.id)}
+        ${getExoImageHTML(exo.id, exo.muscles, id)}
         <div class="exo-photo-overlay"></div>
         <div class="exo-photo-num">${allDone?'✓':idx+1}</div>
         <div class="exo-photo-content">
@@ -3130,7 +3281,7 @@ function toggleDone(exoId, i) {
     const restSec = PROGRAM.sessions[S.session].exercises.find(e=>e.id===exoId)?.restSec || 120;
     showFloatingTimer(restSec);
     if (navigator.vibrate) navigator.vibrate(40);
-    if (isPR) { launchConfetti(); showToast(`🏆 Nouveau PR ! ${set.weight} kg`, 'pr'); }
+    if (isPR) { launchConfetti(); showToast(`🏆 Nouveau PR ! ${set.weight} kg`, 'pr'); _endModalPRCount++; }
   } else {
     set.done = false;
   }
@@ -3185,6 +3336,12 @@ function updateSessionProgress() {
   if (fill) fill.style.width = `${pct}%`;
   const meta = document.getElementById('finish-meta');
   if (meta) meta.textContent = `${done} / ${total} séries`;
+  
+  // Afficher le modal de fin si toutes les séries sont validées
+  if (total > 0 && done >= total && !S._endModalShown) {
+    S._endModalShown = true;
+    setTimeout(() => showSessionEndModal(), 600); // petit délai pour le feedback visuel
+  }
 }
 
 function updatePillChecks() {
@@ -3215,6 +3372,85 @@ function copyLastSession() {
   DB.set(sKey(id), cur);
   renderExercises();
   showToast('📋 Charges copiées !', 'success');
+}
+
+
+// ── POIDS CORPOREL ──────────────────────────────────────────────
+function promptBodyWeight() {
+  // Récupère le poids actuel si déjà saisi
+  const current = DB.get('body-weight-current');
+  const val = prompt(
+    current
+      ? \`Ton poids actuel : \${current.weight} kg (saisi le \${new Date(current.date).toLocaleDateString('fr-FR')})
+
+Entre ton nouveau poids (kg) :\`
+      : 'Entre ton poids corporel actuel (kg) :',
+    current ? current.weight : ''
+  );
+  if (val === null) return; // annulé
+  const w = parseFloat(val.replace(',', '.'));
+  if (!w || w < 30 || w > 250) { showToast('Poids invalide (30-250 kg)', 'error'); return; }
+  // Sauvegarder avec historique
+  const entry = { weight: w, date: new Date().toISOString() };
+  DB.set('body-weight-current', entry);
+  const hist = DB.get('body-weight-history', []);
+  hist.push(entry);
+  DB.set('body-weight-history', hist);
+  // Mettre à jour l'affichage
+  const el = document.getElementById('kpi-weight');
+  if (el) el.textContent = w;
+  showToast(\`✅ Poids enregistré : \${w} kg\`);
+}
+
+// Charger le poids corporel au démarrage
+function loadBodyWeight() {
+  const bw = DB.get('body-weight-current');
+  const el = document.getElementById('kpi-weight');
+  if (el && bw) el.textContent = bw.weight;
+}
+
+
+// ── MODAL FIN DE SÉANCE ─────────────────────────────────────────
+let _endModalPRCount = 0;
+
+function showSessionEndModal() {
+  const id   = S.session;
+  const sess = PROGRAM.sessions[id];
+  const saved = DB.get(sKey(id), {sets:{}});
+  
+  // Calculer le volume total
+  let totalVol = 0, totalSets = 0;
+  sess.exercises.forEach(exo => {
+    (saved.sets[exo.id]||[]).filter(s=>s.done).forEach(s => {
+      const w = parseFloat(s.weight)||0;
+      const r = parseInt(s.reps)||0;
+      totalVol += w * r;
+      totalSets++;
+    });
+  });
+  
+  // Durée de séance
+  const dur = S.sessionChronoSec || 0;
+  const durStr = dur > 60 ? `${Math.floor(dur/60)} min` : '';
+  
+  document.getElementById('end-session-name').textContent = sess.name + ' · Semaine ' + S.week;
+  document.getElementById('end-volume').textContent = Math.round(totalVol).toLocaleString();
+  document.getElementById('end-sets').textContent = totalSets;
+  document.getElementById('end-prs').textContent = _endModalPRCount;
+  document.getElementById('end-duration').textContent = durStr ? `⏱ Durée : ${durStr}` : '';
+  _endModalPRCount = 0; // reset
+  
+  const modal = document.getElementById('session-end-modal');
+  modal.style.display = 'flex';
+}
+
+function closeSessionEndModal() {
+  document.getElementById('session-end-modal').style.display = 'none';
+}
+
+function confirmFinishSession() {
+  closeSessionEndModal();
+  finishSession();
 }
 
 function finishSession() {
@@ -3391,7 +3627,8 @@ function markWarmupDone() {
   const saved = DB.get(sKey(S.session), {sets:{}, finished:false});
   saved.warmupDone = !saved.warmupDone;
   DB.set(sKey(S.session), saved);
-  if (saved.warmupDone) { showToast('🔥 Échauffement validé !','success'); if(navigator.vibrate)navigator.vibrate(50); setTimeout(()=>{ updatePillChecks(); showScreen('session'); }, 500); }
+  if (saved.warmupDone) { showToast('🔥 Échauffement validé !','success'); if(navigator.vibrate)navigator.vibrate(50); setTimeout(()=>{ updatePillChecks();
+  loadBodyWeight(); showScreen('session'); }, 500); }
   else renderWarmup();
 }
 
@@ -3399,7 +3636,8 @@ function markCooldownDone() {
   const saved = DB.get(sKey(S.session), {sets:{}, finished:false});
   saved.cooldownDone = !saved.cooldownDone;
   DB.set(sKey(S.session), saved);
-  if (saved.cooldownDone) { showToast('🧘 Cool-down validé !','success'); if(navigator.vibrate)navigator.vibrate(50); setTimeout(()=>{ updatePillChecks(); showScreen('session'); }, 500); }
+  if (saved.cooldownDone) { showToast('🧘 Cool-down validé !','success'); if(navigator.vibrate)navigator.vibrate(50); setTimeout(()=>{ updatePillChecks();
+  loadBodyWeight(); showScreen('session'); }, 500); }
   else renderCooldown();
 }
 
