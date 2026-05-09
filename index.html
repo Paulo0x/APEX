@@ -1143,7 +1143,8 @@ canvas { width: 100% !important; }
 <script>
 /**
  * paulo-tracker / data.js
- * Données du programme 4 séances Push/Pull/Legs/Upper Hypertrophie
+ * Programme 4 séances — Lundi Push / Mardi Pull / Jeudi Legs / Vendredi Upper
+ * Fréquence 2×/semaine sur chaque groupe musculaire (optimal hypertrophie)
  */
 
 const PROGRAM = {
@@ -1228,19 +1229,6 @@ const PROGRAM = {
           difficulty: "Débutant",
           muscles: ["Deltoïdes lat."],
           technique: "Monter les bras sur les côtés jusqu'à l'horizontale SEULEMENT, coudes légèrement fléchis. Descente contrôlée. ⭐ L'exo clé pour la largeur d'épaules."
-        },
-        {
-          id: "push-6",
-          name: "Élévations latérales poulie basse",
-          sets: 3,
-          reps: "12-15",
-          rest: "1:00",
-          restSec: 60,
-          rir: "0-1",
-          tempo: "2-0-1-1",
-          difficulty: "Débutant",
-          muscles: ["Deltoïdes lat."],
-          technique: "Debout face à la poulie basse, poignée dans la main opposée (bras qui passe devant le corps). Lever sur le côté jusqu'à l'horizontale."
         },
         {
           id: "push-7",
@@ -1357,14 +1345,27 @@ const PROGRAM = {
           difficulty: "Débutant",
           muscles: ["Biceps", "Brachio-radial"],
           technique: "Assis banc 45°, dos plaqué. Bras pendants (étirement max du biceps). Curler sans bouger les épaules en avant. Descente lente 3 sec."
+        },
+        {
+          id: "pull-8",
+          name: "Curl barre EZ (finisher biceps)",
+          sets: 3,
+          reps: "10-12",
+          rest: "1:00",
+          restSec: 60,
+          rir: "0",
+          tempo: "2-0-1-0",
+          difficulty: "Débutant",
+          muscles: ["Biceps", "Brachial"],
+          technique: "Barre EZ prise large. Coudes collés au corps et IMMOBILES. Curler jusqu'à hauteur des pecs, pause 1 sec en contraction maximale. Descente lente 2 sec. Finisher — va jusqu'au bout !"
         }
       ]
     },
 
     legs: {
       id: "legs",
-      day: "Mercredi",
-      dayIdx: 3,
+      day: "Jeudi",
+      dayIdx: 4,
       name: "Legs",
       focus: "Jambes complètes — sans barre",
       duration: "75 min",
@@ -1440,11 +1441,11 @@ const PROGRAM = {
 
     upper: {
       id: "upper",
-      day: "Jeudi",
-      dayIdx: 4,
+      day: "Vendredi",
+      dayIdx: 5,
       name: "Upper Hypertrophie",
-      focus: "Pecs · Dos · Épaules · Trapèzes",
-      duration: "75 min",
+      focus: "Pecs · Dos · Épaules · Bras · Jambes (2e fréquence)",
+      duration: "90 min",
       color: "#8b5cf6",
       exercises: [
         {
@@ -1524,6 +1525,58 @@ const PROGRAM = {
           difficulty: "Débutant",
           muscles: ["Deltoïdes", "Trapèzes"],
           technique: "Debout, haltères lourds bras tendus. Soulever les épaules VERTICALEMENT, pause 1 sec en haut. Redescendre contrôlé. Ne pas rouler les épaules."
+        },
+        {
+          id: "upper-7",
+          name: "Curl marteau haltères (2e fréquence biceps)",
+          sets: 3,
+          reps: "10-12",
+          rest: "1:00",
+          restSec: 60,
+          rir: "1",
+          tempo: "2-0-1-0",
+          difficulty: "Débutant",
+          muscles: ["Biceps", "Brachial"],
+          technique: "Prise neutre (paumes face à face), alterner ou ensemble. Curler sans tourner le poignet. Coudes immobiles. Cible le brachial = épaisseur du bras. 2e stimulus biceps de la semaine — essentiel pour la croissance."
+        },
+        {
+          id: "upper-8",
+          name: "Extensions triceps poulie corde (2e fréquence triceps)",
+          sets: 3,
+          reps: "12-15",
+          rest: "1:00",
+          restSec: 60,
+          rir: "0-1",
+          tempo: "2-0-1-1",
+          difficulty: "Débutant",
+          muscles: ["Triceps"],
+          technique: "Poulie haute, corde prise neutre. Coudes collés au corps et IMMOBILES. Descendre en écartant la corde en bas pour contraction max. Remonter sans bouger les épaules. 2e stimulus triceps de la semaine."
+        },
+        {
+          id: "upper-9",
+          name: "Leg extension (2e fréquence quadris)",
+          sets: 3,
+          reps: "15",
+          rest: "1:00",
+          restSec: 60,
+          rir: "0-1",
+          tempo: "2-0-1-1",
+          difficulty: "Débutant",
+          muscles: ["Quadriceps"],
+          technique: "Charge plus légère qu'en séance Legs — objectif fréquence, pas surcharge. Extension complète, pause 1 sec en haut. Descente contrôlée. Finisher léger pour le 2e stimulus quadri de la semaine."
+        },
+        {
+          id: "upper-10",
+          name: "Mollets machine assis (2e fréquence)",
+          sets: 3,
+          reps: "15-20",
+          rest: "1:00",
+          restSec: 60,
+          rir: "0",
+          tempo: "2-2-1-1",
+          difficulty: "Débutant",
+          muscles: ["Mollets (soléaire)"],
+          technique: "Même machine qu'en séance Legs. Amplitude complète — talons très bas 2 sec, montée max. Les mollets répondent bien à la fréquence élevée et récupèrent vite. Pousse jusqu'à la brûlure !"
         }
       ]
     },
@@ -1988,7 +2041,7 @@ async function askCoachAI(userQuestion, onChunk) {
   // System prompt complet — le coach connaît tout de Paulo
   const systemPrompt = `Tu es le coach personnel d'élite de Paulo ROSA (42 ans, 75 kg, 1m72, objectif hypertrophie maximale du haut du corps).
 
-Programme : 4 séances/semaine — Push (Poitrine/Épaules/Triceps), Pull (Dos/Biceps), Legs (Jambes/Fessiers), Upper Hypertrophie (Haut du corps mix Push+Pull).
+Programme : 4 séances/semaine — Push Lundi · Pull Mardi · Legs Jeudi · Upper Vendredi. Chaque muscle 2×/semaine : fréquence optimale hypertrophie.
 Méthode : Progressive Overload — augmenter les charges de 2,5 à 5 kg dès que les reps cibles sont atteintes sur toutes les séries.
 Cycle : 7 semaines (S1-S6 progression, S7 deload à -20%).
 
