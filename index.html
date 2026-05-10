@@ -967,7 +967,7 @@ canvas { width: 100% !important; }
       <button class="hdr-icon-btn" onclick="showScreen('settings')" title="Réglages">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
       </button>
-      <div class="week-chip" id="week-chip">S1</div>
+      <div class="week-chip" id="week-chip" onclick="openWeekPicker()" title="Changer de semaine">S1</div>
     </div>
   </header>
 
@@ -3002,7 +3002,7 @@ function showScreen(id, fromPopState) {
 
   const back  = document.getElementById('hdr-back');
   const title = document.getElementById('hdr-title');
-  const noNav = ['session','warmup','cooldown'];
+  const noNav = ['session','warmup','cooldown','week-recap'];
 
   back.classList.toggle('hidden', !['session','warmup','cooldown'].includes(id));
   document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.screen === id));
@@ -3022,6 +3022,11 @@ function showScreen(id, fromPopState) {
   window.scrollTo(0, 0);
 }
 function goBack() {
+  // Si on est sur l'écran récap semaine → retour à la vraie semaine
+  if (document.getElementById('screen-week-recap').classList.contains('active')) {
+    returnToCurrentWeek();
+    return;
+  }
   // Si on est dans une séance en cours, demander confirmation avant de quitter
   if (S.screen === 'session') {
     const saved = DB.get(sKey(S.session), {sets:{}, finished:false});
@@ -3541,6 +3546,182 @@ function promptBodyWeight() {
   const el = document.getElementById('kpi-weight');
   if (el) el.textContent = w;
   showToast('Poids enregistré : ' + w + ' kg');
+}
+
+
+
+// ════════════════════════════════════════════════════════════
+// SÉLECTEUR DE SEMAINE + RÉCAP HISTORIQUE
+// ════════════════════════════════════════════════════════════
+
+// Semaine "réelle" de l'utilisateur (pour pouvoir y revenir)
+let _realWeek = null;
+
+function openWeekPicker() {
+  // Mémoriser la vraie semaine si pas déjà fait
+  if (_realWeek === null) _realWeek = S.week;
+
+  const overlay = document.getElementById('week-picker-overlay');
+  const list    = document.getElementById('week-picker-list');
+  const retBtn  = document.getElementById('week-picker-current-btn');
+  const ORDER   = ['push','pull','legs','upper'];
+
+  // Construire la grille S1 → S7
+  list.innerHTML = Array.from({length: 7}, (_, i) => {
+    const w = i + 1;
+    const isDeload = w === 7;
+    const isCurrent = w === _realWeek;
+    const isViewing = w === S.week && w !== _realWeek;
+
+    // Compter les séances faites cette semaine
+    const doneCount = ORDER.filter(id => {
+      const d = DB.get('sess-' + w + '-' + id);
+      return d && d.sets && Object.keys(d.sets).length > 0;
+    }).length;
+
+    // Couleur selon état
+    let bg, border, color;
+    if (isCurrent) {
+      bg = 'var(--gold-dim)'; border = 'rgba(245,197,24,0.4)'; color = 'var(--gold)';
+    } else if (isViewing) {
+      bg = 'rgba(34,221,102,0.1)'; border = 'rgba(34,221,102,0.4)'; color = '#22dd66';
+    } else if (doneCount > 0) {
+      bg = 'var(--bg3)'; border = 'var(--border2)'; color = 'var(--text)';
+    } else {
+      bg = 'var(--bg2)'; border = 'var(--border)'; color = 'var(--text3)';
+    }
+
+    const badge = doneCount > 0
+      ? `<div style="font-size:10px;color:${doneCount===ORDER.length?'#22dd66':'var(--text3)'};margin-top:4px">${doneCount}/${ORDER.length} séances</div>`
+      : `<div style="font-size:10px;color:var(--text3);margin-top:4px">—</div>`;
+
+    const label = isDeload ? 'Deload' : (isCurrent ? '✦ En cours' : (isViewing ? '👁 Vue' : ''));
+
+    return `<button onclick="viewWeek(${w})" style="background:${bg};border:1px solid ${border};color:${color};border-radius:12px;padding:14px 8px;font-weight:800;font-size:16px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center">
+      S${w}
+      ${badge}
+      <div style="font-size:9px;margin-top:2px;opacity:0.8">${label}</div>
+    </button>`;
+  }).join('');
+
+  // Bouton "retour semaine courante" visible seulement si on consulte une autre semaine
+  retBtn.style.display = (S.week !== _realWeek) ? 'block' : 'none';
+
+  overlay.style.display = 'block';
+}
+
+function closeWeekPicker() {
+  document.getElementById('week-picker-overlay').style.display = 'none';
+}
+
+function viewWeek(w) {
+  closeWeekPicker();
+
+  // Si c'est la semaine en cours → retour accueil normal
+  if (w === _realWeek) {
+    returnToCurrentWeek();
+    return;
+  }
+
+  // Temporairement pointer sur la semaine choisie
+  S.week = w;
+  updateWeekChip();
+
+  // Construire l'écran récap
+  renderWeekRecap(w);
+  showScreen('week-recap');
+}
+
+function returnToCurrentWeek() {
+  closeWeekPicker();
+  if (_realWeek !== null) {
+    S.week = _realWeek;
+    updateWeekChip();
+  }
+  _realWeek = null;
+  showScreen('home');
+}
+
+function renderWeekRecap(w) {
+  const ORDER   = ['push','pull','legs','upper'];
+  const NAMES   = {push:'Push', pull:'Pull', legs:'Legs', upper:'Upper'};
+  const ICONS   = {push:'🔥', pull:'🎯', legs:'🦵', upper:'💪'};
+  const COLORS  = {push:'#ef4444', pull:'#3b82f6', legs:'#22dd66', upper:'#a855f7'};
+  const isDeload = w === 7;
+
+  document.getElementById('recap-week-title').textContent = isDeload
+    ? 'Semaine ' + w + ' — Deload ❄️'
+    : 'Semaine ' + w;
+
+  const totalSessions = ORDER.filter(id => {
+    const d = DB.get('sess-' + w + '-' + id);
+    return d && d.sets && Object.keys(d.sets).length > 0;
+  }).length;
+  document.getElementById('recap-week-sub').textContent = totalSessions
+    ? totalSessions + ' séance' + (totalSessions > 1 ? 's' : '') + ' enregistrée' + (totalSessions > 1 ? 's' : '')
+    : 'Aucune séance enregistrée cette semaine';
+
+  const container = document.getElementById('recap-sessions-list');
+
+  container.innerHTML = ORDER.map(sessId => {
+    const sess = PROGRAM.sessions[sessId];
+    const data = DB.get('sess-' + w + '-' + sessId);
+    const color = COLORS[sessId];
+
+    if (!data || !data.sets || !Object.keys(data.sets).length) {
+      // Séance non faite
+      return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;opacity:0.4">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:20px">${ICONS[sessId]}</span>
+          <div>
+            <div style="font-weight:800;font-size:15px;color:var(--text)">${NAMES[sessId]}</div>
+            <div style="font-size:12px;color:var(--text3)">Non effectuée</div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // Calculer volume total
+    let totalVol = 0, totalSets = 0;
+    Object.values(data.sets).forEach(arr => arr.forEach(s => {
+      if (s.done) { totalSets++; totalVol += (parseFloat(s.weight)||0) * (parseInt(s.reps)||0); }
+    }));
+
+    // Résumé par exercice
+    const exoRows = sess.exercises.map(exo => {
+      const sets = (data.sets[exo.id] || []).filter(s => s.done && s.weight);
+      if (!sets.length) return '';
+      const best = sets.reduce((a, b) =>
+        (parseFloat(a.weight)||0) * (parseInt(a.reps)||0) >= (parseFloat(b.weight)||0) * (parseInt(b.reps)||0) ? a : b
+      );
+      const allW = [...new Set(sets.map(s => s.weight))].join(', ');
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:12px;color:var(--text2);flex:1">${exo.name}</div>
+        <div style="font-size:12px;font-weight:700;color:${color};white-space:nowrap;margin-left:8px">${allW} kg × ${sets.length} séries</div>
+      </div>`;
+    }).filter(Boolean).join('');
+
+    const dateStr = data.date
+      ? new Date(data.date).toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'short'})
+      : 'Date inconnue';
+    const finished = data.finished
+      ? '<span style="font-size:10px;background:rgba(34,221,102,0.12);color:#22dd66;padding:2px 7px;border-radius:20px;font-weight:700">✓ Terminée</span>'
+      : '<span style="font-size:10px;background:rgba(245,197,24,0.1);color:var(--gold);padding:2px 7px;border-radius:20px;font-weight:700">Partielle</span>';
+
+    return `<div style="background:var(--bg2);border:1px solid ${color}33;border-left:3px solid ${color};border-radius:14px;overflow:hidden">
+      <div style="padding:14px 16px 10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:20px">${ICONS[sessId]}</span>
+            <div style="font-weight:900;font-size:16px;color:var(--text)">${NAMES[sessId]}</div>
+          </div>
+          ${finished}
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px">${dateStr} · ${totalSets} séries · Vol. ${Math.round(totalVol)} kg</div>
+        <div>${exoRows}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // Charger le poids corporel au démarrage
@@ -5229,5 +5410,31 @@ if ('serviceWorker' in navigator) {
 })();
 </script>
 
+
+<!-- ═══════════════════════════════════════════════════════
+     MODAL SÉLECTEUR DE SEMAINE
+════════════════════════════════════════════════════════ -->
+<div id="week-picker-overlay" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px)" onclick="closeWeekPicker()">
+  <div onclick="event.stopPropagation()" style="position:absolute;bottom:0;left:0;right:0;background:var(--bg2);border-radius:20px 20px 0 0;padding:20px 16px 40px;max-height:80vh;overflow-y:auto">
+    <div style="width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 20px"></div>
+    <div style="font-size:18px;font-weight:900;color:var(--text);margin-bottom:6px;text-align:center">Choisir une semaine</div>
+    <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:20px">Consulte l'historique de tes séances</div>
+    <div id="week-picker-list" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px"></div>
+    <button id="week-picker-current-btn" onclick="returnToCurrentWeek()" style="display:none;width:100%;padding:14px;background:var(--gold);color:#000;font-weight:900;border:none;border-radius:12px;font-size:15px;cursor:pointer;margin-top:8px">
+      ↩ Retour à ma semaine en cours
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ÉCRAN RÉCAP SEMAINE (lecture seule)
+════════════════════════════════════════════════════════ -->
+<section id="screen-week-recap" class="screen" style="padding-bottom:80px">
+  <div style="padding:16px 16px 0">
+    <div id="recap-week-title" style="font-size:22px;font-weight:900;color:var(--text);margin-bottom:4px"></div>
+    <div id="recap-week-sub" style="font-size:13px;color:var(--text3);margin-bottom:16px"></div>
+  </div>
+  <div id="recap-sessions-list" style="padding:0 16px;display:flex;flex-direction:column;gap:12px"></div>
+</section>
 </body>
 </html>
