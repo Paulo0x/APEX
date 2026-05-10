@@ -3073,6 +3073,20 @@ function renderHome() {
   // Date
   const now  = new Date();
   const week = WEEKS[S.week - 1];
+
+
+
+  // Bannière mode consultation (semaine différente de la vraie)
+  const existingBanner = document.getElementById('consult-banner');
+  if (existingBanner) existingBanner.remove();
+  if (_realWeek !== null && S.week !== _realWeek) {
+    const banner = document.createElement('div');
+    banner.id = 'consult-banner';
+    banner.style.cssText = 'background:rgba(34,221,102,0.08);border:1px solid rgba(34,221,102,0.2);border-radius:12px;margin:8px 16px 0;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px';
+    banner.innerHTML = '<span style="font-size:13px;color:#22dd66;font-weight:700">👁 Consultation S' + S.week + '</span><button onclick="returnToCurrentWeek()" style="background:var(--gold);color:#000;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:800;cursor:pointer">↩ S' + _realWeek + '</button>';
+    const homeTop = document.querySelector('.home-top') || document.getElementById('screen-home');
+    if (homeTop) homeTop.insertAdjacentElement('afterend', banner);
+  }
   document.getElementById('home-day').textContent = DAYS_FR[now.getDay()];
   document.getElementById('home-date').textContent = `${now.getDate()} ${MONTHS_FR[now.getMonth()]} · ${week.label}`;
 
@@ -3317,13 +3331,17 @@ function renderExercises() {
       const red = Math.round(exoPR.weight * 0.8 * 2) / 2;
       prevHtml = `<div class="coach-banner deload">❄️ Deload −20% : <strong style="color:#a0a0ff">${red} kg</strong> (PR : ${exoPR.weight} kg)</div>`;
     } else if (coachSug) {
-      const prevInfo = (coachSug.prevWeight && coachSug.prevReps)
-        ? ` <span style="opacity:0.6;font-size:11px">· Dernier : ${coachSug.prevWeight}kg × ${coachSug.prevReps}</span>`
+      const arrow = coachSug.type === 'progress' ? '↑' : coachSug.type === 'down' ? '↓' : '→';
+      const prevLine = (coachSug.prevWeight)
+        ? `<div style="font-size:11px;opacity:0.65;margin-top:3px">Dernier : ${coachSug.prevWeight} kg × ${coachSug.prevReps || '?'} reps</div>`
         : '';
-      prevHtml = `<div class="coach-banner ${coachSug.type}">${coachSug.reason}${prevInfo}</div>`;
+      prevHtml = `<div class="coach-banner ${coachSug.type}">
+        <div>${arrow} ${coachSug.reason}</div>
+        ${prevLine}
+      </div>`;
     } else if (last) {
       const best = last.sets.filter(s=>s.done&&s.weight).sort((a,b)=>b.weight*b.reps-a.weight*a.reps)[0];
-      if (best) prevHtml = `<div class="last-perf">📅 Dernière fois : <strong>${best.weight} kg × ${best.reps} reps</strong></div>`;
+      if (best) prevHtml = `<div class="last-perf">📅 Dernier : <strong>${best.weight} kg × ${best.reps} reps</strong></div>`;
     }
 
     // Rows de sets
@@ -3604,77 +3622,72 @@ function openWeekPicker() {
   const overlay = document.getElementById('week-picker-overlay');
   const list    = document.getElementById('week-picker-list');
   const retBtn  = document.getElementById('week-picker-current-btn');
-  const ORDER   = ['push','pull','legs','upper'];
 
-  // Semaines avec données réelles + semaine courante
+  // Semaines avec données + semaine en cours
   const weeksWithData = getWeeksWithData();
   const allWeeks = [...new Set([...weeksWithData, _realWeek])].sort((a,b) => a-b);
 
-  if (allWeeks.length === 0) {
-    list.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:13px;padding:20px">Aucune séance enregistrée.</div>';
-  } else {
-    list.innerHTML = allWeeks.map(w => {
-      const isDeload = w === 7;
-      const isCurrent = w === _realWeek;
-      const isViewing = w === S.week && w !== _realWeek;
+  list.innerHTML = allWeeks.map(w => {
+    const isCurrent = w === _realWeek;
+    const isViewing = w === S.week && !isCurrent;
+    const isDeload  = w === 7;
 
-      // Compter les séances réellement trouvées
-      const doneCount = ORDER.filter(id => {
-        const raw = localStorage.getItem('sess-' + w + '-' + id);
-        if (!raw) return false;
-        try { const d = JSON.parse(raw); return d && d.sets && Object.keys(d.sets).length > 0; }
-        catch(e) { return false; }
-      }).length;
+    const doneCount = ['push','pull','legs','upper'].filter(id => {
+      const raw = localStorage.getItem('sess-' + w + '-' + id);
+      if (!raw) return false;
+      try { const d = JSON.parse(raw); return d && d.sets && Object.keys(d.sets).length > 0; }
+      catch(e) { return false; }
+    }).length;
 
-      let bg, border, color;
-      if (isCurrent) {
-        bg = 'var(--gold-dim)'; border = 'rgba(245,197,24,0.4)'; color = 'var(--gold)';
-      } else if (isViewing) {
-        bg = 'rgba(34,221,102,0.1)'; border = 'rgba(34,221,102,0.4)'; color = '#22dd66';
-      } else if (doneCount > 0) {
-        bg = 'var(--bg3)'; border = 'var(--border2)'; color = 'var(--text)';
-      } else {
-        bg = 'var(--bg2)'; border = 'var(--border)'; color = 'var(--text3)';
-      }
+    let bg, border, color;
+    if (isCurrent)    { bg='var(--gold-dim)'; border='rgba(245,197,24,0.4)'; color='var(--gold)'; }
+    else if (isViewing){ bg='rgba(34,221,102,0.1)'; border='rgba(34,221,102,0.3)'; color='#22dd66'; }
+    else if (doneCount){ bg='var(--bg3)'; border='var(--border2)'; color='var(--text)'; }
+    else               { bg='var(--bg2)'; border='var(--border)';  color='var(--text3)'; }
 
-      const badge = doneCount > 0
-        ? `<div style="font-size:10px;color:${doneCount===4?'#22dd66':'var(--text3)'};margin-top:4px">${doneCount}/4 séances</div>`
-        : `<div style="font-size:10px;color:var(--text3);margin-top:4px">aucune</div>`;
+    const badge = doneCount > 0
+      ? `<div style="font-size:10px;margin-top:3px;color:${doneCount===4?'#22dd66':'var(--text3)'}">${doneCount}/4</div>`
+      : `<div style="font-size:10px;margin-top:3px;color:var(--text3)">—</div>`;
+    const tag = isCurrent ? '<div style="font-size:9px;margin-top:2px">✦ actuelle</div>' : '';
 
-      const label = isCurrent ? '✦ En cours' : (isViewing ? '👁 Vue' : '');
-
-      return `<button onclick="viewWeek(${w})" style="background:${bg};border:1px solid ${border};color:${color};border-radius:12px;padding:14px 8px;font-weight:800;font-size:16px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center">
-        S${w}
-        ${badge}
-        <div style="font-size:9px;margin-top:2px;opacity:0.8">${label}</div>
-      </button>`;
-    }).join('');
-  }
+    return `<button onclick="switchWeekAndHome(${w})" style="background:${bg};border:1px solid ${border};color:${color};border-radius:12px;padding:14px 8px;font-weight:800;font-size:17px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1px">
+      S${w}${badge}${tag}
+    </button>`;
+  }).join('');
 
   retBtn.style.display = (S.week !== _realWeek) ? 'block' : 'none';
   overlay.style.display = 'block';
 }
-
 function closeWeekPicker() {
   document.getElementById('week-picker-overlay').style.display = 'none';
 }
 
-function viewWeek(w) {
+// Change la semaine affichée et retourne à l'accueil
+function switchWeekAndHome(w) {
   closeWeekPicker();
-
-  // Si c'est la semaine en cours → retour accueil normal
-  if (w === _realWeek) {
-    returnToCurrentWeek();
-    return;
-  }
-
-  // Temporairement pointer sur la semaine choisie
   S.week = w;
   updateWeekChip();
+  // Bannière "mode consultation" si différent de la vraie semaine
+  showScreen('home');
+  if (w !== _realWeek) {
+    showToast('Vue S' + w + ' · Tape S' + _realWeek + ' pour revenir', 'success');
+  }
+}
 
-  // Construire l'écran récap
-  renderWeekRecap(w);
-  showScreen('week-recap');
+// Change la semaine affichée et retourne à l'accueil
+function switchWeekAndHome(w) {
+  closeWeekPicker();
+  S.week = w;
+  updateWeekChip();
+  // Bannière "mode consultation" si différent de la vraie semaine
+  showScreen('home');
+  if (w !== _realWeek) {
+    showToast('Vue S' + w + ' · Tape S' + _realWeek + ' pour revenir', 'success');
+  }
+}
+
+function viewWeek(w) {
+  switchWeekAndHome(w);
 }
 
 function returnToCurrentWeek() {
@@ -3682,8 +3695,8 @@ function returnToCurrentWeek() {
   if (_realWeek !== null) {
     S.week = _realWeek;
     updateWeekChip();
+    _realWeek = null;
   }
-  _realWeek = null;
   showScreen('home');
 }
 
