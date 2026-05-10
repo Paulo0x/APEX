@@ -3172,18 +3172,45 @@ function renderHome() {
 
     const normPhoto = (typeof SESSION_PHOTOS !== 'undefined' && SESSION_PHOTOS[id]) ? SESSION_PHOTOS[id] : '';
     const sessColor = PROGRAM.sessions[id].color || '#ffffff';
+
+    // Charges projetées pour cette séance (surcharge progressive)
+    const suggestions = computeProgressiveSuggestions(id);
+    const suggKeys = Object.keys(suggestions);
+    let chargesHtml = '';
+    if (suggKeys.length > 0) {
+      // Prendre les 3 premiers exercices avec une suggestion
+      const lines = sess.exercises
+        .filter(e => suggestions[e.id]?.suggestedWeight)
+        .slice(0, 3)
+        .map(e => {
+          const sug = suggestions[e.id];
+          const arrow = sug.type === 'progress' ? '↑' : sug.type === 'down' ? '↓' : '→';
+          // Nom court (2 premiers mots)
+          const shortName = e.name.split(' ').slice(0,2).join(' ');
+          return `<span style="white-space:nowrap">${arrow} ${shortName} <strong>${sug.suggestedWeight}kg</strong></span>`;
+        });
+      if (lines.length > 0) {
+        chargesHtml = `<div style="margin-top:6px;padding:6px 8px;background:rgba(245,197,24,0.08);border-radius:8px;border:1px solid rgba(245,197,24,0.15);display:flex;flex-wrap:wrap;gap:6px 10px">
+          ${lines.join('')}
+        </div>`;
+      }
+    }
+
     return `<div class="card-normal ${id}" onclick="startSession('${id}')">
       ${normPhoto ? `<div class="card-normal-photo" style="background-image:url('${normPhoto}')"></div><div class="card-normal-overlay"></div>` : `<div class="card-normal-color" style="background:${sessColor}22"></div>`}
-      <div class="card-normal-content">
-        <div style="display:flex;flex-direction:column;gap:2px">
-          <div class="card-day">${sess.day.toUpperCase()}</div>
-          <div class="card-name" style="font-size:18px;font-weight:900;color:#fff">${sess.name}${deload?' ❄️':''}</div>
-          <div class="card-meta" style="color:rgba(255,255,255,0.5)">${sess.duration} · ${sess.exercises.length} exos</div>
+      <div class="card-normal-content" style="flex-direction:column;align-items:flex-start;gap:4px">
+        <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+          <div>
+            <div class="card-day">${sess.day.toUpperCase()}</div>
+            <div class="card-name" style="font-size:18px;font-weight:900;color:#fff">${sess.name}${deload?' ❄️':''}</div>
+            <div class="card-meta" style="color:rgba(255,255,255,0.5)">${sess.duration} · ${sess.exercises.length} exos</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+            <div style="font-size:22px">${ICONS[id]}</div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-          <div style="font-size:22px">${ICONS[id]}</div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
+        ${chargesHtml}
       </div>
     </div>`;
   }).join('');
@@ -3607,12 +3634,22 @@ function openWeekPicker() {
   const list    = document.getElementById('week-picker-list');
   const retBtn  = document.getElementById('week-picker-current-btn');
 
-  // Toutes les semaines qui ont des données + semaine courante
+  // Semaines avec données + semaine courante + 2 semaines futures (max S7)
   const weeksWithData = getWeeksWithData();
-  const allWeeks = [...new Set([...weeksWithData, S.week])].sort((a,b) => a-b);
+  const future1 = Math.min(S.week + 1, 7);
+  const future2 = Math.min(S.week + 2, 7);
+  const allWeeks = [...new Set([
+    ...weeksWithData,
+    S.week,
+    future1,
+    future2
+  ])].filter(w => w >= 1 && w <= 7).sort((a,b) => a-b);
 
   list.innerHTML = allWeeks.map(w => {
     const isCurrent = w === S.week;
+    const isFuture  = w > S.week;
+    const isDeload  = w === 7;
+
     const doneCount = ['push','pull','legs','upper'].filter(id => {
       try {
         const raw = localStorage.getItem('sess-' + w + '-' + id);
@@ -3622,15 +3659,26 @@ function openWeekPicker() {
       } catch(e) { return false; }
     }).length;
 
-    const bg     = isCurrent ? 'var(--gold)' : doneCount > 0 ? 'var(--bg3)' : 'var(--bg2)';
-    const color  = isCurrent ? '#000' : doneCount > 0 ? 'var(--text)' : 'var(--text3)';
-    const border = isCurrent ? 'var(--gold)' : 'var(--border2)';
-    const badge  = doneCount > 0
-      ? `<div style="font-size:10px;margin-top:3px;opacity:0.7">${doneCount}/4 séances</div>`
-      : `<div style="font-size:10px;margin-top:3px;opacity:0.4">—</div>`;
+    let bg, color, border, badgeText, badgeColor;
 
-    return `<button onclick="pickWeek(${w})" style="background:${bg};border:1.5px solid ${border};color:${color};border-radius:12px;padding:14px 6px;font-weight:900;font-size:18px;cursor:pointer;display:flex;flex-direction:column;align-items:center;width:100%">
-      S${w}${badge}
+    if (isCurrent) {
+      bg = 'var(--gold)'; color = '#000'; border = 'var(--gold)';
+      badgeText = 'en cours'; badgeColor = 'rgba(0,0,0,0.5)';
+    } else if (isFuture) {
+      bg = 'rgba(34,221,102,0.07)'; color = '#22dd66';
+      border = 'rgba(34,221,102,0.3)';
+      badgeText = isDeload ? '❄️ deload' : '→ à venir'; badgeColor = 'rgba(34,221,102,0.6)';
+    } else if (doneCount > 0) {
+      bg = 'var(--bg3)'; color = 'var(--text)'; border = 'var(--border2)';
+      badgeText = doneCount + '/4 séances'; badgeColor = 'var(--text3)';
+    } else {
+      bg = 'var(--bg2)'; color = 'var(--text3)'; border = 'var(--border)';
+      badgeText = '—'; badgeColor = 'var(--text3)';
+    }
+
+    return `<button onclick="pickWeek(${w})" style="background:${bg};border:1.5px solid ${border};color:${color};border-radius:12px;padding:14px 6px;font-weight:900;font-size:18px;cursor:pointer;display:flex;flex-direction:column;align-items:center;width:100%;gap:3px">
+      S${w}
+      <div style="font-size:10px;font-weight:600;color:${badgeColor}">${badgeText}</div>
     </button>`;
   }).join('');
 
@@ -5449,7 +5497,7 @@ if ('serviceWorker' in navigator) {
   <div onclick="event.stopPropagation()" style="position:absolute;bottom:0;left:0;right:0;background:var(--bg2);border-radius:20px 20px 0 0;padding:20px 16px 40px;max-height:80vh;overflow-y:auto">
     <div style="width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 20px"></div>
     <div style="font-size:18px;font-weight:900;color:var(--text);margin-bottom:6px;text-align:center">Choisir une semaine</div>
-    <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:20px">Consulte l'historique de tes séances</div>
+    <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:20px">Historique · Semaines à venir avec charges projetées</div>
     <div id="week-picker-list" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px"></div>
     <button id="week-picker-current-btn" onclick="returnToCurrentWeek()" style="display:none;width:100%;padding:14px;background:var(--gold);color:#000;font-weight:900;border:none;border-radius:12px;font-size:15px;cursor:pointer;margin-top:8px">
       ↩ Retour à ma semaine en cours
