@@ -3561,6 +3561,37 @@ function promptBodyWeight() {
 
 
 // ════════════════════════════════════════════════════════════
+// UTILITAIRES SCAN localStorage DYNAMIQUE
+// ════════════════════════════════════════════════════════════
+
+// Retourne toutes les clés sess-{w}-{id} trouvées dans localStorage
+function getAllSessKeys() {
+  const results = []; // { week, sessId, key, data }
+  const sessIds = ['push','pull','legs','upper'];
+  // Scanne semaines 1 à 12 (large pour couvrir tous les cas)
+  for (let w = 1; w <= 12; w++) {
+    for (const id of sessIds) {
+      const key = 'sess-' + w + '-' + id;
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      try {
+        const data = JSON.parse(raw);
+        if (data && data.sets && Object.keys(data.sets).length > 0) {
+          results.push({ week: w, sessId: id, key, data });
+        }
+      } catch(e) {}
+    }
+  }
+  return results;
+}
+
+// Retourne les numéros de semaines qui ont au moins 1 séance
+function getWeeksWithData() {
+  const all = getAllSessKeys();
+  return [...new Set(all.map(r => r.week))].sort((a,b) => a-b);
+}
+
+// ════════════════════════════════════════════════════════════
 // SÉLECTEUR DE SEMAINE + RÉCAP HISTORIQUE
 // ════════════════════════════════════════════════════════════
 
@@ -3568,7 +3599,6 @@ function promptBodyWeight() {
 let _realWeek = null;
 
 function openWeekPicker() {
-  // Mémoriser la vraie semaine si pas déjà fait
   if (_realWeek === null) _realWeek = S.week;
 
   const overlay = document.getElementById('week-picker-overlay');
@@ -3576,47 +3606,52 @@ function openWeekPicker() {
   const retBtn  = document.getElementById('week-picker-current-btn');
   const ORDER   = ['push','pull','legs','upper'];
 
-  // Construire la grille S1 → S7
-  list.innerHTML = Array.from({length: 7}, (_, i) => {
-    const w = i + 1;
-    const isDeload = w === 7;
-    const isCurrent = w === _realWeek;
-    const isViewing = w === S.week && w !== _realWeek;
+  // Semaines avec données réelles + semaine courante
+  const weeksWithData = getWeeksWithData();
+  const allWeeks = [...new Set([...weeksWithData, _realWeek])].sort((a,b) => a-b);
 
-    // Compter les séances faites cette semaine
-    const doneCount = ORDER.filter(id => {
-      const d = DB.get('sess-' + w + '-' + id);
-      return d && d.sets && Object.keys(d.sets).length > 0;
-    }).length;
+  if (allWeeks.length === 0) {
+    list.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:13px;padding:20px">Aucune séance enregistrée.</div>';
+  } else {
+    list.innerHTML = allWeeks.map(w => {
+      const isDeload = w === 7;
+      const isCurrent = w === _realWeek;
+      const isViewing = w === S.week && w !== _realWeek;
 
-    // Couleur selon état
-    let bg, border, color;
-    if (isCurrent) {
-      bg = 'var(--gold-dim)'; border = 'rgba(245,197,24,0.4)'; color = 'var(--gold)';
-    } else if (isViewing) {
-      bg = 'rgba(34,221,102,0.1)'; border = 'rgba(34,221,102,0.4)'; color = '#22dd66';
-    } else if (doneCount > 0) {
-      bg = 'var(--bg3)'; border = 'var(--border2)'; color = 'var(--text)';
-    } else {
-      bg = 'var(--bg2)'; border = 'var(--border)'; color = 'var(--text3)';
-    }
+      // Compter les séances réellement trouvées
+      const doneCount = ORDER.filter(id => {
+        const raw = localStorage.getItem('sess-' + w + '-' + id);
+        if (!raw) return false;
+        try { const d = JSON.parse(raw); return d && d.sets && Object.keys(d.sets).length > 0; }
+        catch(e) { return false; }
+      }).length;
 
-    const badge = doneCount > 0
-      ? `<div style="font-size:10px;color:${doneCount===ORDER.length?'#22dd66':'var(--text3)'};margin-top:4px">${doneCount}/${ORDER.length} séances</div>`
-      : `<div style="font-size:10px;color:var(--text3);margin-top:4px">—</div>`;
+      let bg, border, color;
+      if (isCurrent) {
+        bg = 'var(--gold-dim)'; border = 'rgba(245,197,24,0.4)'; color = 'var(--gold)';
+      } else if (isViewing) {
+        bg = 'rgba(34,221,102,0.1)'; border = 'rgba(34,221,102,0.4)'; color = '#22dd66';
+      } else if (doneCount > 0) {
+        bg = 'var(--bg3)'; border = 'var(--border2)'; color = 'var(--text)';
+      } else {
+        bg = 'var(--bg2)'; border = 'var(--border)'; color = 'var(--text3)';
+      }
 
-    const label = isDeload ? 'Deload' : (isCurrent ? '✦ En cours' : (isViewing ? '👁 Vue' : ''));
+      const badge = doneCount > 0
+        ? `<div style="font-size:10px;color:${doneCount===4?'#22dd66':'var(--text3)'};margin-top:4px">${doneCount}/4 séances</div>`
+        : `<div style="font-size:10px;color:var(--text3);margin-top:4px">aucune</div>`;
 
-    return `<button onclick="viewWeek(${w})" style="background:${bg};border:1px solid ${border};color:${color};border-radius:12px;padding:14px 8px;font-weight:800;font-size:16px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center">
-      S${w}
-      ${badge}
-      <div style="font-size:9px;margin-top:2px;opacity:0.8">${label}</div>
-    </button>`;
-  }).join('');
+      const label = isCurrent ? '✦ En cours' : (isViewing ? '👁 Vue' : '');
 
-  // Bouton "retour semaine courante" visible seulement si on consulte une autre semaine
+      return `<button onclick="viewWeek(${w})" style="background:${bg};border:1px solid ${border};color:${color};border-radius:12px;padding:14px 8px;font-weight:800;font-size:16px;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center">
+        S${w}
+        ${badge}
+        <div style="font-size:9px;margin-top:2px;opacity:0.8">${label}</div>
+      </button>`;
+    }).join('');
+  }
+
   retBtn.style.display = (S.week !== _realWeek) ? 'block' : 'none';
-
   overlay.style.display = 'block';
 }
 
@@ -3657,78 +3692,101 @@ function renderWeekRecap(w) {
   const NAMES   = {push:'Push', pull:'Pull', legs:'Legs', upper:'Upper'};
   const ICONS   = {push:'🔥', pull:'🎯', legs:'🦵', upper:'💪'};
   const COLORS  = {push:'#ef4444', pull:'#3b82f6', legs:'#22dd66', upper:'#a855f7'};
-  const isDeload = w === 7;
 
-  document.getElementById('recap-week-title').textContent = isDeload
-    ? 'Semaine ' + w + ' — Deload ❄️'
-    : 'Semaine ' + w;
+  document.getElementById('recap-week-title').textContent =
+    w === 7 ? 'Semaine ' + w + ' — Deload ❄️' : 'Semaine ' + w;
 
-  const totalSessions = ORDER.filter(id => {
-    const d = DB.get('sess-' + w + '-' + id);
+  // Lire les données directement depuis localStorage (bypass DB.get)
+  function readSessData(week, sessId) {
+    const raw = localStorage.getItem('sess-' + week + '-' + sessId);
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch(e) { return null; }
+  }
+
+  const doneSessions = ORDER.filter(id => {
+    const d = readSessData(w, id);
     return d && d.sets && Object.keys(d.sets).length > 0;
-  }).length;
-  document.getElementById('recap-week-sub').textContent = totalSessions
-    ? totalSessions + ' séance' + (totalSessions > 1 ? 's' : '') + ' enregistrée' + (totalSessions > 1 ? 's' : '')
+  });
+
+  document.getElementById('recap-week-sub').textContent = doneSessions.length
+    ? doneSessions.length + ' séance' + (doneSessions.length > 1 ? 's' : '') + ' enregistrée' + (doneSessions.length > 1 ? 's' : '')
     : 'Aucune séance enregistrée cette semaine';
 
   const container = document.getElementById('recap-sessions-list');
 
+  // Afficher seulement les séances faites (+ titre pour les non faites)
   container.innerHTML = ORDER.map(sessId => {
     const sess = PROGRAM.sessions[sessId];
-    const data = DB.get('sess-' + w + '-' + sessId);
+    const data = readSessData(w, sessId);
     const color = COLORS[sessId];
 
+    // Séance non trouvée
     if (!data || !data.sets || !Object.keys(data.sets).length) {
-      // Séance non faite
-      return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;opacity:0.4">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:20px">${ICONS[sessId]}</span>
-          <div>
-            <div style="font-weight:800;font-size:15px;color:var(--text)">${NAMES[sessId]}</div>
-            <div style="font-size:12px;color:var(--text3)">Non effectuée</div>
-          </div>
+      return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;opacity:0.35">
+        <span style="font-size:22px">${ICONS[sessId]}</span>
+        <div>
+          <div style="font-weight:800;font-size:15px;color:var(--text)">${NAMES[sessId]}</div>
+          <div style="font-size:12px;color:var(--text3)">Non enregistrée</div>
         </div>
       </div>`;
     }
 
-    // Calculer volume total
+    // Volume + sets
     let totalVol = 0, totalSets = 0;
     Object.values(data.sets).forEach(arr => arr.forEach(s => {
-      if (s.done) { totalSets++; totalVol += (parseFloat(s.weight)||0) * (parseInt(s.reps)||0); }
+      if (s.done) {
+        totalSets++;
+        totalVol += (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0);
+      }
     }));
 
-    // Résumé par exercice
+    // Lignes par exercice
     const exoRows = sess.exercises.map(exo => {
-      const sets = (data.sets[exo.id] || []).filter(s => s.done && s.weight);
+      const sets = (data.sets[exo.id] || []).filter(s => s.done);
       if (!sets.length) return '';
-      const best = sets.reduce((a, b) =>
-        (parseFloat(a.weight)||0) * (parseInt(a.reps)||0) >= (parseFloat(b.weight)||0) * (parseInt(b.reps)||0) ? a : b
-      );
-      const allW = [...new Set(sets.map(s => s.weight))].join(', ');
-      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
-        <div style="font-size:12px;color:var(--text2);flex:1">${exo.name}</div>
-        <div style="font-size:12px;font-weight:700;color:${color};white-space:nowrap;margin-left:8px">${allW} kg × ${sets.length} séries</div>
+
+      // Résumé : poids utilisés et nb reps
+      const withWeight = sets.filter(s => s.weight);
+      if (!withWeight.length) {
+        // Pas de poids (exercice au poids de corps ?)
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+          <div style="font-size:12px;color:var(--text2);flex:1">${exo.name}</div>
+          <div style="font-size:12px;font-weight:700;color:var(--text3)">${sets.length} série${sets.length>1?'s':''}</div>
+        </div>`;
+      }
+
+      const weights = withWeight.map(s => parseFloat(s.weight)).filter(Boolean);
+      const maxW = Math.max(...weights);
+      const allW = [...new Set(weights.map(w => w + ' kg'))].join(' / ');
+      const repsList = withWeight.map(s => s.reps || '?').join(', ');
+
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <div style="font-size:12px;color:var(--text2);flex:1;padding-right:8px">${exo.name}</div>
+        <div style="text-align:right">
+          <div style="font-size:13px;font-weight:800;color:${color}">${allW}</div>
+          <div style="font-size:10px;color:var(--text3)">${repsList} reps</div>
+        </div>
       </div>`;
     }).filter(Boolean).join('');
 
     const dateStr = data.date
       ? new Date(data.date).toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'short'})
-      : 'Date inconnue';
-    const finished = data.finished
-      ? '<span style="font-size:10px;background:rgba(34,221,102,0.12);color:#22dd66;padding:2px 7px;border-radius:20px;font-weight:700">✓ Terminée</span>'
-      : '<span style="font-size:10px;background:rgba(245,197,24,0.1);color:var(--gold);padding:2px 7px;border-radius:20px;font-weight:700">Partielle</span>';
+      : '';
+    const statusTag = data.finished
+      ? `<span style="font-size:10px;background:rgba(34,221,102,0.12);color:#22dd66;padding:2px 8px;border-radius:20px;font-weight:700">✓ Terminée</span>`
+      : `<span style="font-size:10px;background:rgba(245,197,24,0.1);color:var(--gold);padding:2px 8px;border-radius:20px;font-weight:700">Partielle</span>`;
 
-    return `<div style="background:var(--bg2);border:1px solid ${color}33;border-left:3px solid ${color};border-radius:14px;overflow:hidden">
-      <div style="padding:14px 16px 10px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+    return `<div style="background:var(--bg2);border:1px solid ${color}44;border-left:3px solid ${color};border-radius:14px;overflow:hidden">
+      <div style="padding:14px 16px 12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:20px">${ICONS[sessId]}</span>
             <div style="font-weight:900;font-size:16px;color:var(--text)">${NAMES[sessId]}</div>
           </div>
-          ${finished}
+          ${statusTag}
         </div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:10px">${dateStr} · ${totalSets} séries · Vol. ${Math.round(totalVol)} kg</div>
-        <div>${exoRows}</div>
+        ${dateStr ? `<div style="font-size:11px;color:var(--text3);margin-bottom:10px">${dateStr} · ${totalSets} séries · ${Math.round(totalVol)} kg volume</div>` : ''}
+        <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:4px">${exoRows}</div>
       </div>
     </div>`;
   }).join('');
