@@ -5299,6 +5299,9 @@ function importData(e) {
   reader.readAsText(file);
 }
 
+// Démarrage de l'app au chargement de la page
+window.addEventListener('load', init);
+
 // ================================================================
 // TIMER FLOTTANT — DRAG & DROP (tactile + souris)
 // ================================================================
