@@ -3468,6 +3468,12 @@ function toggleDone(exoId, i) {
   const set = saved.sets[exoId][i];
 
   if (!set.done) {
+    // Lire les valeurs DOM si pas encore sauvegardées (cas pre-remplissage coach)
+    const wInput = document.getElementById('w-' + exoId + '-' + i);
+    const rInput = document.getElementById('r-' + exoId + '-' + i);
+    if (!set.weight && wInput?.value) set.weight = wInput.value;
+    if (!set.reps  && rInput?.value)  set.reps   = rInput.value;
+
     if (!set.weight && !set.reps) { showToast('Entre la charge ou les reps !', 'error'); return; }
     set.done = true;
     const isPR = checkPR(exoId, parseFloat(set.weight)||0, parseInt(set.reps)||0);
