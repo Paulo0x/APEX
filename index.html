@@ -1940,7 +1940,23 @@ function computeProgressiveSuggestions(sessId) {
     // Extraire poids et reps des séries validées
     const weights = done.map(s => parseFloat(s.weight) || 0).filter(w => w > 0);
     const repsArr = done.map(s => parseInt(s.reps) || 0).filter(r => r > 0);
-    if (!weights.length) return;
+
+    // Si aucun poids enregistré (séance validée sans poids), utiliser le PR comme base
+    if (!weights.length) {
+      const pr = DB.get('pr-' + exo.id);
+      if (pr && pr.weight) {
+        const parts2 = String(exo.reps).split('-').map(Number);
+        plan[exo.id] = {
+          suggestedWeight: pr.weight,
+          suggestedReps: parts2[0] || 8,
+          prevWeight: pr.weight,
+          prevReps: pr.reps || 0,
+          reason: '🏆 Basé sur ton PR : ' + pr.weight + ' kg × ' + (pr.reps || '?') + ' reps',
+          type: 'maintain'
+        };
+      }
+      return; // Pas de poids dans la séance = on ne peut pas calculer de progression
+    }
 
     const maxW = Math.max(...weights);
     const avgR = repsArr.length
@@ -3138,14 +3154,31 @@ function renderHome() {
     if (done) {
       // La carte reste cliquable même si la séance est terminée
       // → l'utilisateur peut la revoir ou ajouter des séries
+      // Suggestions pour la PROCHAINE fois (basées sur la séance qui vient d'être faite)
+      const suggDone = computeProgressiveSuggestions(id);
+      const suggDoneLines = sess.exercises
+        .filter(e => suggDone[e.id]?.suggestedWeight)
+        .slice(0, 3)
+        .map(e => {
+          const sug = suggDone[e.id];
+          const arrow = sug.type === 'progress' ? '↑' : sug.type === 'down' ? '↓' : '→';
+          const shortName = e.name.split(' ').slice(0,2).join(' ');
+          return `<span style="white-space:nowrap">${arrow} ${shortName} <strong>${sug.suggestedWeight}kg</strong></span>`;
+        });
+      const nextHtml = suggDoneLines.length > 0
+        ? `<div style="margin-top:5px;padding:4px 7px;background:rgba(255,255,255,0.06);border-radius:6px;border:1px solid rgba(255,255,255,0.1);display:flex;flex-wrap:wrap;gap:5px 8px;font-size:11px;opacity:0.75">
+            <span style="opacity:0.55;margin-right:2px">prochaine fois :</span>${suggDoneLines.join('')}
+          </div>`
+        : '';
       return `<div class="card-normal" onclick="startSession('${id}')" style="cursor:pointer">
         <div class="card-icon">${ICONS[id]}</div>
-        <div class="card-info">
+        <div class="card-info" style="flex:1">
           <div class="card-day">${sess.day.toUpperCase()}</div>
           <div class="card-name done-name">${sess.name}${deload?' ❄️':''}</div>
           <div class="card-meta">${saved.doneSets}/${saved.totalSets} séries · ${fmtTime(saved.date)} · il y a ${daysSince(saved.date)}j</div>
+          ${nextHtml}
         </div>
-        <div style="display:flex;align-items:center;gap:6px">
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
           <div class="card-done-badge">FAIT</div>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity="0.4"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
@@ -5479,8 +5512,15 @@ window.addEventListener('load', init);
     "legs-5": {weight: 20,  reps: 15, date: "2026-04-23T00:00:00.000Z"}
   };
   Object.entries(prs).forEach(([exoId, pr]) => {
-    if (!localStorage.getItem('pr-' + exoId)) {
-      localStorage.setItem('pr-' + exoId, JSON.stringify(pr));
+    // Utiliser DB.set pour bien stocker avec le préfixe apfp. (lu par DB.get dans le coach)
+    if (!DB.get('pr-' + exoId)) {
+      DB.set('pr-' + exoId, pr);
+    }
+    // Migration : si PR stocké sans préfixe (ancienne version), le migrer
+    const oldKey = 'pr-' + exoId;
+    const oldRaw = localStorage.getItem(oldKey);
+    if (oldRaw && !DB.get(oldKey)) {
+      try { DB.set(oldKey, JSON.parse(oldRaw)); } catch(e) {}
     }
   });
 })();
