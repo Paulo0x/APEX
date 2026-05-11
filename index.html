@@ -3947,7 +3947,6 @@ function finishSession() {
     done  += arr.filter(s => s.done).length;
   });
   if (done === 0) { showToast('Aucune série validée !', 'error'); return; }
-  if (done < total && !confirm(`${done}/${total} séries. Terminer quand même ?`)) return;
 
   saved.finished = true;
   saved.date = new Date().toISOString();
