@@ -3946,7 +3946,7 @@ function finishSession() {
     total += Math.max(e.sets, arr.length);
     done  += arr.filter(s => s.done).length;
   });
-  if (done === 0) { showToast('Aucune série validée !', 'error'); return; }
+  // Sauvegarde même si vide - l'utilisateur peut revenir compléter plus tard
 
   saved.finished = true;
   saved.date = new Date().toISOString();
