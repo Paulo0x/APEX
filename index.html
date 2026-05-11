@@ -3575,6 +3575,59 @@ function copyLastSession() {
 }
 
 
+
+
+// ── SAUVEGARDE / RESTAURATION ──────────────────────────────
+function showBackupModal(code) {
+  document.getElementById('backup-code-area').value = code || '';
+  document.getElementById('restore-code-area').value = '';
+  document.getElementById('backup-modal').style.display = 'block';
+}
+
+function closeBackupModal() {
+  document.getElementById('backup-modal').style.display = 'none';
+}
+
+function copyBackupCode() {
+  const area = document.getElementById('backup-code-area');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(area.value)
+      .then(() => showToast('Code copié !', 'success'))
+      .catch(() => { area.select(); document.execCommand('copy'); showToast('Code copié !', 'success'); });
+  } else {
+    area.select(); document.execCommand('copy');
+    showToast('Code copié !', 'success');
+  }
+}
+
+function importFromCode() {
+  const code = document.getElementById('restore-code-area').value.trim();
+  if (!code) { showToast('Colle ton code d\'abord', 'error'); return; }
+  try {
+    let obj;
+    if (code.startsWith('{')) {
+      obj = JSON.parse(code);
+    } else {
+      obj = JSON.parse(decodeURIComponent(escape(atob(code))));
+    }
+    if (!obj.data) throw new Error();
+    if (!confirm('Restaurer ? Tes données actuelles seront remplacées.')) return;
+    Object.entries(obj.data).forEach(([k,v]) => localStorage.setItem(k, v));
+    S.week = DB.get('week', 1);
+    updateWeekChip();
+    closeBackupModal();
+    showToast('Données restaurées !', 'success');
+    showScreen('home');
+  } catch(e) {
+    showToast('Code invalide', 'error');
+  }
+}
+
+// Ouvrir le modal sauvegarde sans générer de code (pour restauration seule)
+function openRestoreModal() {
+  showBackupModal('');
+}
+
 // ── POIDS CORPOREL ──────────────────────────────────────────────
 function promptBodyWeight() {
   // Récupère le poids actuel si déjà saisi
@@ -3604,22 +3657,17 @@ function promptBodyWeight() {
 // UTILITAIRES SCAN localStorage DYNAMIQUE
 // ════════════════════════════════════════════════════════════
 
-// Retourne toutes les clés sess-{w}-{id} trouvées dans localStorage
+// Retourne toutes les clés sess-{w}-{id} trouvées (via DB.get avec préfixe apfp.)
 function getAllSessKeys() {
-  const results = []; // { week, sessId, key, data }
+  const results = [];
   const sessIds = ['push','pull','legs','upper'];
-  // Scanne semaines 1 à 12 (large pour couvrir tous les cas)
   for (let w = 1; w <= 12; w++) {
     for (const id of sessIds) {
       const key = 'sess-' + w + '-' + id;
-      const raw = localStorage.getItem(key);
-      if (!raw) continue;
-      try {
-        const data = JSON.parse(raw);
-        if (data && data.sets && Object.keys(data.sets).length > 0) {
-          results.push({ week: w, sessId: id, key, data });
-        }
-      } catch(e) {}
+      const data = DB.get(key); // utilise le préfixe apfp. automatiquement
+      if (data && data.sets && Object.keys(data.sets).length > 0) {
+        results.push({ week: w, sessId: id, key, data });
+      }
     }
   }
   return results;
@@ -3657,12 +3705,8 @@ function openWeekPicker() {
     const isDeload  = w === 7;
 
     const doneCount = ['push','pull','legs','upper'].filter(id => {
-      try {
-        const raw = localStorage.getItem('sess-' + w + '-' + id);
-        if (!raw) return false;
-        const d = JSON.parse(raw);
-        return d && d.sets && Object.keys(d.sets).length > 0;
-      } catch(e) { return false; }
+      const d = DB.get('sess-' + w + '-' + id);
+      return d && d.sets && Object.keys(d.sets).length > 0;
     }).length;
 
     let bg, color, border, badgeText, badgeColor;
@@ -3713,11 +3757,9 @@ function renderWeekRecap(w) {
   document.getElementById('recap-week-title').textContent =
     w === 7 ? 'Semaine ' + w + ' — Deload ❄️' : 'Semaine ' + w;
 
-  // Lire les données directement depuis localStorage (bypass DB.get)
+  // Lire les données via DB (préfixe apfp. inclus automatiquement)
   function readSessData(week, sessId) {
-    const raw = localStorage.getItem('sess-' + week + '-' + sessId);
-    if (!raw) return null;
-    try { return JSON.parse(raw); } catch(e) { return null; }
+    return DB.get('sess-' + week + '-' + sessId);
   }
 
   const doneSessions = ORDER.filter(id => {
@@ -5148,8 +5190,8 @@ function renderSettings() {
 
     <div class="settings-group">
       <div class="settings-group-title">Données</div>
-      <div class="settings-row" onclick="exportData()"><div class="settings-row-label">📤 Exporter</div><div class="settings-row-val">JSON</div></div>
-      <div class="settings-row" onclick="document.getElementById('import-file').click()"><div class="settings-row-label">📥 Importer</div><div class="settings-row-val">›</div></div>
+      <div class="settings-row" onclick="exportData()" style="cursor:pointer"><div class="settings-row-label">💾 Sauvegarder / Restaurer</div><div class="settings-row-val">›</div></div>
+      <div class="settings-row" onclick="document.getElementById('import-file').click()" style="cursor:pointer"><div class="settings-row-label">📁 Import fichier JSON</div><div class="settings-row-val">›</div></div>
       <input type="file" id="import-file" accept=".json" onchange="importData(event)" style="display:none">
     </div>
 
@@ -5211,104 +5253,50 @@ function showToast(msg,type=''){const t=document.getElementById('toast');t.class
 
 function launchConfetti(){const colors=['#ff3b3b','#30d158','#ff9f0a','#0a84ff','#bf5af2'];for(let i=0;i<22;i++){const el=document.createElement('div');el.className='confetti-p';el.style.cssText=`left:${Math.random()*100}vw;top:-10px;background:${colors[i%colors.length]};animation-delay:${Math.random()*0.5}s;animation-duration:${1+Math.random()*1}s`;document.body.appendChild(el);setTimeout(()=>el.remove(),2500);}}
 
-function exportData(){const data={};Object.keys(localStorage).filter(k=>k.startsWith('apfp.')).forEach(k=>data[k]=localStorage.getItem(k));const blob=new Blob([JSON.stringify({version:'5.0',date:new Date().toISOString(),data},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`apex-backup-${fmtDate(new Date())}.json`;a.click();URL.revokeObjectURL(url);showToast('Backup exporté ✓','success');}
+function exportData() {
+  // Collecter toutes les données apfp.* (clé DB standard)
+  const data = {};
+  Object.keys(localStorage)
+    .filter(k => k.startsWith('apfp.'))
+    .forEach(k => { data[k] = localStorage.getItem(k); });
 
-async function sendToCowork() {
-  // Collecte toutes les données utiles pour le coaching
-  const hist = DB.get('history', []);
-  if (!hist.length) { showToast('Aucune séance enregistrée', 'error'); return; }
-
-  // Construire le payload coaching (compact mais complet)
-  const payload = {
-    exportDate: new Date().toISOString(),
-    week: S.week,
-    history: hist,
-    sessions: {},
-    weightLog: DB.get('weight-log', []),
-    mensurations: DB.get('mensuration-log', []),
-    recovery: DB.get('recovery-log', []),
-  };
-
-  // Ajouter les données de séries pour chaque session de l'historique
-  hist.forEach(entry => {
-    const data = DB.get(entry.key);
-    if (data) payload.sessions[entry.key] = data;
-  });
-
-  // Ajouter les progressions par exercice
-  const allExos = [];
-  Object.values(PROGRAM.sessions).forEach(sess => sess.exercises.forEach(e => allExos.push(e)));
-  payload.progress = {};
-  allExos.forEach(exo => {
-    const prog = DB.get(`prog-${exo.id}`, []);
-    if (prog.length) payload.progress[exo.id] = { name: exo.name, data: prog };
-  });
-
-  const json = JSON.stringify(payload, null, 2);
-  const fileName = 'apex-coaching.json';
-
-  try {
-    // Essayer File System Access API (écrit directement dans le dossier APEX)
-    if ('showSaveFilePicker' in window) {
-      const handle = await window.showSaveFilePicker({
-        suggestedName: fileName,
-        types: [{ description: 'Données coaching', accept: { 'application/json': ['.json'] } }],
-      });
-      const writable = await handle.createWritable();
-      await writable.write(json);
-      await writable.close();
-      showToast('✅ Fichier sauvegardé ! Dis à Claude de le lire.', 'success');
-    } else {
-      // Fallback : téléchargement classique
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = fileName; a.click();
-      URL.revokeObjectURL(url);
-      showToast('Fichier téléchargé — glisse-le dans Cowork', 'success');
-    }
-  } catch(e) {
-    if (e.name !== 'AbortError') {
-      // Fallback si annulé ou non supporté
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = fileName; a.click();
-      URL.revokeObjectURL(url);
-      showToast('Fichier téléchargé — glisse-le dans Cowork', 'success');
-    }
+  if (Object.keys(data).length === 0) {
+    showToast('Aucune donnée à exporter', 'error'); return;
   }
+
+  const payload = JSON.stringify({ version: '6.0', date: new Date().toISOString(), data });
+
+  // Sur mobile : code à copier. Sur desktop : téléchargement fichier
+  const encoded = btoa(unescape(encodeURIComponent(payload)));
+  showBackupModal(encoded);
 }
-function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const obj=JSON.parse(ev.target.result);if(!obj.data)throw new Error();if(!confirm('Importer ? Les données actuelles seront remplacées.'))return;Object.entries(obj.data).forEach(([k,v])=>localStorage.setItem(k,v));S.week=DB.get('week',1);updateWeekChip();showToast('Import réussi ✓','success');showScreen('home');}catch{showToast('Fichier invalide','error');}};reader.readAsText(file);}
-function confirmReset(){if(!confirm('Supprimer TOUTES les données APEX ? Irréversible.'))return;if(!confirm('Vraiment ?'))return;DB.clear();S.week=1;S.nextWeekPlan=null;S.coachHistory=[];updateWeekChip();showToast('Données réinitialisées');showScreen('home');}
-
-window.addEventListener('load', init);
-
-</script>
-
-<script>
-// ================================================================
-// SERVICE WORKER — Pour que l'app fonctionne HORS-LIGNE
-// (Cache l'app à la première visite, la sert ensuite sans internet)
-// ================================================================
-if ('serviceWorker' in navigator) {
-  // D'abord supprimer les anciens SW (notamment les Blob URL de la v1)
-  navigator.serviceWorker.getRegistrations().then(regs => {
-    regs.forEach(reg => {
-      // Supprimer si ce n'est pas notre /sw.js officiel
-      if (!reg.active?.scriptURL?.endsWith('/sw.js')) {
-        reg.unregister();
-        console.log('[APEX] Ancien SW supprimé:', reg.active?.scriptURL);
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      let obj;
+      const text = ev.target.result.trim();
+      // Accepte JSON direct ou code base64
+      if (text.startsWith('{')) {
+        obj = JSON.parse(text);
+      } else {
+        obj = JSON.parse(decodeURIComponent(escape(atob(text))));
       }
-    });
-  });
-  // Enregistrer le nouveau SW depuis /sw.js (compatible iOS + Android)
-  navigator.serviceWorker.register('/sw.js', { scope: '/' })
-    .then(reg => {
-      console.log('[APEX] SW enregistré:', reg.scope);
-      // Forcer la mise à jour si une nouvelle version est disponible
-      reg.update();
-    })
-    .catch(err => console.warn('[APEX] SW non disponible:', err));
+      if (!obj.data) throw new Error('Format invalide');
+      if (!confirm('Importer ? Les données actuelles seront remplacées.')) return;
+      Object.entries(obj.data).forEach(([k,v]) => localStorage.setItem(k, v));
+      S.week = DB.get('week', 1);
+      updateWeekChip();
+      showToast('Import réussi !', 'success');
+      renderHome();
+    } catch(err) {
+      showToast('Fichier invalide', 'error');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
 }
 
 // ================================================================
@@ -5470,12 +5458,12 @@ if ('serviceWorker' in navigator) {
   };
 
   // Injecter seulement si pas encore de données pour ces semaines
-  if (!localStorage.getItem('sess-1-legs')) {
-    localStorage.setItem('sess-1-legs', JSON.stringify(legsW1));
+  if (!DB.get('sess-1-legs')) {
+    DB.set('sess-1-legs', legsW1);
     console.log('[APEX] Données Legs S1 injectées');
   }
-  if (!localStorage.getItem('sess-2-legs')) {
-    localStorage.setItem('sess-2-legs', JSON.stringify(legsW2));
+  if (!DB.get('sess-2-legs')) {
+    DB.set('sess-2-legs', legsW2);
     console.log('[APEX] Données Legs S2 injectées');
   }
 
@@ -5508,6 +5496,25 @@ if ('serviceWorker' in navigator) {
     <button id="week-picker-current-btn" onclick="returnToCurrentWeek()" style="display:none;width:100%;padding:14px;background:var(--gold);color:#000;font-weight:900;border:none;border-radius:12px;font-size:15px;cursor:pointer;margin-top:8px">
       ↩ Retour à ma semaine en cours
     </button>
+  </div>
+</div>
+
+<!-- ═══ MODAL SAUVEGARDE / RESTAURATION ═══ -->
+<div id="backup-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);padding:20px;overflow-y:auto">
+  <div style="background:var(--bg2);border-radius:20px;padding:24px;max-width:500px;margin:0 auto">
+    <div style="font-size:18px;font-weight:900;color:var(--text);margin-bottom:6px">💾 Code de sauvegarde</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:16px">Copie ce code et garde-le précieusement. Sur un autre appareil, colle-le dans "Restaurer mes données".</div>
+    <textarea id="backup-code-area" readonly style="width:100%;height:120px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:12px;color:var(--text);font-size:11px;font-family:monospace;resize:none;box-sizing:border-box;line-height:1.4"></textarea>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button onclick="copyBackupCode()" style="flex:1;padding:14px;background:var(--gold);color:#000;font-weight:900;border:none;border-radius:12px;font-size:15px;cursor:pointer">📋 Copier</button>
+      <button onclick="closeBackupModal()" style="padding:14px 20px;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:12px;font-size:14px;cursor:pointer">Fermer</button>
+    </div>
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+      <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:8px">📥 Restaurer mes données</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Colle ton code de sauvegarde ici :</div>
+      <textarea id="restore-code-area" placeholder="Colle ton code ici..." style="width:100%;height:80px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:12px;color:var(--text);font-size:11px;font-family:monospace;resize:none;box-sizing:border-box"></textarea>
+      <button onclick="importFromCode()" style="width:100%;margin-top:10px;padding:13px;background:rgba(34,221,102,0.15);color:#22dd66;border:1px solid rgba(34,221,102,0.3);border-radius:12px;font-size:14px;font-weight:800;cursor:pointer">✅ Restaurer</button>
+    </div>
   </div>
 </div>
 </body>
