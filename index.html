@@ -1881,11 +1881,21 @@ function computeProgressiveSuggestions(sessId) {
   // Priorité : semaines passées (S.week-1 → 1), puis semaine en cours si terminée
   let lastData = null;
 
-  // 1. Semaines précédentes (la plus récente en premier)
+  // 1. Semaines précédentes (la plus récente, en sautant les semaines deload)
   for (let w = S.week - 1; w >= 1; w--) {
+    if (w % 7 === 0) continue; // ignorer les semaines deload pour la référence de progression
     const d = DB.get('sess-' + w + '-' + sessId);
     if (d && d.sets && Object.keys(d.sets).length > 0) {
       lastData = d; break;
+    }
+  }
+  // Si rien trouvé hors deload, accepter aussi les semaines deload comme fallback
+  if (!lastData) {
+    for (let w = S.week - 1; w >= 1; w--) {
+      const d = DB.get('sess-' + w + '-' + sessId);
+      if (d && d.sets && Object.keys(d.sets).length > 0) {
+        lastData = d; break;
+      }
     }
   }
 
@@ -2922,12 +2932,14 @@ async function shareStats() {
 // NOUVEAU CYCLE (après S7)
 // ================================================================
 function startNewCycle() {
-  if (!confirm('Recommencer un nouveau cycle en Semaine 1 ?\nTes données et historique sont conservés.')) return;
-  S.week = 1;
-  DB.set('week', 1);
-  DB.set('weekStartDate', new Date().toISOString()); // nouvelle semaine = aujourd'hui
+  // Avancer au premier jour du cycle suivant (semaine suivant le dernier multiple de 7)
+  const nextWeek = Math.ceil(S.week / 7) * 7 + 1;
+  S.week = nextWeek;
+  DB.set('week', nextWeek);
+  DB.set('weekStartDate', new Date().toISOString());
   updateWeekChip();
-  showToast('💪 Nouveau cycle S1 — Let\'s go !', 'success');
+  const cycle = Math.ceil(nextWeek / 7);
+  showToast('💪 Cycle ' + cycle + ' — Semaine 1 — Let\'s go !', 'success');
   showScreen('home');
 }
 
@@ -2943,20 +2955,24 @@ function checkAutoWeekAdvance() {
   // Combien de jours depuis le début de la semaine actuelle ?
   const daysSince = Math.floor((Date.now() - new Date(weekStart).getTime()) / (86400000));
 
-  // Si 7+ jours se sont écoulés ET qu'on n'est pas déjà à S7
-  if (daysSince >= 7 && S.week < 7) {
-    const newWeek = Math.min(S.week + Math.floor(daysSince / 7), 7);
+  // Si 7+ jours se sont écoulés, avancer d'autant de semaines (sans limite)
+  if (daysSince >= 7) {
+    const newWeek = S.week + Math.floor(daysSince / 7); // pas de cap — programme infini
     if (newWeek > S.week) {
       S.week = newWeek;
       DB.set('week', newWeek);
       DB.set('weekStartDate', new Date().toISOString());
       updateWeekChip();
+      const cycle   = Math.ceil(newWeek / 7);
+      const weekInC = ((newWeek - 1) % 7) + 1;
+      const isDeload = newWeek % 7 === 0;
       // Toast informatif après l'écran de démarrage
       setTimeout(() => {
-        if (newWeek === 7) {
-          showToast('❄️ Semaine de Deload ! Charges réduites de 20%.', 'error');
+        const label = cycle > 1 ? `C${cycle}-S${weekInC}` : `S${weekInC}`;
+        if (isDeload) {
+          showToast(`❄️ ${label} — Semaine Deload ! Charges -20%.`, 'error');
         } else {
-          showToast(`🗓 Nouvelle semaine détectée — passage en S${newWeek} !`, 'success');
+          showToast(`🗓 Nouvelle semaine — ${label} !`, 'success');
         }
       }, 2500);
     }
@@ -3132,7 +3148,7 @@ function renderHome() {
   document.getElementById('kpi-weight').textContent = wLog.length ? `${wLog[wLog.length-1].w}` : '—';
 
   // Plan badge
-  if (hist.length > 0 && S.week < 7) {
+  if (hist.length > 0) { // plan badge visible sur toutes les semaines
     S.nextWeekPlan = generateNextWeekPlan(S.week);
     const badge = document.getElementById('plan-badge');
     if (badge) badge.style.display = 'flex';
@@ -3149,7 +3165,7 @@ function renderHome() {
     const saved = DB.get(sKey(id));
     const done  = saved?.finished;
     const isToday = sess.day.toUpperCase() === today;
-    const deload = S.week === 7;
+    const deload = S.week % 7 === 0; // multiples de 7 = semaines deload
 
     if (done) {
       // La carte reste cliquable même si la séance est terminée
@@ -3251,8 +3267,12 @@ function renderHome() {
 
 function updateWeekChip() {
   const chip = document.getElementById('week-chip'); if (!chip) return;
-  chip.textContent = `S${S.week}`;
-  chip.classList.toggle('deload', S.week === 7);
+  // Calcul du cycle et de la semaine dans le cycle (ex: semaine 8 → C2-S1)
+  const cycle   = Math.ceil(S.week / 7);
+  const weekInC = ((S.week - 1) % 7) + 1;
+  const isDeload = S.week % 7 === 0; // les multiples de 7 sont des semaines deload
+  chip.textContent = cycle > 1 ? `C${cycle}-S${weekInC}` : `S${weekInC}`;
+  chip.classList.toggle('deload', isDeload);
 }
 
 function computeStreak() {
@@ -3316,7 +3336,7 @@ function renderExercises() {
   const id   = S.session;
   const sess = PROGRAM.sessions[id];
   const saved = DB.get(sKey(id), {sets:{}, finished:false});
-  const deload = S.week === 7;
+  const deload = S.week % 7 === 0; // multiples de 7 = semaines deload
 
   // Afficher/cacher le banner deload selon la semaine
   const existingBanner = document.getElementById('deload-banner');
@@ -3721,21 +3741,26 @@ function openWeekPicker() {
   const list    = document.getElementById('week-picker-list');
   const retBtn  = document.getElementById('week-picker-current-btn');
 
-  // Semaines avec données + semaine courante + 2 semaines futures (max S7)
+  // Semaines avec données + courante + 2 futures (sans limite)
   const weeksWithData = getWeeksWithData();
-  const future1 = Math.min(S.week + 1, 7);
-  const future2 = Math.min(S.week + 2, 7);
   const allWeeks = [...new Set([
     ...weeksWithData,
     S.week,
-    future1,
-    future2
-  ])].filter(w => w >= 1 && w <= 7).sort((a,b) => a-b);
+    S.week + 1,
+    S.week + 2
+  ])].filter(w => w >= 1).sort((a,b) => a-b);
+
+  // Fonction helper pour afficher le label d'une semaine absolue
+  function wLabel(w) {
+    const cycle   = Math.ceil(w / 7);
+    const weekInC = ((w - 1) % 7) + 1;
+    return cycle > 1 ? `C${cycle}-S${weekInC}` : `S${weekInC}`;
+  }
 
   list.innerHTML = allWeeks.map(w => {
     const isCurrent = w === S.week;
     const isFuture  = w > S.week;
-    const isDeload  = w === 7;
+    const isDeload  = w % 7 === 0;
 
     const doneCount = ['push','pull','legs','upper'].filter(id => {
       const d = DB.get('sess-' + w + '-' + id);
@@ -3759,8 +3784,8 @@ function openWeekPicker() {
       badgeText = '—'; badgeColor = 'var(--text3)';
     }
 
-    return `<button onclick="pickWeek(${w})" style="background:${bg};border:1.5px solid ${border};color:${color};border-radius:12px;padding:14px 6px;font-weight:900;font-size:18px;cursor:pointer;display:flex;flex-direction:column;align-items:center;width:100%;gap:3px">
-      S${w}
+    return `<button onclick="pickWeek(${w})" style="background:${bg};border:1.5px solid ${border};color:${color};border-radius:12px;padding:14px 6px;font-weight:900;font-size:15px;cursor:pointer;display:flex;flex-direction:column;align-items:center;width:100%;gap:3px">
+      ${wLabel(w)}
       <div style="font-size:10px;font-weight:600;color:${badgeColor}">${badgeText}</div>
     </button>`;
   }).join('');
@@ -3990,27 +4015,8 @@ function finishSession() {
   // Générer le briefing coach en arrière-plan (ne bloque pas le retour à l'accueil)
   generateSessionBriefing(id);
 
-  if (S.week === 7) {
-    // En S7 (deload), compter combien de séances ont été faites cette semaine
-    const ORDER = ['push','pull','legs','upper'];
-    const sessionsFinishedThisWeek = ORDER.filter(sid => DB.get(sKey(sid))?.finished).length;
-    if (sessionsFinishedThisWeek >= 5) {
-      // Toutes les séances du cycle sont terminées → proposer un nouveau cycle
-      setTimeout(() => {
-        if (confirm('🏆 Cycle complet terminé !\n\nTu as fini les 7 semaines du programme. Recommencer un nouveau cycle ?')) {
-          startNewCycle();
-        } else {
-          showScreen('home');
-        }
-      }, 1000);
-    } else {
-      setTimeout(() => showScreen('home'), 800);
-    }
-  } else if (S.nextWeekPlan && S.week < 7) {
-    setTimeout(() => showNextWeekModal(), 1000);
-  } else {
-    setTimeout(() => showScreen('home'), 800);
-  }
+  // Retour automatique à l'accueil — pas de popup ni de confirmation
+  setTimeout(() => showScreen('home'), 800);
 }
 
 // SWIPE TO VALIDATE
@@ -4508,7 +4514,7 @@ function analyzeAllProgress() {
     let nextW = last.maxW;
     let nextAction = 'maintenir';
     let nextReason = 'Maintiens le poids et vise le maximum de reps propres.';
-    const deload = S.week === 7;
+    const deload = S.week % 7 === 0; // multiples de 7 = semaines deload
 
     if (deload) {
       nextW = Math.round(last.maxW * 0.8 * 2) / 2;
@@ -5236,14 +5242,14 @@ function renderSettings() {
     </div>
 
     <div class="settings-group">
-      ${S.week === 7 ? `
+      ${S.week % 7 === 0 ? `
       <!-- Bouton visible seulement en semaine 7 (deload terminé) -->
       <div class="settings-group" style="margin-bottom:0">
         <div style="padding:12px 15px">
           <button onclick="startNewCycle()" style="width:100%;background:linear-gradient(135deg,var(--red),var(--gold));border:none;color:#fff;padding:14px;border-radius:var(--r-sm);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;letter-spacing:0.5px">
-            🔄 Démarrer un nouveau cycle (S1)
+            🔄 Démarrer le cycle suivant
           </button>
-          <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">Ton historique et tes PR sont conservés</div>
+          <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">Progression continue — historique conservé</div>
         </div>
       </div>` : ''}
       <div class="settings-group-title">Danger</div>
