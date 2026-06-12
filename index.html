@@ -3750,25 +3750,18 @@ function openWeekPicker() {
   const list    = document.getElementById('week-picker-list');
   const retBtn  = document.getElementById('week-picker-current-btn');
 
-  // Semaines avec données + courante + 2 futures (sans limite)
-  const weeksWithData = getWeeksWithData();
-  const allWeeks = [...new Set([
-    ...weeksWithData,
-    S.week,
-    S.week + 1,
-    S.week + 2
-  ])].filter(w => w >= 1).sort((a,b) => a-b);
+  // Seulement semaine courante + 3 semaines futures (pas de retour en arrière)
+  const futureWeeks = [S.week, S.week + 1, S.week + 2, S.week + 3];
 
-  // Fonction helper pour afficher le label d'une semaine absolue
+  // Helper label cycle-aware
   function wLabel(w) {
     const cycle   = Math.ceil(w / 7);
     const weekInC = ((w - 1) % 7) + 1;
     return cycle > 1 ? `C${cycle}-S${weekInC}` : `S${weekInC}`;
   }
 
-  list.innerHTML = allWeeks.map(w => {
+  list.innerHTML = futureWeeks.map(w => {
     const isCurrent = w === S.week;
-    const isFuture  = w > S.week;
     const isDeload  = w % 7 === 0;
 
     const doneCount = ['push','pull','legs','upper'].filter(id => {
@@ -3781,16 +3774,11 @@ function openWeekPicker() {
     if (isCurrent) {
       bg = 'var(--gold)'; color = '#000'; border = 'var(--gold)';
       badgeText = 'en cours'; badgeColor = 'rgba(0,0,0,0.5)';
-    } else if (isFuture) {
+    } else {
+      // Semaine future
       bg = 'rgba(34,221,102,0.07)'; color = '#22dd66';
       border = 'rgba(34,221,102,0.3)';
       badgeText = isDeload ? '❄️ deload' : '→ à venir'; badgeColor = 'rgba(34,221,102,0.6)';
-    } else if (doneCount > 0) {
-      bg = 'var(--bg3)'; color = 'var(--text)'; border = 'var(--border2)';
-      badgeText = doneCount + '/4 séances'; badgeColor = 'var(--text3)';
-    } else {
-      bg = 'var(--bg2)'; color = 'var(--text3)'; border = 'var(--border)';
-      badgeText = '—'; badgeColor = 'var(--text3)';
     }
 
     return `<button onclick="pickWeek(${w})" style="background:${bg};border:1.5px solid ${border};color:${color};border-radius:12px;padding:14px 6px;font-weight:900;font-size:15px;cursor:pointer;display:flex;flex-direction:column;align-items:center;width:100%;gap:3px">
@@ -5587,7 +5575,9 @@ window.addEventListener('load', init);
 // semaine de travail) si l'app est vide, et positionne en C2-S1 (semaine 8).
 // Il ne s'exécute QU'UNE SEULE FOIS (si apfp.week est absent = app neuve).
 (function injectCycle1Data() {
-  if (localStorage.getItem('apfp.week') !== null) return; // déjà des données
+  // Re-injecter si l'app est vide OU si la semaine a été réinitialisée par erreur
+  const storedWeek = parseInt(localStorage.getItem('apfp.week') || '0');
+  if (storedWeek >= 8) return; // données correctes → ne rien faire
 
   // ── Fonction raccourci ──
   const set = (k, v) => localStorage.setItem('apfp.' + k, JSON.stringify(v));
