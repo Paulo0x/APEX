@@ -3063,6 +3063,15 @@ function showScreen(id, fromPopState) {
 
   window.scrollTo(0, 0);
 }
+// Retourne à la vraie semaine d'entraînement (lecture depuis DB)
+function returnToCurrentWeek() {
+  closeWeekPicker();
+  const realWeek = DB.get('week', 1);
+  S.week = realWeek; // remettre la semaine réelle en mémoire
+  updateWeekChip();
+  showScreen('home');
+}
+
 function goBack() {
   // Si on est sur l'écran récap semaine → retour à la vraie semaine
   if (document.getElementById('screen-week-recap').classList.contains('active')) {
@@ -3750,8 +3759,25 @@ function openWeekPicker() {
   const list    = document.getElementById('week-picker-list');
   const retBtn  = document.getElementById('week-picker-current-btn');
 
-  // Seulement semaine courante + 3 semaines futures (pas de retour en arrière)
-  const futureWeeks = [S.week, S.week + 1, S.week + 2, S.week + 3];
+  // Bouton "revenir à ma semaine" si on visualise une autre semaine
+  if (S.week !== DB.get('week', 1)) {
+    retBtn.style.display = 'flex';
+    retBtn.textContent = '↩ Revenir à ma semaine (' + (() => {
+      const rw = DB.get('week', 1);
+      const c = Math.ceil(rw / 7);
+      const wi = ((rw - 1) % 7) + 1;
+      return c > 1 ? 'C' + c + '-S' + wi : 'S' + wi;
+    })() + ')';
+    retBtn.onclick = () => returnToCurrentWeek();
+  } else {
+    retBtn.style.display = 'none';
+  }
+
+  // Toujours calculer depuis la VRAIE semaine (DB), pas la semaine de vue temporaire
+  // Ex: si on visualise C2-S2 (S.week=9 en mémoire), le picker s'ouvre
+  // quand même depuis C2-S1 (la vraie semaine sauvegardée)
+  const realWeek = DB.get('week', 1);
+  const futureWeeks = [realWeek, realWeek + 1, realWeek + 2, realWeek + 3];
 
   // Helper label cycle-aware
   function wLabel(w) {
@@ -3761,7 +3787,7 @@ function openWeekPicker() {
   }
 
   list.innerHTML = futureWeeks.map(w => {
-    const isCurrent = w === S.week;
+    const isCurrent = w === realWeek; // 'en cours' = la vraie semaine DB
     const isDeload  = w % 7 === 0;
 
     const doneCount = ['push','pull','legs','upper'].filter(id => {
@@ -3798,8 +3824,7 @@ function closeWeekPicker() {
 // Changer de semaine — exactement comme dans Réglages
 function pickWeek(w) {
   closeWeekPicker();
-  S.week = w;
-  DB.set('week', w); // persiste la semaine choisie dans localStorage
+  S.week = w;       // vue temporaire en mémoire (pas sauvegardée dans DB)
   updateWeekChip();
   showScreen('home');
 }
