@@ -5598,7 +5598,32 @@ window.addEventListener('load', init);
 (function injectCycle1Data() {
   // Re-injecter si l'app est vide OU si la semaine a été réinitialisée par erreur
   const storedWeek = parseInt(localStorage.getItem('apfp.week') || '0');
-  if (storedWeek >= 8) return; // données correctes → ne rien faire
+
+  // Vérifier s'il y a de VRAIES séances validées depuis la semaine 8
+  // (exclut les données injectées en S6 qui sont notre référence)
+  // Si week=12 mais aucune séance faite entre S8 et S12 → c'est un artefact
+  // de navigation (pickWeek avait sauvegardé en DB avant le fix) → reset à S8
+  const hasRealSessionsFromS8 = (() => {
+    if (storedWeek < 8) return false;
+    const sessIds = ['push','pull','legs','upper'];
+    for (let w = 8; w <= storedWeek; w++) {
+      for (const sid of sessIds) {
+        try {
+          const raw = localStorage.getItem('apfp.sess-' + w + '-' + sid);
+          if (raw && JSON.parse(raw)?.finished) return true;
+        } catch(e) {}
+      }
+    }
+    return false;
+  })();
+
+  // Garder uniquement si on est à une semaine valide ET qu'il y a de vraies données
+  if (storedWeek === 8 && !hasRealSessionsFromS8) {
+    // S8 mais pas encore de séance faite → garder S8 (début de cycle correct)
+    return;
+  }
+  if (storedWeek >= 8 && hasRealSessionsFromS8) return; // vraies séances → ne pas toucher
+  // Sinon : storedWeek < 8 OU > 8 sans données → réinjecter et remettre à S8
 
   // ── Fonction raccourci ──
   const set = (k, v) => localStorage.setItem('apfp.' + k, JSON.stringify(v));
