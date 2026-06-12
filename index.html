@@ -3104,12 +3104,17 @@ function renderHome() {
 
   // Date
   const now  = new Date();
-  const week = WEEKS[S.week - 1];
-
-
+  // WEEKS a 7 entrées (S1-S7). Pour les semaines > 7 (cycle 2+), on utilise
+  // le modulo pour rester dans le tableau (ex: semaine 8 → index 0 = S1)
+  const weekIdx = (S.week - 1) % 7;
+  const week = WEEKS[weekIdx];
+  // Label affiché avec le numéro de cycle si > 1
+  const cycleNum  = Math.ceil(S.week / 7);
+  const weekInCyc = ((S.week - 1) % 7) + 1;
+  const weekLabel = cycleNum > 1 ? `C${cycleNum}-S${weekInCyc}` : week.label;
 
   document.getElementById('home-day').textContent = DAYS_FR[now.getDay()];
-  document.getElementById('home-date').textContent = `${now.getDate()} ${MONTHS_FR[now.getMonth()]} · ${week.label}`;
+  document.getElementById('home-date').textContent = `${now.getDate()} ${MONTHS_FR[now.getMonth()]} · ${weekLabel}`;
 
   // Quote du jour (change selon le jour)
   const q = QUOTES[now.getDate() % QUOTES.length];
@@ -3123,10 +3128,14 @@ function renderHome() {
   const streak = computeStreak();
   document.getElementById('streak-num').textContent = streak;
 
-  // Barre cycle
-  const pct = Math.min(Math.round(((S.week - 1) / 6) * 100), 100);
+  // Barre cycle — position dans le bloc 7 semaines actuel (ex: semaine 10 = S3 du C2)
+  const weekPos = ((S.week - 1) % 7); // 0-6
+  const pct = Math.min(Math.round((weekPos / 6) * 100), 100);
   document.getElementById('cycle-fill').style.width = `${pct}%`;
-  document.getElementById('cycle-label-mid').textContent = `S${S.week} — ${pct}%`;
+  const cycLabel = Math.ceil(S.week / 7) > 1
+    ? `C${Math.ceil(S.week/7)}-S${weekPos+1}`
+    : `S${S.week}`;
+  document.getElementById('cycle-label-mid').textContent = `${cycLabel} — ${pct}%`;
 
   // KPIs
   const hist = DB.get('history', []);
@@ -3802,6 +3811,7 @@ function closeWeekPicker() {
 function pickWeek(w) {
   closeWeekPicker();
   S.week = w;
+  DB.set('week', w); // persiste la semaine choisie dans localStorage
   updateWeekChip();
   showScreen('home');
 }
@@ -3813,7 +3823,12 @@ function renderWeekRecap(w) {
   const COLORS  = {push:'#ef4444', pull:'#3b82f6', legs:'#22dd66', upper:'#a855f7'};
 
   document.getElementById('recap-week-title').textContent =
-    w === 7 ? 'Semaine ' + w + ' — Deload ❄️' : 'Semaine ' + w;
+    (() => {
+      const c2 = Math.ceil(w / 7);
+      const wi = ((w - 1) % 7) + 1;
+      const lbl = c2 > 1 ? `C${c2}-S${wi}` : `S${wi}`;
+      return (w % 7 === 0) ? lbl + ' — Deload ❄️' : lbl;
+    })();
 
   // Lire les données via DB (préfixe apfp. inclus automatiquement)
   function readSessData(week, sessId) {
@@ -5645,12 +5660,12 @@ window.addEventListener('load', init);
   set('week', 8);
   set('weekStartDate', new Date().toISOString());
 
-  // Historique minimal pour que les stats ne soient pas vides
+  // Historique au bon format (key = clé DB de la séance, comme finishSession le fait)
   set('history', [
-    { date: '2026-06-01', session: 'push', volume: 3200, week: 6 },
-    { date: '2026-06-02', session: 'pull', volume: 2800, week: 6 },
-    { date: '2026-06-03', session: 'legs', volume: 4100, week: 6 },
-    { date: '2026-06-04', session: 'upper', volume: 2600, week: 6 },
+    { date: '2026-06-01T11:33:00.000Z', sessionId: 'push',  sessionName: 'Push',  week: 6, doneSets: 19, totalSets: 19, key: 'sess-6-push'  },
+    { date: '2026-06-02T11:28:00.000Z', sessionId: 'pull',  sessionName: 'Pull',  week: 6, doneSets: 21, totalSets: 21, key: 'sess-6-pull'  },
+    { date: '2026-06-03T11:30:00.000Z', sessionId: 'legs',  sessionName: 'Legs',  week: 6, doneSets: 15, totalSets: 15, key: 'sess-6-legs'  },
+    { date: '2026-06-04T11:25:00.000Z', sessionId: 'upper', sessionName: 'Upper', week: 6, doneSets: 13, totalSets: 13, key: 'sess-6-upper' },
   ]);
 
   console.log('[APEX] ✅ Données Cycle 1 injectées — positionné en C2-S1 (semaine 8)');
