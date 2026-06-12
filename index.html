@@ -5565,5 +5565,97 @@ window.addEventListener('load', init);
     </div>
   </div>
 </div>
+
+<script>
+// ─── INJECTION DONNÉES CYCLE 1 ───────────────────────────────────────────────
+// Ce script restaure automatiquement les données du Cycle 1 (S6 = dernière
+// semaine de travail) si l'app est vide, et positionne en C2-S1 (semaine 8).
+// Il ne s'exécute QU'UNE SEULE FOIS (si apfp.week est absent = app neuve).
+(function injectCycle1Data() {
+  if (localStorage.getItem('apfp.week') !== null) return; // déjà des données
+
+  // ── Fonction raccourci ──
+  const set = (k, v) => localStorage.setItem('apfp.' + k, JSON.stringify(v));
+  const s = (w, r) => ({ weight: w, reps: r, done: true });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // PUSH — S6 (2026-06-01) — données réelles
+  // ──────────────────────────────────────────────────────────────────────────
+  set('sess-6-push', {
+    finished: true,
+    sets: {
+      'push-1': [s(28,12), s(30,8), s(32,8), s(32,8)],         // Développé couché haltères
+      'push-2': [s(14,10), s(14,10), s(14,10)],                 // Développé décliné machine
+      'push-3': [s(47,15), s(47,15), s(47,15)],                 // Écartés poulie basse
+      'push-4': [s(50,12), s(50,10), s(50,10)],                 // Développé assis machine (épaules)
+      'push-5': [s(10,15), s(10,15), s(10,15), s(10,15)],       // Élévations latérales haltères
+      'push-7': [s(17.5,13), s(17.5,12), s(17.5,12)],           // Extensions triceps poulie corde
+    }
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // PULL — S6 (2026-06-02) — données réelles
+  // ──────────────────────────────────────────────────────────────────────────
+  set('sess-6-pull', {
+    finished: true,
+    sets: {
+      'pull-1': [s(50,12), s(50,12), s(50,12), s(50,12)],       // Tirage vertical poulie
+      'pull-2': [s(50,10), s(50,12), s(50,10), s(50,10)],       // Rowing horizontal poulie
+      'pull-4': [s(18,10), s(18,10), s(18,10)],                 // Rowing haltère unilatéral (S5)
+      'pull-5': [s(5,18), s(7.5,12)],                           // Oiseau poulie (rear delt)
+      'pull-6': [s(22.5,12), s(22.5,12), s(22.5,12)],           // Face pull poulie
+      'pull-7': [s(12,12), s(12,10), s(12,10)],                 // Curl incliné haltères
+      'pull-8': [s(20.5,11), s(20.5,11), s(20.5,11)],           // Curl barre EZ
+    }
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // LEGS — S6 (2026-06-03) — données réelles
+  // ──────────────────────────────────────────────────────────────────────────
+  set('sess-6-legs', {
+    finished: true,
+    sets: {
+      'legs-1': [s(100,8), s(100,8), s(90,10)],                 // Hammer Strength unilatéral
+      'legs-2': [s(140,10), s(140,10), s(140,10)],              // Presse à cuisse
+      'legs-3': [s(42.5,12), s(42.5,12), s(42.5,12)],           // Leg curl (machine)
+      'legs-4': [s(42.5,12), s(42.5,12), s(42.5,12)],           // Leg extension (machine)
+      'legs-5': [s(22.5,15), s(22.5,15), s(22.5,15)],           // Mollets machine assis
+    }
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // UPPER — S6 (2026-06-04) — données réelles
+  // ──────────────────────────────────────────────────────────────────────────
+  set('sess-6-upper', {
+    finished: true,
+    sets: {
+      'upper-1': [s(28,8), s(28,8), s(28,7), s(28,7)],          // Développé incliné haltères
+      'upper-2': [s(21,10), s(21,10), s(21,9), s(21,9)],        // Tractions machine assistée
+      'upper-3': [s(20,12), s(22,10), s(22,9)],                 // Développé militaire haltères
+      'upper-4': [s(18,10), s(18,10), s(18,10)],                // Rowing haltère unilatéral
+      'upper-5': [s(21,10), s(21,10), s(21,11)],                // Dips machine assistée (S4)
+      'upper-7': [s(12,10), s(12,10)],                          // Curl marteau haltères (S5)
+      'upper-8': [s(17.5,12), s(17.5,12)],                      // Extensions triceps 2e fréq (S5)
+    }
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // POSITION : C2-S1 = semaine absolue 8 (1 cycle de 7 + 1)
+  // ──────────────────────────────────────────────────────────────────────────
+  set('week', 8);
+  set('weekStartDate', new Date().toISOString());
+
+  // Historique minimal pour que les stats ne soient pas vides
+  set('history', [
+    { date: '2026-06-01', session: 'push', volume: 3200, week: 6 },
+    { date: '2026-06-02', session: 'pull', volume: 2800, week: 6 },
+    { date: '2026-06-03', session: 'legs', volume: 4100, week: 6 },
+    { date: '2026-06-04', session: 'upper', volume: 2600, week: 6 },
+  ]);
+
+  console.log('[APEX] ✅ Données Cycle 1 injectées — positionné en C2-S1 (semaine 8)');
+})();
+</script>
+
 </body>
 </html>
