@@ -3219,6 +3219,24 @@ function renderHome() {
       </div>`;
     }
 
+    // Charges projetées pour cette séance (surcharge progressive) — calculé une fois
+    // pour être utilisé dans les cartes AUJOURD'HUI et NORMAL
+    const suggestions = computeProgressiveSuggestions(id);
+    const sugLines = sess.exercises
+      .filter(e => suggestions[e.id]?.suggestedWeight)
+      .slice(0, 3)
+      .map(e => {
+        const sug = suggestions[e.id];
+        const arrow = sug.type === 'progress' ? '↑' : sug.type === 'down' ? '↓' : '→';
+        const shortName = e.name.split(' ').slice(0,2).join(' ');
+        return `<span style="white-space:nowrap">${arrow} ${shortName} <strong>${sug.suggestedWeight}kg</strong></span>`;
+      });
+    const chargesHtml = sugLines.length > 0
+      ? `<div style="margin-top:8px;padding:6px 10px;background:rgba(245,197,24,0.12);border-radius:8px;border:1px solid rgba(245,197,24,0.2);display:flex;flex-wrap:wrap;gap:6px 10px;font-size:12px">
+          ${sugLines.join('')}
+        </div>`
+      : '';
+
     if (isToday) {
       const sessionPhoto = (typeof SESSION_PHOTOS !== 'undefined' && SESSION_PHOTOS[id]) ? SESSION_PHOTOS[id] : '';
       return `<div class="card-today" onclick="startSession('${id}')">
@@ -3232,6 +3250,7 @@ function renderHome() {
             ${sess.focus.split('·').map(f=>`<span class="card-pill">${f.trim()}</span>`).join('')}
             <span class="card-pill">${sess.duration}</span>
           </div>
+          ${chargesHtml}
         </div>
         <div class="card-today-go"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg></div>
       </div>`;
@@ -3239,29 +3258,6 @@ function renderHome() {
 
     const normPhoto = (typeof SESSION_PHOTOS !== 'undefined' && SESSION_PHOTOS[id]) ? SESSION_PHOTOS[id] : '';
     const sessColor = PROGRAM.sessions[id].color || '#ffffff';
-
-    // Charges projetées pour cette séance (surcharge progressive)
-    const suggestions = computeProgressiveSuggestions(id);
-    const suggKeys = Object.keys(suggestions);
-    let chargesHtml = '';
-    if (suggKeys.length > 0) {
-      // Prendre les 3 premiers exercices avec une suggestion
-      const lines = sess.exercises
-        .filter(e => suggestions[e.id]?.suggestedWeight)
-        .slice(0, 3)
-        .map(e => {
-          const sug = suggestions[e.id];
-          const arrow = sug.type === 'progress' ? '↑' : sug.type === 'down' ? '↓' : '→';
-          // Nom court (2 premiers mots)
-          const shortName = e.name.split(' ').slice(0,2).join(' ');
-          return `<span style="white-space:nowrap">${arrow} ${shortName} <strong>${sug.suggestedWeight}kg</strong></span>`;
-        });
-      if (lines.length > 0) {
-        chargesHtml = `<div style="margin-top:6px;padding:6px 8px;background:rgba(245,197,24,0.08);border-radius:8px;border:1px solid rgba(245,197,24,0.15);display:flex;flex-wrap:wrap;gap:6px 10px">
-          ${lines.join('')}
-        </div>`;
-      }
-    }
 
     return `<div class="card-normal ${id}" onclick="startSession('${id}')">
       ${normPhoto ? `<div class="card-normal-photo" style="background-image:url('${normPhoto}')"></div><div class="card-normal-overlay"></div>` : `<div class="card-normal-color" style="background:${sessColor}22"></div>`}
